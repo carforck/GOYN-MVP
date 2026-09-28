@@ -26,7 +26,7 @@ export async function SiteHeader() {
         : { href: "/panel", label: "Mi panel" };
 
   return (
-    <header className="sticky top-0 z-40 border-b border-border/70 bg-white/90 backdrop-blur supports-backdrop-filter:bg-white/75">
+    <header className="sticky top-0 z-40 border-b border-border/70 bg-background/90 backdrop-blur supports-backdrop-filter:bg-background/75">
       <div className="goyn-container flex h-16 items-center justify-between gap-4">
         <ProductLogo />
         <nav aria-label="Principal" className="hidden items-center gap-0.5 lg:flex">

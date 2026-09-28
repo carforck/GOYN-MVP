@@ -31,11 +31,11 @@ export function OrgInitials({ name, className }: { name: string; className?: str
 export function OrgCard({ org, href }: { org: PublicOrganization; href?: string }) {
   const link = href ?? `/actores/${org.slug}`;
   return (
-    <article className="group relative flex flex-col gap-4 rounded-2xl border bg-white p-5 transition-all hover:-translate-y-0.5 hover:border-goyn-violeta/40 hover:shadow-lg hover:shadow-goyn-violeta/5">
+    <article className="group relative flex flex-col gap-4 rounded-2xl border bg-card p-5 transition-all hover:-translate-y-0.5 hover:border-goyn-violeta/40 hover:shadow-lg hover:shadow-goyn-violeta/5">
       <div className="flex items-start gap-3">
         <OrgInitials name={org.name} />
         <div className="min-w-0 flex-1">
-          <h3 className="font-heading text-base leading-snug font-bold text-goyn-navy">
+          <h3 className="font-heading text-base leading-snug font-bold text-foreground">
             <Link href={link} className="after:absolute after:inset-0 focus-visible:outline-none">
               {org.name}
             </Link>
@@ -45,14 +45,14 @@ export function OrgCard({ org, href }: { org: PublicOrganization; href?: string 
         {org.verified_at && <BadgeCheckIcon className="size-5 shrink-0 text-goyn-violeta" aria-label="Perfil verificado por GOYN" />}
       </div>
 
-      <div className="flex items-center gap-2 text-sm font-semibold text-goyn-navy">
+      <div className="flex items-center gap-2 text-sm font-semibold text-foreground">
         <RoleIcon code={org.primary_role_code} size={24} />
         {org.primary_role_label}
       </div>
 
       <ul className="flex flex-wrap gap-1.5" aria-label="Áreas de impacto">
         {org.area_codes.map((code) => (
-          <li key={code} className="inline-flex items-center gap-1.5 rounded-full bg-muted px-2.5 py-0.5 text-xs font-semibold text-goyn-navy">
+          <li key={code} className="inline-flex items-center gap-1.5 rounded-full bg-muted px-2.5 py-0.5 text-xs font-semibold text-foreground">
             <span aria-hidden className="size-2 rounded-full" style={{ backgroundColor: item("impactAreas", code)?.color }} />
             {label("impactAreas", code)}
           </li>

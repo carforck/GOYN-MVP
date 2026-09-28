@@ -7,8 +7,11 @@ const dateTimeFmt = new Intl.DateTimeFormat("es-CO", {
 
 export const formatNumber = (n: number) => numberFmt.format(n);
 export const formatCompact = (n: number) => compactFmt.format(n);
-export const formatDate = (iso: string | null | undefined) => (iso ? dateFmt.format(new Date(iso)) : "—");
-export const formatDateTime = (iso: string | null | undefined) => (iso ? dateTimeFmt.format(new Date(iso)) : "—");
+// Node y los navegadores usan espacios Unicode distintos en "p. m."; se normalizan para que el
+// HTML del servidor y del cliente coincidan (evita errores de hidratación).
+const clean = (s: string) => s.replace(/[\u00a0\u202f]/g, " ");
+export const formatDate = (iso: string | null | undefined) => (iso ? clean(dateFmt.format(new Date(iso))) : "—");
+export const formatDateTime = (iso: string | null | undefined) => (iso ? clean(dateTimeFmt.format(new Date(iso))) : "—");
 
 // "2025-T3" → "T3 2025"
 export const formatPeriod = (label: string) => {

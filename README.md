@@ -6,7 +6,7 @@ y su área metropolitana.
 
 ```
 GOYN-MVP/
-├── frontend/   Next.js 16 (App Router) + TypeScript + Tailwind 4 + shadcn/ui (Base UI) + MapLibre + Recharts → Vercel
+├── frontend/   Next.js 16 (App Router) + TypeScript + Tailwind 4 + shadcn/ui (Base UI) + three.js (R3F) + MapLibre + Recharts + Motion → Vercel
 ├── backend/    Supabase: migraciones SQL (PostgreSQL + PostGIS), RLS, flujo editorial, seed demo, pruebas → Supabase
 └── docs/       Vistas y rutas, validación PRD ↔ base de datos, identidad de marca, despliegue
 ```
@@ -26,7 +26,7 @@ npm run dev            # http://localhost:3000
 # Backend: probar migraciones + seed + flujo editorial sin Docker (PGlite con PostGIS)
 cd backend
 npm install
-npm test               # 17 pruebas de RLS, publicación, auditoría y roles
+npm test               # 19 pruebas: RLS, publicación, auditoría, roles y avisos en tiempo real
 ```
 
 En modo demo, `/ingresar` permite entrar como **Organización**, **Equipo GOYN** o **Superadministración**

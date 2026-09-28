@@ -28,11 +28,11 @@ export function ComingSoon({
           <span className="goyn-eyebrow bg-goyn-magenta">
             <SparklesIcon className="size-3.5" aria-hidden /> Próximamente · {phase}
           </span>
-          <h1 className="text-3xl font-extrabold text-goyn-navy sm:text-5xl">{title}</h1>
-          <p className="max-w-xl text-lg text-goyn-navy/80">{description}</p>
+          <h1 className="text-3xl font-extrabold text-foreground sm:text-5xl">{title}</h1>
+          <p className="max-w-xl text-lg text-foreground/80">{description}</p>
           <ul className="space-y-2.5">
             {features.map((f) => (
-              <li key={f} className="flex items-start gap-3 text-goyn-navy">
+              <li key={f} className="flex items-start gap-3 text-foreground">
                 <span aria-hidden className="mt-2 size-2 shrink-0 rounded-full bg-goyn-magenta" />
                 {f}
               </li>

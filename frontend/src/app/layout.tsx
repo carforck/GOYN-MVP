@@ -25,7 +25,7 @@ export const viewport: Viewport = { themeColor: "#9B00FF" };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="es" className={`${quicksand.variable} ${marker.variable} h-full antialiased`}>
+    <html lang="es" suppressHydrationWarning className={`${quicksand.variable} ${marker.variable} h-full antialiased`}>
       <body className="flex min-h-full flex-col">
         {children}
         <Toaster richColors position="top-center" />

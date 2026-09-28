@@ -7,7 +7,7 @@ import { Field } from "@/components/forms/fields";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
-const selectClass = "h-11 w-full rounded-lg border border-input bg-white px-3 text-sm";
+const selectClass = "h-11 w-full rounded-lg border border-input bg-card px-3 text-sm";
 
 // Captura de un reporte (FR-011). En modo conectado se enviará como reporte 'enviado'
 // para revisión GOYN (función review_indicator_report).
@@ -22,7 +22,7 @@ export function IndicatorReportForm({ programs }: { programs: { id: string; name
   }
   return (
     <form
-      className="grid gap-4 rounded-2xl border bg-white p-5 md:grid-cols-3"
+      className="grid gap-4 rounded-2xl border bg-card p-5 md:grid-cols-3"
       onSubmit={(e) => {
         e.preventDefault();
         toast.success("Reporte enviado a revisión del equipo GOYN.");

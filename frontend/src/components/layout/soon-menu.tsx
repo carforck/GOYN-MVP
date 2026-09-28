@@ -35,17 +35,17 @@ export function SoonMenu({ items }: { items: { href: string; label: string; phas
         onClick={() => setOpen((o) => !o)}
         className={cn(
           "inline-flex h-10 items-center gap-1.5 rounded-full px-3.5 text-sm font-semibold transition-colors",
-          active ? "bg-goyn-lila text-goyn-violeta" : "text-goyn-navy/70 hover:bg-muted hover:text-goyn-navy",
+          active ? "bg-goyn-lila text-goyn-violeta" : "text-foreground/70 hover:bg-muted hover:text-foreground",
         )}
       >
         <SparklesIcon className="size-4 text-goyn-magenta" aria-hidden /> Próximamente
         <ChevronDownIcon className={cn("size-4 transition-transform", open && "rotate-180")} aria-hidden />
       </button>
       {open && (
-        <div role="menu" className="absolute top-12 right-0 w-72 rounded-2xl border bg-white p-2 shadow-xl">
+        <div role="menu" className="absolute top-12 right-0 w-72 rounded-2xl border bg-card p-2 shadow-xl">
           {items.map((i) => (
             <Link key={i.href} role="menuitem" href={i.href} onClick={() => setOpen(false)} className="flex items-center justify-between rounded-xl px-3 py-2.5 hover:bg-muted">
-              <span className="text-sm font-semibold text-goyn-navy">{i.label}</span>
+              <span className="text-sm font-semibold text-foreground">{i.label}</span>
               <span className="rounded-full bg-goyn-rosa px-2 py-0.5 text-[11px] font-bold text-accent-foreground">{i.phase}</span>
             </Link>
           ))}

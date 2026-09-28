@@ -22,7 +22,7 @@ export function Field({
 }) {
   return (
     <div className="space-y-1.5">
-      <label htmlFor={htmlFor} className="block text-sm font-bold text-goyn-navy">
+      <label htmlFor={htmlFor} className="block text-sm font-bold text-foreground">
         {label} {required && <span className="text-goyn-magenta" aria-hidden>*</span>}
       </label>
       {hint && <p className="text-xs text-muted-foreground">{hint}</p>}
@@ -63,7 +63,7 @@ export function ChoiceGroup({
   };
   return (
     <fieldset className="space-y-2" aria-describedby={hint ? `${id}-hint` : undefined}>
-      <legend className="text-sm font-bold text-goyn-navy">
+      <legend className="text-sm font-bold text-foreground">
         {label} {required && <span className="text-goyn-magenta" aria-hidden>*</span>}
       </legend>
       {hint && <p id={`${id}-hint`} className="text-xs text-muted-foreground">{hint}</p>}
@@ -79,7 +79,7 @@ export function ChoiceGroup({
               onClick={() => toggle(o.code)}
               className={cn(
                 "flex items-start gap-2 rounded-xl border px-3 py-2 text-left text-sm transition-colors focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none",
-                checked ? "border-goyn-violeta bg-goyn-lila text-goyn-navy" : "bg-white hover:border-goyn-violeta/40",
+                checked ? "border-goyn-violeta bg-goyn-lila text-foreground" : "bg-card hover:border-goyn-violeta/40",
               )}
             >
               <span
@@ -116,7 +116,7 @@ export function Scale({
 }) {
   return (
     <fieldset className="space-y-2">
-      <legend className="text-sm font-bold text-goyn-navy">{label}</legend>
+      <legend className="text-sm font-bold text-foreground">{label}</legend>
       <div role="radiogroup" className="grid grid-cols-10 gap-1">
         {Array.from({ length: 10 }, (_, i) => i + 1).map((n) => (
           <button
@@ -128,7 +128,7 @@ export function Scale({
             onClick={() => onChange(n)}
             className={cn(
               "h-10 rounded-lg border text-sm font-bold transition-colors",
-              value === n ? "border-goyn-violeta bg-goyn-violeta text-white" : "bg-white hover:border-goyn-violeta/50",
+              value === n ? "border-goyn-violeta bg-goyn-violeta text-white" : "bg-card hover:border-goyn-violeta/50",
             )}
           >
             {n}

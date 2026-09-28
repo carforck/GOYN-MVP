@@ -24,8 +24,9 @@
   --color-goyn-amarillo: #ffbd25;
   --color-goyn-cian: #00a0cc;
   --color-goyn-verde: #0aa066;
-  --color-goyn-lila: #f3e6ff;
-  --color-goyn-rosa: #ffe6f5;
+  /* Tintes suaves que cambian con el tema. */
+  --color-goyn-lila: var(--lila);
+  --color-goyn-rosa: var(--rosa);
 
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -103,6 +104,42 @@
   --sidebar-accent-foreground: #ffffff;
   --sidebar-border: #232862;
   --sidebar-ring: #ff01a2;
+  --lila: #f3e6ff;
+  --rosa: #ffe6f5;
+  --grid: #eee8f5;
+}
+
+/* Modo oscuro: fondo azul oscuro de la marca (#060A28) con morado y magenta como luz. */
+.dark {
+  --background: #060a28;
+  --foreground: #f4f1ff;
+  --card: #0d1238;
+  --card-foreground: #f4f1ff;
+  --popover: #111745;
+  --popover-foreground: #f4f1ff;
+  --primary: #b44dff;
+  --primary-foreground: #ffffff;
+  --secondary: #24124a;
+  --secondary-foreground: #e6ccff;
+  --muted: #0a0f33;
+  --muted-foreground: #a9a6cc;
+  --accent: #3a0a2e;
+  --accent-foreground: #ffb3e0;
+  --destructive: #ff5c6c;
+  --border: #232a5e;
+  --input: #2d3570;
+  --ring: #b44dff;
+  --chart-1: #b44dff;
+  --chart-2: #22c3f0;
+  --chart-3: #ff3db5;
+  --chart-4: #ff7a3d;
+  --chart-5: #f4f1ff;
+  --sidebar: #03051a;
+  --sidebar-accent: #141a4a;
+  --sidebar-border: #1c2258;
+  --lila: #1d1247;
+  --rosa: #33102e;
+  --grid: #1c2258;
 }
 
 @layer base {
@@ -110,7 +147,7 @@
     @apply border-border outline-ring/50;
   }
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground transition-colors duration-300;
   }
   html {
     @apply font-sans;
@@ -132,6 +169,15 @@
   .goyn-stripe {
     background: linear-gradient(90deg, #0aa066 0 25%, #9b00ff 25% 50%, #fe5200 50% 75%, #ff01a2 75% 100%);
   }
+  /* Entrada del hero en CSS: corre antes de que cargue JavaScript (no retrasa el LCP). */
+  .goyn-enter {
+    animation: fade-up 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+    animation-delay: var(--d, 0s);
+  }
+  .goyn-live-dot {
+    @apply inline-block size-2 rounded-full bg-goyn-magenta;
+    animation: live-dot 1.6s ease-out infinite;
+  }
   .goyn-container {
     @apply mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8;
   }
@@ -145,6 +191,55 @@
   @apply px-2 text-lg text-muted-foreground;
 }
 
+/* Respeta "reducir movimiento" del sistema operativo. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes marquee-y {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(-50%);
+  }
+}
+
+@keyframes kenburns {
+  from {
+    transform: scale(1.08) translate3d(0, 0, 0);
+  }
+  to {
+    transform: scale(1.18) translate3d(-2%, -2%, 0);
+  }
+}
+
+@keyframes live-dot {
+  0% {
+    box-shadow: 0 0 0 0 rgb(255 1 162 / 0.7);
+  }
+  100% {
+    box-shadow: 0 0 0 10px rgb(255 1 162 / 0);
+  }
+}
+
 @keyframes marquee {
   from {
     transform: translateX(0);
@@ -152,4 +247,30 @@
   to {
     transform: translateX(-50%);
   }
+}
+
+/* Popups del mapa en vivo (escenario oscuro). */
+.goyn-popup .maplibregl-popup-content {
+  background: #0d1238;
+  border: 1px solid rgb(255 255 255 / 0.12);
+  color: #fff;
+}
+.goyn-popup.maplibregl-popup-anchor-top .maplibregl-popup-tip,
+.goyn-popup.maplibregl-popup-anchor-top-left .maplibregl-popup-tip,
+.goyn-popup.maplibregl-popup-anchor-top-right .maplibregl-popup-tip {
+  border-bottom-color: #0d1238;
+}
+.goyn-popup.maplibregl-popup-anchor-bottom .maplibregl-popup-tip,
+.goyn-popup.maplibregl-popup-anchor-bottom-left .maplibregl-popup-tip,
+.goyn-popup.maplibregl-popup-anchor-bottom-right .maplibregl-popup-tip {
+  border-top-color: #0d1238;
+}
+.goyn-popup.maplibregl-popup-anchor-left .maplibregl-popup-tip {
+  border-right-color: #0d1238;
+}
+.goyn-popup.maplibregl-popup-anchor-right .maplibregl-popup-tip {
+  border-left-color: #0d1238;
+}
+.goyn-popup .maplibregl-popup-close-button {
+  color: rgb(255 255 255 / 0.7);
 }

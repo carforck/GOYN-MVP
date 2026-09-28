@@ -38,14 +38,14 @@ export default async function SolicitudPage(props: PageProps<"/admin/solicitudes
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <p className="text-sm font-semibold text-muted-foreground">{isNew ? "Registro nuevo" : request.kind === "actualizacion" ? "Actualización de perfil" : "Reporte de indicador"} · enviada {formatDateTime(request.submitted_at)}</p>
-          <h1 className="text-2xl font-extrabold text-goyn-navy sm:text-3xl">{request.organization_name}</h1>
+          <h1 className="text-2xl font-extrabold text-foreground sm:text-3xl">{request.organization_name}</h1>
         </div>
         <span className={cn("rounded-full px-3 py-1 text-sm font-bold", statusStyle[request.status]?.className)}>{statusStyle[request.status]?.label}</span>
       </div>
 
       <div className="grid gap-6 lg:grid-cols-[1fr_380px]">
-        <section className="overflow-hidden rounded-2xl border bg-white" aria-labelledby="cambios">
-          <h2 id="cambios" className="border-b p-5 font-heading text-lg font-bold text-goyn-navy">
+        <section className="overflow-hidden rounded-2xl border bg-card" aria-labelledby="cambios">
+          <h2 id="cambios" className="border-b p-5 font-heading text-lg font-bold text-foreground">
             {isNew ? "Información propuesta" : "Solo lo que cambió frente a lo publicado"}
           </h2>
           <div className="divide-y">
@@ -53,11 +53,11 @@ export default async function SolicitudPage(props: PageProps<"/admin/solicitudes
               <div key={c.field} className="grid gap-3 p-5 md:grid-cols-[160px_1fr]">
                 <p className="text-xs font-bold text-muted-foreground uppercase">{c.field}</p>
                 {isNew ? (
-                  <p className="text-sm text-goyn-navy">{c.after}</p>
+                  <p className="text-sm text-foreground">{c.after}</p>
                 ) : (
                   <div className="grid gap-2 sm:grid-cols-2">
-                    <p className="rounded-xl bg-destructive/5 p-3 text-sm text-goyn-navy/80 line-through decoration-destructive/40">{c.before}</p>
-                    <p className="rounded-xl bg-goyn-lila p-3 text-sm text-goyn-navy">{c.after}</p>
+                    <p className="rounded-xl bg-destructive/5 p-3 text-sm text-foreground/80 line-through decoration-destructive/40">{c.before}</p>
+                    <p className="rounded-xl bg-goyn-lila p-3 text-sm text-foreground">{c.after}</p>
                   </div>
                 )}
               </div>

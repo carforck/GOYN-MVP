@@ -32,14 +32,14 @@ export function DecisionPanel({ id, fields, disabled }: { id: string; fields: st
   ];
 
   return (
-    <aside className="h-fit space-y-5 rounded-2xl border bg-white p-5 lg:sticky lg:top-20">
-      <h2 className="font-heading text-lg font-bold text-goyn-navy">Decisión</h2>
+    <aside className="h-fit space-y-5 rounded-2xl border bg-card p-5 lg:sticky lg:top-20">
+      <h2 className="font-heading text-lg font-bold text-foreground">Decisión</h2>
       {disabled && <p className="rounded-xl bg-muted p-3 text-sm text-muted-foreground">Esta solicitud ya no está pendiente.</p>}
       <div role="radiogroup" className="grid grid-cols-3 gap-2">
         {options.map((o) => (
           <button key={o.value} type="button" role="radio" aria-checked={decision === o.value} data-on={decision === o.value} disabled={disabled}
             onClick={() => setDecision(o.value)}
-            className={cn("flex flex-col items-center gap-1 rounded-xl border p-3 text-xs font-bold text-goyn-navy disabled:opacity-50", o.className)}>
+            className={cn("flex flex-col items-center gap-1 rounded-xl border p-3 text-xs font-bold text-foreground disabled:opacity-50", o.className)}>
             <o.icon className="size-5" aria-hidden /> {o.label}
           </button>
         ))}
@@ -47,17 +47,17 @@ export function DecisionPanel({ id, fields, disabled }: { id: string; fields: st
 
       {decision === "ajustes" && (
         <div className="space-y-3">
-          <p className="text-sm font-semibold text-goyn-navy">Comentario por campo</p>
+          <p className="text-sm font-semibold text-foreground">Comentario por campo</p>
           {fields.map((f) => (
             <label key={f} className="block space-y-1 text-xs font-bold text-muted-foreground">
               {f}
-              <Textarea rows={2} value={comments[f] ?? ""} onChange={(e) => setComments({ ...comments, [f]: e.target.value })} className="text-sm font-normal text-goyn-navy" />
+              <Textarea rows={2} value={comments[f] ?? ""} onChange={(e) => setComments({ ...comments, [f]: e.target.value })} className="text-sm font-normal text-foreground" />
             </label>
           ))}
         </div>
       )}
 
-      <label className="block space-y-1.5 text-sm font-bold text-goyn-navy">
+      <label className="block space-y-1.5 text-sm font-bold text-foreground">
         {decision === "rechazar" ? "Motivo del rechazo (obligatorio)" : "Nota para la organización (opcional)"}
         <Textarea rows={3} value={reason} onChange={(e) => setReason(e.target.value)} className="font-normal" />
       </label>

@@ -87,3 +87,17 @@ src/
   `change_request`, la consola llama `decide_change_request` y la auditoría lee `audit_log`.
 
 Las vistas no cambian entre modos; solo cambia la implementación de `src/lib/data`.
+
+## Experiencia visual y datos en vivo
+
+| Pieza | Dónde | Cómo funciona |
+|---|---|---|
+| Hero con carrusel | `/` | Fundido entre 5 fotos con efecto Ken Burns en duotono morado + dos columnas de fotos que se desplazan en sentidos opuestos (`components/home/hero-slideshow.tsx`). Entrada del texto en CSS para no depender de JavaScript. |
+| Formas de marca animadas | Home, panel, cita | Texturas del manual que flotan, giran y hacen parallax con el scroll (`components/motion/floating-shape.tsx`). |
+| Contadores | KPIs de todo el sitio | `AnimatedNumber`: sube desde 0 al aparecer y, cuando llega un dato en vivo, anima desde el valor anterior y destella. |
+| Globo 3D (three.js) | Home (versión corta) y `/mapa` (intro) | Tierra con textura satelital NASA, relieve, brillo del mar, atmósfera morada/magenta, estrellas, faro pulsante en Barranquilla y arcos con estela. La cámara arranca en vista global y vuela hasta Barranquilla (`components/globe/globe-scene.tsx`). |
+| Mapa en vivo | `/mapa` | Tras la intro, el mapa oscuro teñido con la marca (proyección globo) vuela a Barranquilla: actores con brillo que respira, arcos animados por tipo de relación, ondas por cada evento y vuelos de luz en nuevas conexiones. Panel por territorio con contadores y botón "Ver desde el mundo". |
+| Datos en tiempo real | Home, mapa, panel, consola | `LiveProvider` comparte una instantánea del ecosistema. Con Supabase: la base emite un aviso en el canal público `ecosistema` al publicar algo (migración 009) y el cliente vuelve a pedir `/api/ecosistema`; respaldo cada 45 s. En modo demo: simulador rotulado como tal. |
+| Modo oscuro | Solo `/panel` y `/admin` | Botón sol/luna en la barra superior; preferencia guardada por navegador. La landing y el ingreso van siempre en claro. |
+
+Todas las animaciones respetan la preferencia "reducir movimiento" del sistema operativo.

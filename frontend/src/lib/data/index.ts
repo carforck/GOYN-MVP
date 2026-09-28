@@ -2,6 +2,7 @@ import "server-only";
 import { cache } from "react";
 import { isSupabaseConfigured } from "@/lib/config";
 import { matchesFilters } from "@/lib/filters";
+import type { LiveEvent, LiveSnapshot, TerritoryTotals } from "@/lib/live/types";
 import { createClient } from "@/lib/supabase/server";
 import type {
   ChangeRequestSummary,
@@ -149,4 +150,50 @@ export const getOwnOrganization = cache(async (organizationIds: string[]): Promi
   const supabase = await createClient();
   const { data } = await supabase.from("v_public_organization").select("*").eq("id", organizationIds[0]).maybeSingle();
   return (data as PublicOrganization | null) ?? null;
+});
+
+// ─── Datos en vivo ──────────────────────────────────────────────────────────
+// Instantánea que alimenta contadores, ticker, mapa y globo. En el cliente se mantiene al día
+// con el simulador (demo) o con Supabase Realtime + /api/ecosistema (ver src/lib/live).
+export const getLiveSnapshot = cache(async (): Promise<LiveSnapshot> => {
+  const [stats, orgs, reports] = await Promise.all([getEcosystemStats(), listOrganizations(), listIndicatorReports()]);
+  const territories: Record<string, TerritoryTotals> = {};
+  const bucket = (code: string) => (territories[code] ??= { orgs: 0, conectados: 0, fortalecidos: 0, transformados: 0 });
+  for (const o of orgs) for (const t of o.territory_codes) bucket(t).orgs += 1;
+  for (const r of reports) for (const t of r.territory_codes) bucket(t)[r.indicator_code] += r.value;
+
+  const bySlug = new Map(orgs.map((o) => [o.slug, o]));
+  const latest = [...reports].sort((a, b) => b.period_start.localeCompare(a.period_start)).slice(0, 12);
+  const events: LiveEvent[] = latest.map((r) => {
+    const o = bySlug.get(r.organization_slug);
+    return {
+      id: r.id,
+      at: r.period_end,
+      kind: "reporte",
+      orgSlug: r.organization_slug,
+      orgName: o?.name ?? r.organization_slug,
+      territory: o?.location_territory_code ?? null,
+      lat: o?.lat ?? null,
+      lng: o?.lng ?? null,
+      indicator: r.indicator_code,
+      delta: r.value,
+      historic: true,
+    };
+  });
+
+  return {
+    stats,
+    territories,
+    orgs: orgs.map((o) => ({
+      id: o.id,
+      slug: o.slug,
+      name: o.name,
+      territory: o.location_territory_code,
+      role: o.primary_role_code,
+      lat: o.lat,
+      lng: o.lng,
+    })),
+    events,
+    source: isSupabaseConfigured ? "supabase" : "demo",
+  };
 });

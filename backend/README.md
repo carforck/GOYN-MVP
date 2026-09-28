@@ -14,6 +14,7 @@ PostgreSQL 17 + PostGIS gestionado por Supabase. Todo el comportamiento de datos
 | 006 | `vistas_publicas` | `v_public_organization`, `v_public_program`, `v_public_relation`, `v_public_indicator_report`, `v_ecosystem_stats` |
 | 007 | `flujo_editorial` | `submit_change_request`, `decide_change_request`, `review_indicator_report` |
 | 008 | `almacenamiento` | buckets `logos` (público), `evidencias` y `exportaciones` (privados) |
+| 009 | `tiempo_real` | aviso en el canal público de Realtime `ecosistema` cuando se publica una organización, relación o reporte (solo datos públicos) |
 
 ## Flujo editorial
 
@@ -33,7 +34,7 @@ Organización: borrador ──submit──▶ enviada ──decide(aprobar)─�
 
 ```bash
 npm install
-npm test               # migraciones + seed + 17 pruebas en PGlite (sin Docker)
+npm test               # migraciones + seed + 19 pruebas en PGlite (sin Docker)
 npm run build:seed     # regenera seed.sql y los JSON demo del frontend
 npm run build:catalogs # regenera la migración 002 desde scripts/catalogs.mjs (solo antes del primer push)
 npm run db:push        # aplica migraciones al proyecto vinculado

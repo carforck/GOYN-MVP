@@ -23,7 +23,7 @@ export default async function ProgramasPage() {
           <PencilIcon aria-hidden /> Proponer cambios
         </Link>
       </PageHeader>
-      <div className="overflow-x-auto rounded-2xl border bg-white">
+      <div className="overflow-x-auto rounded-2xl border bg-card">
         <table className="w-full min-w-[720px] text-sm">
           <thead className="bg-muted text-left text-xs font-bold text-muted-foreground uppercase">
             <tr>
@@ -38,7 +38,7 @@ export default async function ProgramasPage() {
           <tbody className="divide-y">
             {programs.map((p) => (
               <tr key={p.id}>
-                <td className="p-4 font-semibold text-goyn-navy">{p.name}</td>
+                <td className="p-4 font-semibold text-foreground">{p.name}</td>
                 <td className="p-4">{label("impactAreas", p.primary_area_code)}</td>
                 <td className="p-4">{p.territory_codes.map(shortTerritory).join(", ")}</td>
                 <td className="p-4">{label("modalities", p.modality_code)}</td>

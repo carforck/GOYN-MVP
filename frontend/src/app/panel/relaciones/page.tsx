@@ -26,15 +26,15 @@ export default async function RelacionesPage() {
         {catalogs.relationTypes.map((type) => {
           const items = relations.filter((r) => r.relation_type_code === type.code);
           return (
-            <section key={type.code} className="rounded-2xl border bg-white p-5">
-              <h2 className="font-heading text-lg font-bold text-goyn-navy">{({ socio: "Socios", aliado: "Aliados", colaborador: "Colaboradores" } as Record<string, string>)[type.code]} <span className="text-muted-foreground">· {items.length}</span></h2>
+            <section key={type.code} className="rounded-2xl border bg-card p-5">
+              <h2 className="font-heading text-lg font-bold text-foreground">{({ socio: "Socios", aliado: "Aliados", colaborador: "Colaboradores" } as Record<string, string>)[type.code]} <span className="text-muted-foreground">· {items.length}</span></h2>
               <p className="mb-3 text-xs text-muted-foreground">{type.description}</p>
               <ul className="space-y-2">
                 {items.map((r) => {
                   const other = r.source_org_id === org?.id ? { slug: r.target_slug, name: r.target_name } : { slug: r.source_slug, name: r.source_name };
                   return (
                     <li key={r.id}>
-                      <Link href={`/actores/${other.slug}`} className="text-sm font-semibold text-goyn-navy hover:text-goyn-violeta hover:underline">{other.name}</Link>
+                      <Link href={`/actores/${other.slug}`} className="text-sm font-semibold text-foreground hover:text-goyn-violeta hover:underline">{other.name}</Link>
                     </li>
                   );
                 })}
@@ -44,7 +44,7 @@ export default async function RelacionesPage() {
           );
         })}
       </div>
-      <p className="flex items-center gap-2 rounded-2xl border border-dashed bg-white p-4 text-sm text-muted-foreground">
+      <p className="flex items-center gap-2 rounded-2xl border border-dashed bg-card p-4 text-sm text-muted-foreground">
         <SparklesIcon className="size-4 text-goyn-magenta" aria-hidden /> Sugerencias de aliados por complementariedad y grafo de red: Fase 2 · 2027.
       </p>
     </div>

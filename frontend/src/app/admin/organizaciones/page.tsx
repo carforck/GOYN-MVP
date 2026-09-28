@@ -19,14 +19,14 @@ export default async function OrganizacionesAdminPage(props: PageProps<"/admin/o
   return (
     <div className="space-y-6">
       <PageHeader title="Organizaciones" description={`${orgs.length} organizaciones publicadas. Las ediciones se hacen mediante solicitudes para conservar versiones y auditoría.`}>
-        <a href="/admin/exportar/descargar?dataset=organizaciones&format=xlsx" className={cn(buttonVariants({ variant: "outline" }), "h-10 rounded-full bg-white")}>
+        <a href="/admin/exportar/descargar?dataset=organizaciones&format=xlsx" className={cn(buttonVariants({ variant: "outline" }), "h-10 rounded-full bg-card")}>
           <DownloadIcon aria-hidden /> Exportar XLSX
         </a>
       </PageHeader>
       <form className="max-w-md">
-        <Input name="q" defaultValue={q} placeholder="Buscar por nombre…" className="h-11 rounded-full bg-white" aria-label="Buscar organización" />
+        <Input name="q" defaultValue={q} placeholder="Buscar por nombre…" className="h-11 rounded-full bg-card" aria-label="Buscar organización" />
       </form>
-      <div className="overflow-x-auto rounded-2xl border bg-white">
+      <div className="overflow-x-auto rounded-2xl border bg-card">
         <table className="w-full min-w-[820px] text-sm">
           <thead className="bg-muted text-left text-xs font-bold text-muted-foreground uppercase">
             <tr>
@@ -43,7 +43,7 @@ export default async function OrganizacionesAdminPage(props: PageProps<"/admin/o
             {orgs.map((o) => (
               <tr key={o.id} className="hover:bg-muted/50">
                 <td className="p-4">
-                  <Link href={`/actores/${o.slug}`} className="font-semibold text-goyn-navy hover:underline">{o.name}</Link>
+                  <Link href={`/actores/${o.slug}`} className="font-semibold text-foreground hover:underline">{o.name}</Link>
                   <p className="text-xs text-muted-foreground">{o.org_type_label}</p>
                 </td>
                 <td className="p-4">{o.primary_role_label}</td>

@@ -13,7 +13,7 @@ import { cn } from "@/lib/utils";
 export const metadata: Metadata = { title: "Impacto colectivo" };
 
 const selectClass =
-  "h-11 w-full rounded-full border border-input bg-white px-4 text-sm font-semibold text-goyn-navy focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none";
+  "h-11 w-full rounded-full border border-input bg-card px-4 text-sm font-semibold text-foreground focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none";
 
 export default async function ImpactoPage(props: PageProps<"/impacto">) {
   const sp = await props.searchParams;
@@ -39,7 +39,7 @@ export default async function ImpactoPage(props: PageProps<"/impacto">) {
       </section>
 
       <div className="goyn-container space-y-8 py-8">
-        <form className="grid gap-3 rounded-2xl border bg-white p-4 sm:grid-cols-2 lg:grid-cols-5" aria-label="Filtrar indicadores">
+        <form className="grid gap-3 rounded-2xl border bg-card p-4 sm:grid-cols-2 lg:grid-cols-5" aria-label="Filtrar indicadores">
           <label className="space-y-1 text-xs font-bold text-muted-foreground uppercase">
             Periodo
             <select name="periodo" defaultValue={filters.periodo ?? ""} className={selectClass}>
@@ -80,7 +80,7 @@ export default async function ImpactoPage(props: PageProps<"/impacto">) {
           <KpiCard label="Jóvenes transformados" value={t.transformados} color="#FF01A2" hint={definitions.transformados} />
         </div>
 
-        <p className="flex items-start gap-2 rounded-2xl bg-goyn-lila/60 p-4 text-sm text-goyn-navy">
+        <p className="flex items-start gap-2 rounded-2xl bg-goyn-lila/60 p-4 text-sm text-foreground">
           <InfoIcon className="mt-0.5 size-4 shrink-0 text-goyn-violeta" aria-hidden />
           <span>
             <strong>Metodología:</strong> las cifras son la suma de reportes validados por el equipo GOYN a partir de {formatNumber(t.organizaciones)} organizaciones,
@@ -88,18 +88,18 @@ export default async function ImpactoPage(props: PageProps<"/impacto">) {
           </span>
         </p>
 
-        <section className="rounded-2xl border bg-white p-5" aria-labelledby="serie">
-          <h2 id="serie" className="mb-4 font-heading text-lg font-bold text-goyn-navy">Evolución por trimestre</h2>
+        <section className="rounded-2xl border bg-card p-5" aria-labelledby="serie">
+          <h2 id="serie" className="mb-4 font-heading text-lg font-bold text-foreground">Evolución por trimestre</h2>
           <TrendChart data={byPeriod(reports)} />
         </section>
 
         <div className="grid gap-6 lg:grid-cols-2">
-          <section className="rounded-2xl border bg-white p-5" aria-labelledby="por-area">
-            <h2 id="por-area" className="mb-4 font-heading text-lg font-bold text-goyn-navy">Por área de impacto</h2>
+          <section className="rounded-2xl border bg-card p-5" aria-labelledby="por-area">
+            <h2 id="por-area" className="mb-4 font-heading text-lg font-bold text-foreground">Por área de impacto</h2>
             <CategoryChart data={byArea(reports)} />
           </section>
-          <section className="rounded-2xl border bg-white p-5" aria-labelledby="por-territorio">
-            <h2 id="por-territorio" className="mb-1 font-heading text-lg font-bold text-goyn-navy">Por territorio</h2>
+          <section className="rounded-2xl border bg-card p-5" aria-labelledby="por-territorio">
+            <h2 id="por-territorio" className="mb-1 font-heading text-lg font-bold text-foreground">Por territorio</h2>
             <p className="mb-4 text-xs text-muted-foreground">Un programa que opera en varias zonas suma en cada una.</p>
             <CategoryChart data={byTerritory(reports)} />
           </section>

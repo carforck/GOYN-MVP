@@ -43,10 +43,10 @@ export default async function AuditoriaPage() {
       <PageHeader title="Registro de auditoría" description="Quién hizo qué y cuándo: envíos, decisiones, publicaciones y exportaciones. El registro es inmutable." />
       <ol className="relative space-y-4 border-l-2 border-goyn-lila pl-6">
         {entries.map((e) => (
-          <li key={e.id} className="relative rounded-2xl border bg-white p-4">
-            <span aria-hidden className="absolute top-5 -left-[33px] size-4 rounded-full border-4 border-white bg-goyn-violeta" />
+          <li key={e.id} className="relative rounded-2xl border bg-card p-4">
+            <span aria-hidden className="absolute top-5 -left-[33px] size-4 rounded-full border-4 border-background bg-goyn-violeta" />
             <p className="text-xs text-muted-foreground">{formatDateTime(e.created_at)}</p>
-            <p className="mt-1 text-sm text-goyn-navy">
+            <p className="mt-1 text-sm text-foreground">
               <strong>{e.actor}</strong> · {actionLabel[e.action] ?? e.action} · {e.entity}
             </p>
             {e.reason && <p className="mt-1 text-sm text-muted-foreground">Motivo: {e.reason}</p>}

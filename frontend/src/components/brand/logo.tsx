@@ -8,7 +8,7 @@ export function ProductLogo({ className, inverted = false }: { className?: strin
   return (
     <Link href="/" className={cn("group inline-flex items-center gap-2.5", className)} aria-label="GOYN Conecta BAQ, inicio">
       <Image src="/icon.webp" alt="" width={36} height={36} className="size-9 transition-transform group-hover:rotate-45" priority />
-      <span className={cn("font-heading text-[15px] leading-none font-extrabold tracking-tight whitespace-nowrap", inverted ? "text-white" : "text-goyn-navy")}>
+      <span className={cn("font-heading text-[15px] leading-none font-extrabold tracking-tight whitespace-nowrap", inverted ? "text-white" : "text-foreground")}>
         GOYN <span className={inverted ? "text-goyn-magenta" : "text-goyn-violeta"}>Conecta</span> BAQ
       </span>
     </Link>

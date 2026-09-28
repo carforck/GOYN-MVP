@@ -26,7 +26,7 @@ export default async function IndicadoresPage() {
     <div className="space-y-6">
       <PageHeader title="Indicadores por programa y periodo" description="Reporta resultados de tus programas. Cada reporte pasa por la revisión del equipo GOYN (regla anti doble conteo) antes de sumar al tablero de impacto." />
       <IndicatorReportForm programs={programs.map((p) => ({ id: p.id, name: p.name }))} />
-      <div className="overflow-x-auto rounded-2xl border bg-white">
+      <div className="overflow-x-auto rounded-2xl border bg-card">
         <table className="w-full min-w-[640px] text-sm">
           <thead className="bg-muted text-left text-xs font-bold text-muted-foreground uppercase">
             <tr>
@@ -41,7 +41,7 @@ export default async function IndicadoresPage() {
           <tbody className="divide-y">
             {rows.map((r) => (
               <tr key={r.key}>
-                <td className="p-4 font-semibold text-goyn-navy">{r.program}</td>
+                <td className="p-4 font-semibold text-foreground">{r.program}</td>
                 <td className="p-4">{formatPeriod(r.period)}</td>
                 <td className="p-4 text-right tabular-nums">{r.conectados !== undefined ? formatNumber(r.conectados) : "—"}</td>
                 <td className="p-4 text-right tabular-nums">{r.fortalecidos !== undefined ? formatNumber(r.fortalecidos) : "—"}</td>

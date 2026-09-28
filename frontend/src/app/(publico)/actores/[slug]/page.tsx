@@ -53,7 +53,7 @@ export default async function ActorPage(props: PageProps<"/actores/[slug]">) {
               <OrgInitials name={org.name} className="size-16 rounded-3xl text-xl sm:size-20 sm:text-2xl" />
               <div className="space-y-3">
                 <p className="text-sm font-bold tracking-wider text-muted-foreground uppercase">{org.org_type_label}</p>
-                <h1 className="text-3xl font-black text-goyn-navy sm:text-4xl">{org.name}</h1>
+                <h1 className="text-3xl font-black text-foreground sm:text-4xl">{org.name}</h1>
                 <div className="flex flex-wrap items-center gap-2">
                   <RoleBadge code={org.primary_role_code} primary />
                   {org.role_codes.filter((r) => r !== org.primary_role_code).map((r) => <RoleBadge key={r} code={r} />)}
@@ -86,19 +86,19 @@ export default async function ActorPage(props: PageProps<"/actores/[slug]">) {
       <div className="goyn-container grid gap-8 py-10 lg:grid-cols-[1fr_340px]">
         <div className="min-w-0 space-y-10">
           <section aria-labelledby="quienes">
-            <h2 id="quienes" className="mb-3 text-xl font-extrabold text-goyn-navy">¿Quiénes son y qué hacen?</h2>
-            <p className="text-lg leading-relaxed text-goyn-navy/85">{org.description}</p>
-            {org.mission && <p className="mt-3 text-muted-foreground"><strong className="text-goyn-navy">Misión:</strong> {org.mission}</p>}
+            <h2 id="quienes" className="mb-3 text-xl font-extrabold text-foreground">¿Quiénes son y qué hacen?</h2>
+            <p className="text-lg leading-relaxed text-foreground/85">{org.description}</p>
+            {org.mission && <p className="mt-3 text-muted-foreground"><strong className="text-foreground">Misión:</strong> {org.mission}</p>}
           </section>
 
           <section aria-labelledby="enfoque">
-            <h2 id="enfoque" className="mb-4 text-xl font-extrabold text-goyn-navy">Enfoque estratégico</h2>
+            <h2 id="enfoque" className="mb-4 text-xl font-extrabold text-foreground">Enfoque estratégico</h2>
             <div className="grid gap-3 sm:grid-cols-2">
               {problemsByArea.map(({ area, problems }) => {
                 const a = item("impactAreas", area);
                 return (
-                  <div key={area} className="rounded-2xl border bg-white p-4" style={{ borderTopColor: a?.color, borderTopWidth: 4 }}>
-                    <p className="font-heading font-bold text-goyn-navy">{a?.label}</p>
+                  <div key={area} className="rounded-2xl border bg-card p-4" style={{ borderTopColor: a?.color, borderTopWidth: 4 }}>
+                    <p className="font-heading font-bold text-foreground">{a?.label}</p>
                     {problems.length > 0 ? (
                       <ul className="mt-2 space-y-1.5 text-sm text-muted-foreground">
                         {problems.map((p) => <li key={p.code} className="flex gap-2"><span aria-hidden>•</span>{p.label}</li>)}
@@ -113,15 +113,15 @@ export default async function ActorPage(props: PageProps<"/actores/[slug]">) {
           </section>
 
           <section aria-labelledby="programas">
-            <h2 id="programas" className="mb-4 text-xl font-extrabold text-goyn-navy">
+            <h2 id="programas" className="mb-4 text-xl font-extrabold text-foreground">
               Programas y proyectos <span className="text-muted-foreground">({programs.length})</span>
             </h2>
             <ul className="space-y-3">
               {programs.map((p) => (
-                <li key={p.id} className="rounded-2xl border bg-white p-5">
+                <li key={p.id} className="rounded-2xl border bg-card p-5">
                   <div className="flex flex-wrap items-start justify-between gap-2">
                     <div>
-                      <p className="font-heading text-lg font-bold text-goyn-navy">{p.name}</p>
+                      <p className="font-heading text-lg font-bold text-foreground">{p.name}</p>
                       <p className="text-sm text-muted-foreground">{p.description}</p>
                     </div>
                     <span className="rounded-full bg-goyn-lila px-3 py-1 text-xs font-bold text-goyn-violeta">{label("modalities", p.modality_code)}</span>
@@ -129,15 +129,15 @@ export default async function ActorPage(props: PageProps<"/actores/[slug]">) {
                   <dl className="mt-4 grid gap-3 text-sm sm:grid-cols-3">
                     <div>
                       <dt className="text-xs font-bold text-muted-foreground uppercase">Población</dt>
-                      <dd className="mt-0.5 text-goyn-navy">{p.population_codes.map((c) => label("populations", c).replace(/ \(.+\)$/, "")).join(", ")}</dd>
+                      <dd className="mt-0.5 text-foreground">{p.population_codes.map((c) => label("populations", c).replace(/ \(.+\)$/, "")).join(", ")}</dd>
                     </div>
                     <div>
                       <dt className="text-xs font-bold text-muted-foreground uppercase">Territorio</dt>
-                      <dd className="mt-0.5 text-goyn-navy">{p.territory_codes.map(shortTerritory).join(", ")}</dd>
+                      <dd className="mt-0.5 text-foreground">{p.territory_codes.map(shortTerritory).join(", ")}</dd>
                     </div>
                     <div>
                       <dt className="text-xs font-bold text-muted-foreground uppercase">Vigencia</dt>
-                      <dd className="mt-0.5 text-goyn-navy">
+                      <dd className="mt-0.5 text-foreground">
                         Desde {formatDate(p.start_date)}{p.end_date ? ` hasta ${formatDate(p.end_date)}` : " · sin fecha de cierre"}
                       </dd>
                     </div>
@@ -149,7 +149,7 @@ export default async function ActorPage(props: PageProps<"/actores/[slug]">) {
           </section>
 
           <section aria-labelledby="resultados">
-            <h2 id="resultados" className="mb-1 text-xl font-extrabold text-goyn-navy">Resultados reportados</h2>
+            <h2 id="resultados" className="mb-1 text-xl font-extrabold text-foreground">Resultados reportados</h2>
             <p className="mb-4 text-sm text-muted-foreground">Suma de reportes validados por GOYN, todos los periodos.</p>
             <div className="grid gap-3 sm:grid-cols-3">
               <KpiCard label="Conectados" value={t.conectados} color="#9B00FF" />
@@ -160,9 +160,9 @@ export default async function ActorPage(props: PageProps<"/actores/[slug]">) {
         </div>
 
         <aside className="space-y-4">
-          <div className="rounded-2xl border bg-white p-5">
-            <h2 className="mb-3 font-heading font-bold text-goyn-navy">Dónde trabaja</h2>
-            <p className="flex items-start gap-2 text-sm text-goyn-navy">
+          <div className="rounded-2xl border bg-card p-5">
+            <h2 className="mb-3 font-heading font-bold text-foreground">Dónde trabaja</h2>
+            <p className="flex items-start gap-2 text-sm text-foreground">
               <MapPinIcon className="mt-0.5 size-4 shrink-0 text-goyn-violeta" aria-hidden />
               Sede en {org.location_territory_code ? label("territories", org.location_territory_code) : "zona no georreferenciada"}
               {org.location_precision === "aproximada" && " (ubicación aproximada)"}
@@ -178,8 +178,8 @@ export default async function ActorPage(props: PageProps<"/actores/[slug]">) {
             </ul>
           </div>
 
-          <div className="rounded-2xl border bg-white p-5">
-            <h2 className="mb-3 flex items-center gap-2 font-heading font-bold text-goyn-navy">
+          <div className="rounded-2xl border bg-card p-5">
+            <h2 className="mb-3 flex items-center gap-2 font-heading font-bold text-foreground">
               <UsersIcon className="size-4 text-goyn-violeta" aria-hidden /> Conexiones en el ecosistema
             </h2>
             <div className="space-y-4">
@@ -192,7 +192,7 @@ export default async function ActorPage(props: PageProps<"/actores/[slug]">) {
                     <ul className="mt-1.5 space-y-1">
                       {items.map((c) => (
                         <li key={c.slug}>
-                          <Link href={`/actores/${c.slug}`} className="text-sm font-semibold text-goyn-navy hover:text-goyn-violeta hover:underline">
+                          <Link href={`/actores/${c.slug}`} className="text-sm font-semibold text-foreground hover:text-goyn-violeta hover:underline">
                             {c.name}
                           </Link>
                         </li>
@@ -211,8 +211,8 @@ export default async function ActorPage(props: PageProps<"/actores/[slug]">) {
           </div>
 
           {(org.website || org.contact_email_public) && (
-            <div className="rounded-2xl border bg-white p-5 text-sm">
-              <h2 className="mb-3 font-heading font-bold text-goyn-navy">Contacto</h2>
+            <div className="rounded-2xl border bg-card p-5 text-sm">
+              <h2 className="mb-3 font-heading font-bold text-foreground">Contacto</h2>
               {org.contact_email_public && (
                 <a href={`mailto:${org.contact_email_public}`} className="flex items-center gap-2 break-all text-goyn-violeta hover:underline">
                   <MailIcon className="size-4 shrink-0" aria-hidden /> {org.contact_email_public}

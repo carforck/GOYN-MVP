@@ -25,7 +25,7 @@ export function LoginForms({ siguiente }: { siguiente: string }) {
             role="tab"
             aria-selected={mode === m}
             onClick={() => setMode(m)}
-            className={cn("h-9 rounded-full", mode === m ? "bg-white text-goyn-violeta shadow-sm" : "text-muted-foreground")}
+            className={cn("h-9 rounded-full", mode === m ? "bg-card text-goyn-violeta shadow-sm" : "text-muted-foreground")}
           >
             {m === "ingresar" ? "Ingresar" : m === "crear" ? "Crear cuenta" : "Enlace por correo"}
           </button>
@@ -51,7 +51,7 @@ export function LoginForms({ siguiente }: { siguiente: string }) {
           </div>
         )}
         {state.error && <p role="alert" className="text-sm font-semibold text-destructive">{state.error}</p>}
-        {state.message && <p role="status" className="rounded-xl bg-goyn-lila p-3 text-sm text-goyn-navy">{state.message}</p>}
+        {state.message && <p role="status" className="rounded-xl bg-goyn-lila p-3 text-sm text-foreground">{state.message}</p>}
         <Button type="submit" disabled={signingIn || signingUp || sendingLink} className="h-11 w-full rounded-full font-bold">
           {mode === "ingresar" ? "Ingresar" : mode === "crear" ? "Crear cuenta" : "Enviarme el enlace"}
         </Button>

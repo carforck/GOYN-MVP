@@ -27,12 +27,12 @@ export default async function SolicitudesPage(props: PageProps<"/admin/solicitud
       <div className="flex flex-wrap gap-2" role="group" aria-label="Filtrar por tipo">
         {[["", "Todas"], ["alta", "Registros nuevos"], ["actualizacion", "Actualizaciones"], ["indicador", "Indicadores"]].map(([value, text]) => (
           <Link key={value} href={value ? `?tipo=${value}` : "?"} aria-current={tipo === value ? "page" : undefined}
-            className={cn("rounded-full border px-4 py-2 text-sm font-semibold", tipo === value ? "border-goyn-navy bg-goyn-navy text-white" : "bg-white")}>
+            className={cn("rounded-full border px-4 py-2 text-sm font-semibold", tipo === value ? "border-goyn-navy bg-goyn-navy text-white" : "bg-card")}>
             {text}
           </Link>
         ))}
       </div>
-      <div className="overflow-x-auto rounded-2xl border bg-white">
+      <div className="overflow-x-auto rounded-2xl border bg-card">
         <table className="w-full min-w-[720px] text-sm">
           <thead className="bg-muted text-left text-xs font-bold text-muted-foreground uppercase">
             <tr>
@@ -48,7 +48,7 @@ export default async function SolicitudesPage(props: PageProps<"/admin/solicitud
             {requests.map((r) => (
               <tr key={r.id} className="hover:bg-muted/50">
                 <td className="p-4">
-                  <p className="font-semibold text-goyn-navy">{r.organization_name}</p>
+                  <p className="font-semibold text-foreground">{r.organization_name}</p>
                   <p className="text-xs text-muted-foreground">{label("orgTypes", r.org_type_code)}</p>
                 </td>
                 <td className="p-4">{kindLabel[r.kind]}</td>

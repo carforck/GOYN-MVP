@@ -31,15 +31,15 @@ export default async function CatalogosPage() {
         {families.map((f) => {
           const items = catalogs[f.key] as { code: string; label: string }[];
           return (
-            <section key={f.key} className="rounded-2xl border bg-white p-5">
+            <section key={f.key} className="rounded-2xl border bg-card p-5">
               <div className="mb-3 flex items-baseline justify-between gap-2">
-                <h2 className="font-heading text-lg font-bold text-goyn-navy">{f.title}</h2>
+                <h2 className="font-heading text-lg font-bold text-foreground">{f.title}</h2>
                 <span className="text-xs text-muted-foreground">{items.length} · {f.source}</span>
               </div>
               <ul className="max-h-64 space-y-1 overflow-y-auto text-sm">
                 {items.map((i) => (
                   <li key={i.code} className="flex justify-between gap-3 border-b border-dashed py-1.5 last:border-0">
-                    <span className="text-goyn-navy">{i.label}</span>
+                    <span className="text-foreground">{i.label}</span>
                     <code className="shrink-0 text-xs text-muted-foreground">{i.code}</code>
                   </li>
                 ))}

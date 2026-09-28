@@ -17,6 +17,10 @@ create table storage.buckets (id text primary key, name text, public boolean, fi
 create table storage.objects (id uuid primary key default gen_random_uuid(), bucket_id text, name text);
 alter table storage.objects enable row level security;
 create or replace function storage.foldername(name text) returns text[] language sql as $$ select string_to_array(name, '/') $$;
+create schema realtime;
+create table realtime.sent (id serial primary key, payload jsonb, event text, topic text, private boolean);
+create or replace function realtime.send(payload jsonb, event text, topic text, private boolean default true) returns void
+  language sql as $$ insert into realtime.sent (payload, event, topic, private) values (payload, event, topic, private) $$;
 `);
 for (const f of readdirSync(dir).filter((f) => f.endsWith(".sql")).sort()) {
   try { await db.exec(readFileSync(`${dir}/${f}`, "utf8")); console.log("OK ", f); }

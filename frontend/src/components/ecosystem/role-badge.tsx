@@ -16,7 +16,7 @@ export function RoleBadge({ code, primary = false, className }: { code: string; 
     <span
       className={cn(
         "inline-flex items-center gap-1.5 rounded-full border py-0.5 pr-2.5 pl-0.5 text-xs font-semibold",
-        primary ? "border-transparent bg-goyn-navy text-white" : "bg-white text-goyn-navy",
+        primary ? "border-transparent bg-goyn-navy text-white" : "bg-card text-foreground",
         className,
       )}
       title={role.description}

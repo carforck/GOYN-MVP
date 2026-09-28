@@ -13,9 +13,9 @@ export default function ContenidoPage() {
         title="Editor visual de contenido"
         description="Permitirá al superadministrador ajustar textos, imágenes, logos, banners y el orden de secciones sin tocar código ni los datos del ecosistema (ADR 006)."
       />
-      <div className="rounded-3xl border-2 border-dashed border-goyn-violeta/30 bg-white p-8">
+      <div className="rounded-3xl border-2 border-dashed border-goyn-violeta/30 bg-card p-8">
         <LayoutTemplateIcon className="size-10 text-goyn-violeta" aria-hidden />
-        <p className="mt-3 font-heading text-lg font-bold text-goyn-navy">Próximamente</p>
+        <p className="mt-3 font-heading text-lg font-bold text-foreground">Próximamente</p>
         <p className="mt-1 max-w-2xl text-muted-foreground">
           La tabla <code>content_block</code> ya existe en la base de datos con bloques tipados, borrador, publicación y versión. Falta la interfaz de edición con vista previa en escritorio y móvil.
         </p>

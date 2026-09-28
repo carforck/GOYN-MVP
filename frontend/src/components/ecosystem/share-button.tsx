@@ -15,7 +15,7 @@ export function ShareButton({ title }: { title: string }) {
     toast.success("Enlace del perfil copiado");
   };
   return (
-    <Button variant="outline" onClick={share} className="h-11 rounded-full bg-white px-5 font-semibold">
+    <Button variant="outline" onClick={share} className="h-11 rounded-full bg-card px-5 font-semibold">
       <Share2Icon aria-hidden /> Compartir
     </Button>
   );

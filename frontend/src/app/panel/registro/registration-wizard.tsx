@@ -138,9 +138,9 @@ export function RegistrationWizard({
 
   if (submitted) {
     return (
-      <div className="mx-auto max-w-2xl rounded-3xl border bg-white p-8 text-center sm:p-12">
+      <div className="mx-auto max-w-2xl rounded-3xl border bg-card p-8 text-center sm:p-12">
         <CheckCircle2Icon className="mx-auto size-14 text-goyn-violeta" aria-hidden />
-        <h1 className="mt-4 text-2xl font-extrabold text-goyn-navy">Tu solicitud está pendiente de validación</h1>
+        <h1 className="mt-4 text-2xl font-extrabold text-foreground">Tu solicitud está pendiente de validación</h1>
         <p className="mt-2 text-muted-foreground">
           El equipo GOYN revisará la información. Te avisaremos por correo si necesitamos ajustes o cuando tu organización quede publicada en el mapa y el directorio.
         </p>
@@ -169,10 +169,10 @@ export function RegistrationWizard({
                   aria-current={i === draft.step ? "step" : undefined}
                   className={cn(
                     "flex w-full items-center gap-2.5 rounded-xl px-3 py-2 text-left text-sm font-semibold transition-colors",
-                    i === draft.step ? "bg-goyn-violeta text-white" : "text-goyn-navy hover:bg-white",
+                    i === draft.step ? "bg-goyn-violeta text-white" : "text-foreground hover:bg-card",
                   )}
                 >
-                  <span className={cn("grid size-6 shrink-0 place-items-center rounded-full text-xs", i === draft.step ? "bg-white text-goyn-violeta" : done ? "bg-goyn-violeta text-white" : "bg-white text-muted-foreground")}>
+                  <span className={cn("grid size-6 shrink-0 place-items-center rounded-full text-xs", i === draft.step ? "bg-card text-goyn-violeta" : done ? "bg-goyn-violeta text-white" : "bg-card text-muted-foreground")}>
                     {done ? <CheckCircle2Icon className="size-4" /> : i + 1}
                   </span>
                   {s.title}
@@ -183,17 +183,17 @@ export function RegistrationWizard({
         </ol>
       </nav>
 
-      <section className="min-w-0 rounded-3xl border bg-white p-5 sm:p-8" aria-labelledby="paso-titulo">
+      <section className="min-w-0 rounded-3xl border bg-card p-5 sm:p-8" aria-labelledby="paso-titulo">
         <p className="text-xs font-bold tracking-wider text-goyn-violeta uppercase">{step.modules}</p>
-        <h1 id="paso-titulo" className="mt-1 text-2xl font-extrabold text-goyn-navy sm:text-3xl">{step.title}</h1>
+        <h1 id="paso-titulo" className="mt-1 text-2xl font-extrabold text-foreground sm:text-3xl">{step.title}</h1>
         <p className="mt-1 text-muted-foreground">{step.summary}</p>
 
         {Object.keys(comments).length > 0 && (
           <div className="mt-5 flex gap-3 rounded-2xl border border-goyn-naranja bg-goyn-naranja/10 p-4 text-sm">
             <MessageSquareWarningIcon className="size-5 shrink-0 text-goyn-naranja" aria-hidden />
             <div>
-              <p className="font-bold text-goyn-navy">El equipo GOYN solicitó ajustes</p>
-              <ul className="mt-1 list-disc pl-4 text-goyn-navy/80">
+              <p className="font-bold text-foreground">El equipo GOYN solicitó ajustes</p>
+              <ul className="mt-1 list-disc pl-4 text-foreground/80">
                 {Object.entries(comments).map(([k, v]) => <li key={k}><strong>{k}:</strong> {v}</li>)}
               </ul>
             </div>
@@ -226,7 +226,7 @@ export function RegistrationWizard({
                 </Field>
               )}
               {p.identificacion.has_nit === false && (
-                <p className="rounded-xl bg-goyn-lila p-3 text-sm text-goyn-navy">Te asignaremos un código interno GOYN para identificar a tu organización.</p>
+                <p className="rounded-xl bg-goyn-lila p-3 text-sm text-foreground">Te asignaremos un código interno GOYN para identificar a tu organización.</p>
               )}
               <div className="grid gap-5 sm:grid-cols-2">
                 <Field label="Contacto estratégico (nombre)" required error={errors.contact_name} htmlFor="cname" hint="Primer contacto con los demás actores del ecosistema.">
@@ -309,7 +309,7 @@ export function RegistrationWizard({
                     value={p.enfoque.problem_codes}
                     onChange={(v) => update((x) => void (x.enfoque.problem_codes = v))} />
                   <Field label="Otras (¿cuál?)" htmlFor={`otra-${area}`}>
-                    <Input id={`otra-${area}`} value={p.enfoque.problem_other[area] ?? ""} onChange={(e) => update((x) => void (x.enfoque.problem_other[area] = e.target.value))} className="h-10 bg-white" />
+                    <Input id={`otra-${area}`} value={p.enfoque.problem_other[area] ?? ""} onChange={(e) => update((x) => void (x.enfoque.problem_other[area] = e.target.value))} className="h-10 bg-card" />
                   </Field>
                 </div>
               ))}
@@ -322,7 +322,7 @@ export function RegistrationWizard({
 
           {step.id === "programas" && (
             <>
-              <p className="rounded-xl bg-goyn-lila p-3 text-sm text-goyn-navy">
+              <p className="rounded-xl bg-goyn-lila p-3 text-sm text-foreground">
                 Registra hasta {MAX_PROGRAMS} proyectos activos que tu organización ejecute directamente con jóvenes en 2026. Los resultados alimentan los indicadores de impacto colectivo.
               </p>
               {p.programas.map((prog, i) => (
@@ -431,13 +431,13 @@ function RelationsStep({
         const matches = q.length >= 2 ? organizations.filter((o) => o.name.toLowerCase().includes(q) && !selected.some((s) => s.target_org_id === o.id)).slice(0, 6) : [];
         return (
           <div key={type.code} className="rounded-2xl border p-4 sm:p-5">
-            <p className="font-heading text-lg font-bold text-goyn-navy">{type.label}</p>
+            <p className="font-heading text-lg font-bold text-foreground">{type.label}</p>
             <p className="text-sm text-muted-foreground">{type.description} ¿Con qué actores tienes una relación tipo {type.label.toUpperCase()}?</p>
             <ul className="mt-3 flex flex-wrap gap-2">
               {selected.map((r) => (
-                <li key={r.target_org_id || r.target_name_free} className="inline-flex items-center gap-1.5 rounded-full bg-goyn-lila py-1 pr-1 pl-3 text-sm font-semibold text-goyn-navy">
+                <li key={r.target_org_id || r.target_name_free} className="inline-flex items-center gap-1.5 rounded-full bg-goyn-lila py-1 pr-1 pl-3 text-sm font-semibold text-foreground">
                   {r.target_org_id ? organizations.find((o) => o.id === r.target_org_id)?.name : `${r.target_name_free} (no registrada)`}
-                  <button type="button" aria-label="Quitar" className="rounded-full p-1 hover:bg-white"
+                  <button type="button" aria-label="Quitar" className="rounded-full p-1 hover:bg-card"
                     onClick={() =>
                       update((x) => {
                         const idx = x.relaciones.findIndex(
@@ -454,7 +454,7 @@ function RelationsStep({
             <div className="relative mt-3">
               <Input placeholder="Busca una organización del Colaborativo…" value={query[type.code] ?? ""} onChange={(e) => setQuery({ ...query, [type.code]: e.target.value })} className="h-10" aria-label={`Buscar ${type.label}`} />
               {(matches.length > 0 || q.length >= 3) && (
-                <ul className="absolute z-10 mt-1 w-full overflow-hidden rounded-xl border bg-white shadow-lg">
+                <ul className="absolute z-10 mt-1 w-full overflow-hidden rounded-xl border bg-card shadow-lg">
                   {matches.map((o) => (
                     <li key={o.id}>
                       <button type="button" className="w-full px-3 py-2 text-left text-sm hover:bg-muted"
@@ -499,7 +499,7 @@ function ProgramCard({
   return (
     <div className="space-y-5 rounded-2xl border bg-muted/40 p-4 sm:p-6">
       <div className="flex items-center justify-between">
-        <p className="font-heading text-lg font-bold text-goyn-navy">Proyecto {index + 1}</p>
+        <p className="font-heading text-lg font-bold text-foreground">Proyecto {index + 1}</p>
         {onRemove && (
           <Button type="button" variant="ghost" size="sm" onClick={onRemove} className="text-destructive">
             <Trash2Icon aria-hidden /> Quitar
@@ -507,10 +507,10 @@ function ProgramCard({
         )}
       </div>
       <Field label="Nombre del proyecto" required error={errors[`${k}.name`]} htmlFor={`${k}-name`}>
-        <Input id={`${k}-name`} value={program.name} onChange={(e) => onChange((p) => void (p.name = e.target.value))} className="h-11 bg-white" />
+        <Input id={`${k}-name`} value={program.name} onChange={(e) => onChange((p) => void (p.name = e.target.value))} className="h-11 bg-card" />
       </Field>
       <Field label="Descripción del proyecto" required error={errors[`${k}.description`]} htmlFor={`${k}-desc`}>
-        <Textarea id={`${k}-desc`} rows={3} value={program.description} onChange={(e) => onChange((p) => void (p.description = e.target.value))} className="bg-white" />
+        <Textarea id={`${k}-desc`} rows={3} value={program.description} onChange={(e) => onChange((p) => void (p.description = e.target.value))} className="bg-card" />
       </Field>
       <ChoiceGroup label="Población joven objetivo" required columns error={errors[`${k}.population_codes`]} options={catalogs.populations}
         value={program.population_codes} onChange={(v) => onChange((p) => void (p.population_codes = v))} />
@@ -526,18 +526,18 @@ function ProgramCard({
         onChange={(v) => onChange((p) => void (p.area_codes = [p.primary_area_code, ...v].filter(Boolean)))} />
       <div className="grid gap-5 sm:grid-cols-3">
         <Field label="Fecha de inicio" required error={errors[`${k}.start_date`]} htmlFor={`${k}-start`}>
-          <Input id={`${k}-start`} type="date" value={program.start_date} onChange={(e) => onChange((p) => void (p.start_date = e.target.value))} className="h-11 bg-white" />
+          <Input id={`${k}-start`} type="date" value={program.start_date} onChange={(e) => onChange((p) => void (p.start_date = e.target.value))} className="h-11 bg-card" />
         </Field>
         <Field label="Fecha de finalización" hint="Déjala vacía si no tiene." error={errors[`${k}.end_date`]} htmlFor={`${k}-end`}>
-          <Input id={`${k}-end`} type="date" value={program.end_date} onChange={(e) => onChange((p) => void (p.end_date = e.target.value))} className="h-11 bg-white" />
+          <Input id={`${k}-end`} type="date" value={program.end_date} onChange={(e) => onChange((p) => void (p.end_date = e.target.value))} className="h-11 bg-card" />
         </Field>
         <Field label="Meta de atención 2026" hint="Si no sabes, pon 0." htmlFor={`${k}-goal`}>
-          <Input id={`${k}-goal`} inputMode="numeric" value={program.annual_goal} onChange={(e) => onChange((p) => void (p.annual_goal = numeric(e.target.value)))} className="h-11 bg-white" />
+          <Input id={`${k}-goal`} inputMode="numeric" value={program.annual_goal} onChange={(e) => onChange((p) => void (p.annual_goal = numeric(e.target.value)))} className="h-11 bg-card" />
         </Field>
       </div>
 
-      <div className="rounded-xl border bg-white p-4">
-        <p className="mb-3 text-sm font-bold text-goyn-navy">Resultados a la fecha</p>
+      <div className="rounded-xl border bg-card p-4">
+        <p className="mb-3 text-sm font-bold text-foreground">Resultados a la fecha</p>
         <div className="grid gap-4 sm:grid-cols-2">
           {([
             ["atendidos", "Jóvenes atendidos a la fecha", "→ Conectados"],
@@ -594,13 +594,13 @@ function ReviewStep({
         {rows.map((r) => (
           <div key={r.label} className="flex flex-col gap-1 p-4 sm:flex-row sm:items-start sm:gap-4">
             <dt className="w-40 shrink-0 text-xs font-bold text-muted-foreground uppercase">{r.label}</dt>
-            <dd className="flex-1 text-sm text-goyn-navy">{r.value}</dd>
+            <dd className="flex-1 text-sm text-foreground">{r.value}</dd>
             <button type="button" className="text-xs font-bold text-goyn-violeta hover:underline" onClick={() => goTo(r.step)}>Editar</button>
           </div>
         ))}
       </dl>
       <div className={cn("rounded-2xl border p-4 sm:p-5", errors.accepted && "border-destructive")}>
-        <label className="flex items-start gap-3 text-sm text-goyn-navy">
+        <label className="flex items-start gap-3 text-sm text-foreground">
           <input type="checkbox" className="mt-1 size-4 accent-[#9B00FF]" checked={p.consentimiento.accepted}
             onChange={(e) => update((x) => void (x.consentimiento.accepted = e.target.checked))} />
           <span>

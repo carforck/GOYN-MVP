@@ -3,6 +3,8 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { KpiCard } from "@/components/ecosystem/kpi-card";
 import { PageHeader } from "@/components/ecosystem/page-header";
+import { LiveBigStats } from "@/components/live/live-kpis";
+import { LiveFeed } from "@/components/live/live-ticker";
 import { catalogs, label, shortTerritory } from "@/lib/catalogs";
 import { getEcosystemStats, listChangeRequests, listOrganizations } from "@/lib/data";
 import { formatDateTime } from "@/lib/format";
@@ -32,10 +34,22 @@ export default async function AdminHome() {
         <KpiCard label="Conexiones" value={stats.connections} color="#00A0CC" />
       </div>
 
+      <div className="grid gap-4 xl:grid-cols-[1.6fr_1fr]">
+        <section className="rounded-2xl border bg-card p-5" aria-label="Impacto colectivo en vivo">
+          <h2 className="mb-4 flex items-center gap-2 font-heading text-lg font-bold text-foreground">
+            <span className="goyn-live-dot" aria-hidden /> Impacto colectivo en vivo
+          </h2>
+          <LiveBigStats compact />
+        </section>
+        <section className="rounded-2xl border bg-card p-5">
+          <LiveFeed limit={5} />
+        </section>
+      </div>
+
       <div className="grid gap-4 lg:grid-cols-3">
-        <section className="rounded-2xl border bg-white p-5 lg:col-span-2">
+        <section className="rounded-2xl border bg-card p-5 lg:col-span-2">
           <div className="mb-4 flex items-center justify-between">
-            <h2 className="flex items-center gap-2 font-heading text-lg font-bold text-goyn-navy"><InboxIcon className="size-5 text-goyn-naranja" aria-hidden /> Pendientes de validación</h2>
+            <h2 className="flex items-center gap-2 font-heading text-lg font-bold text-foreground"><InboxIcon className="size-5 text-goyn-naranja" aria-hidden /> Pendientes de validación</h2>
             <Link href="/admin/solicitudes" className="inline-flex items-center gap-1 text-sm font-bold text-goyn-violeta hover:underline">Ir a la bandeja <ArrowRightIcon className="size-4" aria-hidden /></Link>
           </div>
           <ul className="divide-y">
@@ -43,7 +57,7 @@ export default async function AdminHome() {
               <li key={r.id}>
                 <Link href={`/admin/solicitudes/${r.id}`} className="flex items-center justify-between gap-3 py-3 hover:text-goyn-violeta">
                   <span>
-                    <span className="block font-semibold text-goyn-navy">{r.organization_name}</span>
+                    <span className="block font-semibold text-foreground">{r.organization_name}</span>
                     <span className="text-xs text-muted-foreground">
                       {r.kind === "alta" ? "Registro nuevo" : r.kind === "actualizacion" ? "Actualización de perfil" : "Reporte de indicador"} · {label("orgTypes", r.org_type_code)}
                     </span>
@@ -56,12 +70,12 @@ export default async function AdminHome() {
           </ul>
         </section>
 
-        <section className="rounded-2xl border bg-white p-5">
-          <h2 className="mb-4 flex items-center gap-2 font-heading text-lg font-bold text-goyn-navy"><MapPinOffIcon className="size-5 text-goyn-magenta" aria-hidden /> Huecos de cobertura</h2>
+        <section className="rounded-2xl border bg-card p-5">
+          <h2 className="mb-4 flex items-center gap-2 font-heading text-lg font-bold text-foreground"><MapPinOffIcon className="size-5 text-goyn-magenta" aria-hidden /> Huecos de cobertura</h2>
           <ul className="space-y-2">
             {coverage.slice(0, 5).map((c) => (
               <li key={c.code} className="flex items-center justify-between text-sm">
-                <Link href={`/mapa?territorio=${c.code}`} className="font-semibold text-goyn-navy hover:underline">{shortTerritory(c.code)}</Link>
+                <Link href={`/mapa?territorio=${c.code}`} className="font-semibold text-foreground hover:underline">{shortTerritory(c.code)}</Link>
                 <span className="rounded-full bg-muted px-2 py-0.5 text-xs font-bold">{c.count} org.</span>
               </li>
             ))}
@@ -69,13 +83,13 @@ export default async function AdminHome() {
         </section>
       </div>
 
-      <section className="rounded-2xl border bg-white p-5">
-        <h2 className="mb-1 flex items-center gap-2 font-heading text-lg font-bold text-goyn-navy"><AlertTriangleIcon className="size-5 text-goyn-naranja" aria-hidden /> Perfiles por actualizar</h2>
+      <section className="rounded-2xl border bg-card p-5">
+        <h2 className="mb-1 flex items-center gap-2 font-heading text-lg font-bold text-foreground"><AlertTriangleIcon className="size-5 text-goyn-naranja" aria-hidden /> Perfiles por actualizar</h2>
         <p className="mb-4 text-sm text-muted-foreground">La regla es enviar recordatorio a los 6 meses sin cambios (en la demostración se usa un umbral menor para ver ejemplos).</p>
         <ul className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
           {stale.slice(0, 9).map((o) => (
             <li key={o.id} className="rounded-xl border p-3 text-sm">
-              <Link href={`/actores/${o.slug}`} className="font-semibold text-goyn-navy hover:underline">{o.name}</Link>
+              <Link href={`/actores/${o.slug}`} className="font-semibold text-foreground hover:underline">{o.name}</Link>
               <p className="text-xs text-muted-foreground">Última actualización {formatDateTime(o.updated_at)}</p>
             </li>
           ))}

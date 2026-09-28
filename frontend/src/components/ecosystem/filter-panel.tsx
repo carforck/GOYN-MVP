@@ -57,7 +57,7 @@ function FilterGroups({ compact = false }: { compact?: boolean }) {
                   onClick={() => toggle(group.key, option.code)}
                   className={cn(
                     "rounded-full border px-3 py-1.5 text-left text-xs font-semibold transition-colors focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none",
-                    active ? "border-goyn-violeta bg-goyn-violeta text-white" : "bg-white text-goyn-navy hover:border-goyn-violeta/50",
+                    active ? "border-goyn-violeta bg-goyn-violeta text-white" : "bg-card text-foreground hover:border-goyn-violeta/50",
                     compact && "py-1",
                   )}
                 >
@@ -72,7 +72,7 @@ function FilterGroups({ compact = false }: { compact?: boolean }) {
   );
 }
 
-export function FilterBar({ view, total, shown }: { view: "mapa" | "lista"; total: number; shown: number }) {
+export function FilterBar({ view, total, shown, alwaysSheet = false }: { view: "mapa" | "lista"; total: number; shown: number; alwaysSheet?: boolean }) {
   const { filters, apply, pending, query } = useFilters();
   const [q, setQ] = useState(filters.q ?? "");
   const active = countActive(filters);
@@ -94,12 +94,12 @@ export function FilterBar({ view, total, shown }: { view: "mapa" | "lista"; tota
             onChange={(e) => setQ(e.target.value)}
             placeholder="Buscar organización o tema…"
             aria-label="Buscar organización"
-            className="h-11 rounded-full bg-white pl-10"
+            className="h-11 rounded-full bg-card pl-10"
           />
         </form>
 
         <Sheet>
-          <SheetTrigger render={<Button variant="outline" className="h-11 rounded-full px-4 font-semibold xl:hidden" />}>
+          <SheetTrigger render={<Button variant="outline" className={cn("h-11 rounded-full px-4 font-semibold", !alwaysSheet && "xl:hidden")} />}>
             <SlidersHorizontalIcon aria-hidden /> Filtros
             {active > 0 && <span className="grid size-5 place-items-center rounded-full bg-goyn-violeta text-[11px] text-white">{active}</span>}
           </SheetTrigger>
@@ -109,18 +109,18 @@ export function FilterBar({ view, total, shown }: { view: "mapa" | "lista"; tota
           </SheetContent>
         </Sheet>
 
-        <div className="inline-flex rounded-full border bg-white p-1" role="group" aria-label="Cambiar vista">
+        <div className="inline-flex rounded-full border bg-card p-1" role="group" aria-label="Cambiar vista">
           <Link
             href={`/mapa${query}`}
             aria-current={view === "mapa" ? "page" : undefined}
-            className={cn("inline-flex h-9 items-center gap-1.5 rounded-full px-3.5 text-sm font-semibold", view === "mapa" ? "bg-goyn-navy text-white" : "text-goyn-navy")}
+            className={cn("inline-flex h-9 items-center gap-1.5 rounded-full px-3.5 text-sm font-semibold", view === "mapa" ? "bg-goyn-navy text-white" : "text-foreground")}
           >
             <MapIcon className="size-4" aria-hidden /> Mapa
           </Link>
           <Link
             href={`/actores${query}`}
             aria-current={view === "lista" ? "page" : undefined}
-            className={cn("inline-flex h-9 items-center gap-1.5 rounded-full px-3.5 text-sm font-semibold", view === "lista" ? "bg-goyn-navy text-white" : "text-goyn-navy")}
+            className={cn("inline-flex h-9 items-center gap-1.5 rounded-full px-3.5 text-sm font-semibold", view === "lista" ? "bg-goyn-navy text-white" : "text-foreground")}
           >
             <ListIcon className="size-4" aria-hidden /> Lista
           </Link>
@@ -128,7 +128,7 @@ export function FilterBar({ view, total, shown }: { view: "mapa" | "lista"; tota
       </div>
 
       <div className="flex flex-wrap items-center gap-2 text-sm" aria-live="polite">
-        <span className={cn("font-semibold text-goyn-navy", pending && "opacity-50")}>
+        <span className={cn("font-semibold text-foreground", pending && "opacity-50")}>
           {shown} de {total} organizaciones
         </span>
         {active > 0 && (
@@ -145,8 +145,8 @@ export function FilterBar({ view, total, shown }: { view: "mapa" | "lista"; tota
 export function FilterSidebar() {
   return (
     <aside className="hidden xl:block" aria-label="Filtros">
-      <div className="sticky top-24 max-h-[calc(100vh-7rem)] overflow-y-auto rounded-2xl border bg-white p-5">
-        <h2 className="mb-4 font-heading text-base font-bold text-goyn-navy">Filtrar el ecosistema</h2>
+      <div className="sticky top-24 max-h-[calc(100vh-7rem)] overflow-y-auto rounded-2xl border bg-card p-5">
+        <h2 className="mb-4 font-heading text-base font-bold text-foreground">Filtrar el ecosistema</h2>
         <FilterGroups />
       </div>
     </aside>

@@ -4,23 +4,32 @@ import { signOut } from "@/app/(auth)/actions";
 import { ProductLogo } from "@/components/brand/logo";
 import { AppNav, MobileAppNav, type AppNavItem } from "@/components/layout/app-nav";
 import { DemoBanner } from "@/components/layout/demo-banner";
+import { LiveProvider } from "@/components/live/live-provider";
+import { AccountThemeProvider } from "@/components/theme/theme-provider";
+import { getLiveSnapshot } from "@/lib/data";
+import { ThemeToggle } from "@/components/theme/theme-toggle";
 import { Button } from "@/components/ui/button";
 import type { Viewer } from "@/lib/auth";
 
 // Armazón de las áreas con sesión: /panel (organización) y /admin (equipo GOYN).
-export function AppShell({
+export async function AppShell({
   area,
   viewer,
   nav,
+  focusSlug,
   children,
 }: {
   area: "panel" | "admin";
   viewer: Viewer;
   nav: AppNavItem[];
+  focusSlug?: string;
   children: React.ReactNode;
 }) {
   const areaLabel = area === "admin" ? "Consola GOYN" : "Panel de organización";
+  const snapshot = await getLiveSnapshot();
   return (
+    <AccountThemeProvider>
+    <LiveProvider snapshot={snapshot} focusSlug={focusSlug}>
     <div className="flex min-h-screen flex-col">
       <DemoBanner />
       <div className="flex flex-1 bg-sidebar">
@@ -41,17 +50,26 @@ export function AppShell({
           </div>
         </aside>
 
-        <div className="flex min-w-0 flex-1 flex-col bg-muted/60">
-          <header className="sticky top-0 z-30 flex h-14 items-center justify-between gap-3 border-b bg-white px-4 lg:hidden">
+        <div className="flex min-w-0 flex-1 flex-col bg-muted">
+          <header className="sticky top-0 z-30 flex h-14 items-center justify-between gap-3 border-b bg-card px-4 lg:hidden">
             <ProductLogo />
-            <MobileAppNav items={nav} areaLabel={areaLabel} />
+            <div className="flex items-center gap-1">
+              <ThemeToggle />
+              <MobileAppNav items={nav} areaLabel={areaLabel} />
+            </div>
           </header>
-          <div className="hidden h-14 items-center justify-end gap-4 border-b bg-white px-8 text-sm lg:flex">
+          <div className="hidden h-14 items-center justify-end gap-4 border-b bg-card px-8 text-sm lg:flex">
+            <span className="mr-auto inline-flex items-center gap-2 text-xs font-bold tracking-wider text-muted-foreground uppercase">
+              <span className="goyn-live-dot" aria-hidden /> Datos en vivo
+            </span>
             <Link href="/" className="font-semibold text-goyn-violeta hover:underline">Ver sitio público</Link>
+            <ThemeToggle />
           </div>
           <main id="contenido" className="flex-1 p-4 sm:p-6 lg:p-8">{children}</main>
         </div>
       </div>
     </div>
+    </LiveProvider>
+    </AccountThemeProvider>
   );
 }

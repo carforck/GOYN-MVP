@@ -13,8 +13,8 @@ export function NavLink({ href, soon, children, className }: { href: string; soo
       aria-current={active ? "page" : undefined}
       className={cn(
         "relative inline-flex h-10 items-center gap-1.5 rounded-full px-3.5 text-sm font-semibold transition-colors",
-        active ? "bg-goyn-lila text-goyn-violeta" : "text-goyn-navy/80 hover:bg-muted hover:text-goyn-navy",
-        soon && !active && "text-goyn-navy/55",
+        active ? "bg-goyn-lila text-goyn-violeta" : "text-foreground/80 hover:bg-muted hover:text-foreground",
+        soon && !active && "text-foreground/55",
         className,
       )}
     >

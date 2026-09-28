@@ -34,7 +34,7 @@ export default async function IngresarPage(props: PageProps<"/ingresar">) {
       <div className="flex flex-col px-4 py-8 sm:px-10">
         <ProductLogo />
         <div className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center py-10">
-          <h1 className="text-3xl font-extrabold text-goyn-navy">Ingresa a GOYN Conecta</h1>
+          <h1 className="text-3xl font-extrabold text-foreground">Ingresa a GOYN Conecta</h1>
           <p className="mt-2 text-muted-foreground">Accede al panel de tu organización o a la consola del equipo GOYN.</p>
 
           {isDemoMode ? (
@@ -46,12 +46,12 @@ export default async function IngresarPage(props: PageProps<"/ingresar">) {
                 <form key={r.role} action={enterDemo}>
                   <input type="hidden" name="role" value={r.role} />
                   <input type="hidden" name="siguiente" value={siguiente} />
-                  <button className="flex w-full items-start gap-4 rounded-2xl border bg-white p-4 text-left transition-colors hover:border-goyn-violeta hover:bg-goyn-lila/40">
+                  <button className="flex w-full items-start gap-4 rounded-2xl border bg-card p-4 text-left transition-colors hover:border-goyn-violeta hover:bg-goyn-lila/40">
                     <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-goyn-lila text-goyn-violeta">
                       <r.icon className="size-5" aria-hidden />
                     </span>
                     <span>
-                      <span className="block font-heading font-bold text-goyn-navy">Entrar como {r.title}</span>
+                      <span className="block font-heading font-bold text-foreground">Entrar como {r.title}</span>
                       <span className="block text-sm text-muted-foreground">{r.text}</span>
                     </span>
                   </button>

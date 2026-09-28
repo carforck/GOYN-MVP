@@ -40,13 +40,13 @@ export default function RegistroPage() {
 
       <section className="goyn-container grid gap-10 py-14 lg:grid-cols-2">
         <div>
-          <h2 className="text-2xl font-extrabold text-goyn-navy">Así funciona</h2>
+          <h2 className="text-2xl font-extrabold text-foreground">Así funciona</h2>
           <ol className="mt-6 space-y-5">
             {flow.map((s, i) => (
               <li key={s.title} className="flex gap-4">
                 <span className="grid size-10 shrink-0 place-items-center rounded-full bg-goyn-magenta font-heading font-extrabold text-white">{i + 1}</span>
                 <div>
-                  <p className="font-heading font-bold text-goyn-navy">{s.title}</p>
+                  <p className="font-heading font-bold text-foreground">{s.title}</p>
                   <p className="text-muted-foreground">{s.text}</p>
                 </div>
               </li>
@@ -58,14 +58,14 @@ export default function RegistroPage() {
             <li className="rounded-2xl bg-muted p-4 text-sm"><ShieldCheckIcon className="mb-2 size-5 text-goyn-violeta" aria-hidden />Tu celular nunca se publica</li>
           </ul>
         </div>
-        <div className="rounded-3xl border bg-white p-6 sm:p-8">
-          <h2 className="text-lg font-extrabold text-goyn-navy">Lo que te vamos a preguntar</h2>
+        <div className="rounded-3xl border bg-card p-6 sm:p-8">
+          <h2 className="text-lg font-extrabold text-foreground">Lo que te vamos a preguntar</h2>
           <ol className="mt-4 space-y-3">
             {registrationSteps.map((s, i) => (
               <li key={s.id} className="flex items-start gap-3">
                 <CheckCircle2Icon className="mt-0.5 size-5 shrink-0 text-goyn-violeta" aria-hidden />
                 <div>
-                  <p className="font-semibold text-goyn-navy">{i + 1}. {s.title}</p>
+                  <p className="font-semibold text-foreground">{i + 1}. {s.title}</p>
                   <p className="text-sm text-muted-foreground">{s.summary}</p>
                 </div>
               </li>

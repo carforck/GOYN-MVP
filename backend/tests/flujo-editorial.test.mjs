@@ -77,6 +77,11 @@ export default async function (db) {
   ok(r.rows.map((x) => x.action).join() === "solicitud.enviar,solicitud.ajustes,solicitud.enviar,solicitud.aprobar", `auditoría: ${r.rows.map((x) => x.action).join(" → ")}`);
   r = await as(ORG, "select count(*)::int n from public.audit_log");
   ok(r.rows[0].n === 0, "organización no lee la auditoría");
+  r = await db.query("select payload->>'kind' k, payload->>'orgSlug' s from realtime.sent where topic = 'ecosistema' and payload->>'orgSlug' = 'fundacion-prueba-flujo'");
+  ok(r.rows.some((x) => x.k === "reporte") && r.rows.some((x) => x.k === "registro"), `aviso en tiempo real al publicar: ${[...new Set(r.rows.map((x) => x.k))].join(", ")}`);
+  r = await db.query("select distinct jsonb_object_keys(payload) k from realtime.sent");
+  const allowed = ["kind", "indicator", "delta", "orgSlug", "orgName", "territory", "lat", "lng"];
+  ok(r.rows.every((x) => allowed.includes(x.k)), `los avisos solo llevan datos públicos: ${r.rows.map((x) => x.k).join(", ")}`);
   err = null;
   try { await as(ORG, "update public.profile set platform_role = 'superadmin' where id = $1", [ORG]); } catch (e) { err = e.message; }
   ok(!!err, "nadie se autoasigna superadmin");
