@@ -1,0 +1,19 @@
+{
+  "name": "goyn-conecta-backend",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build:catalogs": "node scripts/build-catalog-migration.mjs",
+    "build:seed": "node scripts/build-seed.mjs",
+    "test": "node tests/run-migrations.mjs supabase/migrations supabase/seed.sql ./flujo-editorial.test.mjs",
+    "db:link": "supabase link",
+    "db:push": "supabase db push",
+    "db:seed": "supabase db push --include-seed",
+    "db:types": "supabase gen types typescript --linked --schema public > ../frontend/src/lib/supabase/database.types.ts"
+  },
+  "devDependencies": {
+    "@electric-sql/pglite": "^0.5.8",
+    "@electric-sql/pglite-postgis": "^0.2.8",
+    "supabase": "^2.109.1"
+  }
+}
