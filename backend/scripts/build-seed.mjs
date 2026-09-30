@@ -98,6 +98,12 @@ for (const [name, type, primaryRole] of orgSeeds) {
   const areas = sample(areaCodes, 1, 3);
   const problems = cat.problems.filter((p) => areas.includes(p.area)).filter(() => rand() > 0.45).map((p) => p.code);
   const roleCodes = [primaryRole, ...sample(cat.roles.map((r) => r.code).filter((r) => r !== primaryRole), 0, 2)];
+  // Líneas de trabajo coherentes con las áreas de impacto de la organización.
+  const linesByArea = {
+    educacion: ["formacion_cultura"], ingresos: ["empleo_juvenil", "emprendimiento_juvenil"], participacion: ["agencia_juvenil", "narrativas"],
+    orientacion: ["orientacion_socio_ocupacional"], entornos: ["conexion_directa"], bienestar: ["conexion_directa"], inclusion_digital: ["formacion_cultura"],
+  };
+  const workLineCodes = [...new Set([...areas.flatMap((a) => linesByArea[a] ?? []), ...(primaryRole === "evaluador" || primaryRole === "generador_conocimiento" ? ["investigacion_mercado"] : [])])];
   const updated = new Date(Date.UTC(2026, int(3, 8), int(1, 27))).toISOString();
   const org = {
     id,
@@ -113,6 +119,7 @@ for (const [name, type, primaryRole] of orgSeeds) {
     territory_codes: [home.code, ...extraTerr],
     area_codes: areas,
     problem_codes: problems,
+    work_line_codes: workLineCodes,
     scope_code: pick(["local", "local", "departamental", "nacional"]),
     website: null,
     social: {},
@@ -228,7 +235,7 @@ values (${q(o.id)}, ${q(o.slug)}, ${q(o.name)}, ${q(o.description)}, ${q(o.missi
 insert into public.organization_role select ${q(o.id)}, unnest(${arr(o.role_codes)});
 insert into public.organization_territory select ${q(o.id)}, unnest(${arr(o.territory_codes)});
 insert into public.organization_area select ${q(o.id)}, unnest(${arr(o.area_codes)});
-${o.problem_codes.length ? `insert into public.organization_problem select ${q(o.id)}, unnest(${arr(o.problem_codes)});\n` : ""}insert into public.location (organization_id, is_primary, municipality, territory_code, geom, precision, source)
+${o.problem_codes.length ? `insert into public.organization_problem select ${q(o.id)}, unnest(${arr(o.problem_codes)});\n` : ""}${o.work_line_codes.length ? `insert into public.organization_work_line select ${q(o.id)}, unnest(${arr(o.work_line_codes)});\n` : ""}insert into public.location (organization_id, is_primary, municipality, territory_code, geom, precision, source)
 values (${q(o.id)}, true, ${q(o.municipality)}, ${q(o.location_territory_code)}, extensions.st_setsrid(extensions.st_makepoint(${o.lng}, ${o.lat}), 4326)::extensions.geography, 'aproximada', 'demo');
 `;
 }

@@ -35,13 +35,13 @@ export default async function AdminHome() {
       </div>
 
       <div className="grid gap-4 xl:grid-cols-[1.6fr_1fr]">
-        <section className="rounded-2xl border bg-card p-5" aria-label="Impacto colectivo en vivo">
+        <section className="min-w-0 rounded-2xl border bg-card p-5" aria-label="Impacto colectivo en vivo">
           <h2 className="mb-4 flex items-center gap-2 font-heading text-lg font-bold text-foreground">
             <span className="goyn-live-dot" aria-hidden /> Impacto colectivo en vivo
           </h2>
           <LiveBigStats compact />
         </section>
-        <section className="rounded-2xl border bg-card p-5">
+        <section className="min-w-0 rounded-2xl border bg-card p-5">
           <LiveFeed limit={5} />
         </section>
       </div>

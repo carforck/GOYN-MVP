@@ -93,6 +93,17 @@ export default async function ActorPage(props: PageProps<"/actores/[slug]">) {
 
           <section aria-labelledby="enfoque">
             <h2 id="enfoque" className="mb-4 text-xl font-extrabold text-foreground">Enfoque estratégico</h2>
+            {org.work_line_codes?.length > 0 && (
+              <ul className="mb-4 flex flex-wrap gap-2" aria-label="Líneas de trabajo">
+                {org.work_line_codes.map((c) => (
+                  <li key={c}>
+                    <Link href={`/actores?linea=${c}`} className="inline-block rounded-full bg-goyn-lila px-3 py-1 text-sm font-semibold text-goyn-violeta hover:underline">
+                      {label("workLines", c)}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            )}
             <div className="grid gap-3 sm:grid-cols-2">
               {problemsByArea.map(({ area, problems }) => {
                 const a = item("impactAreas", area);

@@ -47,14 +47,14 @@ export default async function HomePage() {
         <div className="goyn-container relative py-20 sm:py-28 lg:py-36">
           <div className="max-w-2xl space-y-6 xl:max-w-3xl">
             <div className="goyn-enter" style={{ ["--d" as string]: "0.05s" }}>
-              <span className="goyn-eyebrow bg-goyn-magenta">
+              <span className="goyn-eyebrow bg-goyn-magenta-a11y">
                 <span className="goyn-live-dot bg-white" aria-hidden /> Colaborativo GOYN Barranquilla · Fase Mapear 2026
               </span>
             </div>
             <div className="goyn-enter" style={{ ["--d" as string]: "0.15s" }}>
               <h1 className="text-4xl leading-[1.05] font-bold tracking-tight uppercase sm:text-6xl">
                 El espejo digital del{" "}
-                <span className="bg-goyn-magenta box-decoration-clone px-2 leading-[1.25]">ecosistema juvenil</span> de Barranquilla
+                <span className="bg-goyn-magenta-a11y box-decoration-clone px-2 leading-[1.25]">ecosistema juvenil</span> de Barranquilla
               </h1>
             </div>
             <div className="goyn-enter" style={{ ["--d" as string]: "0.3s" }}>
@@ -63,7 +63,7 @@ export default async function HomePage() {
               </p>
             </div>
             <div className="goyn-enter flex flex-col gap-3 pt-2 sm:flex-row" style={{ ["--d" as string]: "0.42s" }}>
-              <Link href="/mapa" className={cn(buttonVariants(), "h-12 rounded-full bg-goyn-magenta px-6 text-base font-bold text-white shadow-lg shadow-goyn-magenta/40 transition-transform hover:scale-[1.03] hover:bg-goyn-magenta/90")}>
+              <Link href="/mapa" className={cn(buttonVariants(), "h-12 rounded-full bg-goyn-magenta-a11y px-6 text-base font-bold text-white shadow-lg shadow-goyn-magenta/40 transition-transform hover:scale-[1.03] hover:bg-goyn-magenta-a11y/90")}>
                 <MapIcon aria-hidden /> Explorar el mapa
               </Link>
               <Link href="/registro" className={cn(buttonVariants({ variant: "outline" }), "h-12 rounded-full border-white/40 bg-white/5 px-6 text-base font-bold text-white backdrop-blur hover:bg-white/15 hover:text-white")}>
@@ -126,7 +126,7 @@ export default async function HomePage() {
         <div className="goyn-container grid items-center gap-10 py-16 sm:py-20 lg:grid-cols-[1fr_1.15fr]">
           <div className="relative z-10 space-y-8">
             <Reveal className="space-y-3">
-              <span className="goyn-eyebrow bg-goyn-magenta">
+              <span className="goyn-eyebrow bg-goyn-magenta-a11y">
                 <span className="goyn-live-dot bg-white" aria-hidden /> En vivo
               </span>
               <h2 id="en-vivo" className="text-3xl font-bold uppercase sm:text-5xl">De lo global a nuestro territorio</h2>
@@ -199,7 +199,7 @@ export default async function HomePage() {
       </section>
 
       {/* Reto colectivo */}
-      <section className="relative isolate overflow-hidden bg-goyn-magenta py-20 text-white">
+      <section className="relative isolate overflow-hidden bg-goyn-magenta-a11y py-20 text-white">
         <Image src="/images/fotos/sesion-colaborativo-2026.webp" alt="" fill sizes="100vw" className="-z-10 object-cover opacity-40 mix-blend-multiply grayscale" />
         <FloatingShape name="rayo" size={90} white className="top-8 left-[6%] hidden md:block" float={16} />
         <FloatingShape name="asterisco" size={70} white className="right-[8%] bottom-10 hidden md:block" spin={360} duration={10} />
@@ -223,7 +223,7 @@ export default async function HomePage() {
             <Reveal as="li" key={p.name} delay={i * 0.1} className={cn("relative overflow-hidden rounded-3xl border p-6", p.active ? "border-goyn-violeta bg-goyn-lila/60" : "bg-card")}>
               {p.active && <span aria-hidden className="absolute inset-x-0 bottom-0 h-1 goyn-stripe" />}
               <div className="flex items-center justify-between">
-                <span className="font-heading text-5xl font-bold text-goyn-violeta/25">0{i + 1}</span>
+                <span aria-hidden className="font-heading text-5xl font-bold text-goyn-violeta/75">0{i + 1}</span>
                 <span className={cn("inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold", p.active ? "bg-goyn-violeta text-white" : "bg-muted text-muted-foreground")}>
                   {p.active && <span className="goyn-live-dot bg-white" aria-hidden />}
                   {p.year} {p.active && "· en curso"}
@@ -258,11 +258,11 @@ export default async function HomePage() {
 
       {/* CTA registro */}
       <section className="goyn-container py-16 sm:py-20">
-        <Reveal className="relative grid overflow-hidden rounded-3xl bg-goyn-magenta text-white lg:grid-cols-2">
+        <Reveal className="relative grid overflow-hidden rounded-3xl bg-goyn-magenta-a11y text-white lg:grid-cols-2">
           <div className="relative space-y-5 p-8 sm:p-12">
             <FloatingShape name="mas" size={70} white className="top-6 right-6 opacity-50" float={10} />
             <h2 className="text-3xl font-bold uppercase sm:text-4xl">¿Aún no te ves reflejado?</h2>
-            <p className="max-w-md text-lg text-white/90">
+            <p className="max-w-md text-lg text-white">
               Registra tu organización, cuéntanos qué haces por las juventudes y aparece en el mapa y el directorio del Colaborativo una vez GOYN valide tu información.
             </p>
             <Link href="/registro" className={cn(buttonVariants(), "h-12 rounded-full bg-goyn-navy px-6 text-base font-bold text-white hover:bg-goyn-navy/90")}>

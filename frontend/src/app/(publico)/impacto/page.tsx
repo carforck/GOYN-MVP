@@ -6,7 +6,7 @@ import { KpiCard } from "@/components/ecosystem/kpi-card";
 import { buttonVariants } from "@/components/ui/button";
 import { catalogs } from "@/lib/catalogs";
 import { listIndicatorReports } from "@/lib/data";
-import { formatNumber } from "@/lib/format";
+import { formatDate, formatNumber } from "@/lib/format";
 import { byArea, byPeriod, byTerritory, filterReports, periodsAvailable, totals, type ImpactFilters } from "@/lib/impact";
 import { cn } from "@/lib/utils";
 
@@ -24,13 +24,19 @@ export default async function ImpactoPage(props: PageProps<"/impacto">) {
   const reports = filterReports(all, filters);
   const t = totals(reports);
   const definitions = Object.fromEntries(catalogs.indicators.map((i) => [i.code, i.definition]));
+  // Fuente y fecha de corte por indicador (FR-010): último periodo reportado de ese indicador.
+  const sourceOf = (code: string) => {
+    const r = reports.filter((x) => x.indicator_code === code);
+    const last = r.reduce((d, x) => (x.period_end > d ? x.period_end : d), "");
+    return `Fuente: ${r.length} reportes validados por GOYN · Corte ${last ? formatDate(last) : "—"}`;
+  };
 
   return (
     <div>
       <section className="relative isolate overflow-hidden bg-goyn-violeta text-white">
         <Image src="/images/fotos/pilar-equidad.webp" alt="" fill sizes="100vw" className="-z-10 object-cover opacity-50 mix-blend-multiply grayscale" />
         <div className="goyn-container py-12 sm:py-16">
-          <span className="goyn-eyebrow bg-goyn-magenta">Quiero medir el impacto</span>
+          <span className="goyn-eyebrow bg-goyn-magenta-a11y">Quiero medir el impacto</span>
           <h1 className="mt-4 text-3xl font-bold uppercase sm:text-5xl">Impacto colectivo del ecosistema</h1>
           <p className="mt-3 max-w-2xl text-lg text-white/80">
             Lo que logramos juntos: jóvenes conectados, fortalecidos y transformados por las organizaciones del Colaborativo.
@@ -75,9 +81,9 @@ export default async function ImpactoPage(props: PageProps<"/impacto">) {
         </form>
 
         <div className="grid gap-4 md:grid-cols-3">
-          <KpiCard label="Jóvenes conectados" value={t.conectados} color="#9B00FF" hint={definitions.conectados} />
-          <KpiCard label="Jóvenes fortalecidos" value={t.fortalecidos} color="#00A0CC" hint={definitions.fortalecidos} />
-          <KpiCard label="Jóvenes transformados" value={t.transformados} color="#FF01A2" hint={definitions.transformados} />
+          <KpiCard label="Jóvenes conectados" value={t.conectados} color="#9B00FF" hint={definitions.conectados} source={sourceOf("conectados")} />
+          <KpiCard label="Jóvenes fortalecidos" value={t.fortalecidos} color="#00A0CC" hint={definitions.fortalecidos} source={sourceOf("fortalecidos")} />
+          <KpiCard label="Jóvenes transformados" value={t.transformados} color="#FF01A2" hint={definitions.transformados} source={sourceOf("transformados")} />
         </div>
 
         <p className="flex items-start gap-2 rounded-2xl bg-goyn-lila/60 p-4 text-sm text-foreground">

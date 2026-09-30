@@ -157,7 +157,7 @@ export function RegistrationWizard({
           <span>Paso {draft.step + 1} de {registrationSteps.length}</span>
           <SaveIndicator state={saveState} />
         </div>
-        <Progress value={progress} className="mb-4" />
+        <Progress value={progress} className="mb-4" aria-label={`Progreso del registro: paso ${draft.step + 1} de ${registrationSteps.length}`} />
         <ol className="hidden space-y-1 lg:block">
           {registrationSteps.map((s, i) => {
             const done = i < draft.step && Object.keys(validateStep(s.id, p)).length === 0;
@@ -273,6 +273,10 @@ export function RegistrationWizard({
               <ChoiceGroup label="Tipo de alcance territorial" multiple={false} describe options={catalogs.scopes}
                 value={p.caracterizacion.scope_code ? [p.caracterizacion.scope_code] : []}
                 onChange={([v]) => update((x) => void (x.caracterizacion.scope_code = v))} />
+              <ChoiceGroup label="¿En qué líneas de trabajo se enfoca tu organización?" hint="Opcional. Puedes seleccionar varias." columns
+                options={catalogs.workLines}
+                value={p.caracterizacion.work_line_codes ?? []}
+                onChange={(v) => update((x) => void (x.caracterizacion.work_line_codes = v))} />
             </>
           )}
 
@@ -393,7 +397,7 @@ export function RegistrationWizard({
               Guardar y continuar <ArrowRightIcon aria-hidden />
             </Button>
           ) : (
-            <Button type="button" onClick={submit} disabled={pending} className="h-11 rounded-full bg-goyn-magenta px-6 font-bold hover:bg-goyn-magenta/90">
+            <Button type="button" onClick={submit} disabled={pending} className="h-11 rounded-full bg-goyn-magenta-a11y px-6 font-bold hover:bg-goyn-magenta-a11y/90">
               {pending ? <Loader2Icon className="animate-spin" aria-hidden /> : <SendIcon aria-hidden />} Enviar a validación
             </Button>
           )}

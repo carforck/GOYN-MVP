@@ -1,7 +1,9 @@
 import ExcelJS from "exceljs";
 import { NextResponse, type NextRequest } from "next/server";
 import { getViewer, isAdminRole } from "@/lib/auth";
-import { buildRows, datasets, toCsv, type Dataset } from "@/lib/export";
+import { isSupabaseConfigured } from "@/lib/config";
+import { buildRows, datasets, parseExportFilters, toCsv, type Dataset } from "@/lib/export";
+import { createClient } from "@/lib/supabase/server";
 
 export async function GET(request: NextRequest) {
   const viewer = await getViewer();
@@ -11,7 +13,14 @@ export async function GET(request: NextRequest) {
   const format = request.nextUrl.searchParams.get("format") === "xlsx" ? "xlsx" : "csv";
   if (!dataset || !(dataset in datasets)) return NextResponse.json({ error: "Conjunto no válido" }, { status: 400 });
 
-  const { columns, rows } = await buildRows(dataset);
+  const filters = parseExportFilters(request.nextUrl.searchParams);
+  const { columns, rows } = await buildRows(dataset, filters);
+
+  // Registro de la exportación (quién, qué conjunto, con qué filtros). El archivo no se guarda.
+  if (isSupabaseConfigured && viewer.userId) {
+    const supabase = await createClient();
+    await supabase.from("export_job").insert({ requested_by: viewer.userId, format, dataset, filters, status: "listo" });
+  }
   const stamp = new Date().toISOString().slice(0, 10);
   const filename = `goyn-conecta-${dataset}-${stamp}.${format}`;
 

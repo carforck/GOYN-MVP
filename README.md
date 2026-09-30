@@ -26,7 +26,7 @@ npm run dev            # http://localhost:3000
 # Backend: probar migraciones + seed + flujo editorial sin Docker (PGlite con PostGIS)
 cd backend
 npm install
-npm test               # 19 pruebas: RLS, publicación, auditoría, roles y avisos en tiempo real
+npm test               # 20 pruebas: RLS, publicación, auditoría, roles, tiempo real y líneas de trabajo
 ```
 
 En modo demo, `/ingresar` permite entrar como **Organización**, **Equipo GOYN** o **Superadministración**
@@ -40,6 +40,8 @@ para recorrer el panel y la consola.
 | [docs/02-validacion-prd-base-de-datos.md](docs/02-validacion-prd-base-de-datos.md) | Matriz Instrumento/PRD → tablas, inconsistencias encontradas y decisiones pendientes |
 | [docs/03-identidad-de-marca.md](docs/03-identidad-de-marca.md) | Colores, tipografías, íconos y texturas verificados en los recursos entregados |
 | [docs/04-despliegue.md](docs/04-despliegue.md) | Supabase + Vercel paso a paso, variables de entorno |
+| [docs/05-api.md](docs/05-api.md) | API REST (Supabase/PostgREST), funciones del flujo editorial, tiempo real y rutas de la app |
+| [docs/06-dependencias-y-licencias.md](docs/06-dependencias-y-licencias.md) | Dependencias de terceros, licencias y atribuciones |
 | [backend/README.md](backend/README.md) | Modelo de datos, flujo editorial y comandos |
 
 ## Fuentes

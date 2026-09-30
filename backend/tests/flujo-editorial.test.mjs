@@ -28,7 +28,7 @@ export default async function (db) {
   const payload = {
     identificacion: { name: "Fundación Prueba Flujo", description: "Organización creada por la prueba del flujo.", has_nit: true, nit: "900123456-7", contact_email_public: "hola@prueba.co" },
     contacto: { name: "Ana Pérez", position: "Directora", phone: "3001234567", email: "ana@prueba.co", address: "Cra 50 # 70-10" },
-    caracterizacion: { org_type_code: "privado_fundacion", primary_role_code: "implementador", role_codes: ["implementador", "articulador"], scope_code: "local" },
+    caracterizacion: { org_type_code: "privado_fundacion", primary_role_code: "implementador", role_codes: ["implementador", "articulador"], scope_code: "local", work_line_codes: ["empleo_juvenil", "emprendimiento_juvenil"] },
     territorio: { territory_codes: ["baq_suroriente", "amb_soledad"], location_territory_code: "baq_suroriente", municipality: "Barranquilla" },
     enfoque: { area_codes: ["ingresos"], problem_codes: ["ing_barreras_mercado_laboral"], problem_other: { ingresos: "Informalidad" } },
     relaciones: [{ relation_type_code: "aliado", target_org_id: "", target_name_free: "Aliado sin registrar" }],
@@ -67,6 +67,8 @@ export default async function (db) {
   ok(r.rows.length === 1, `aprobada y publicada: ${JSON.stringify(r.rows[0])}`);
   r = await as(null, "select indicator_code, value from public.v_public_indicator_report where organization_slug = 'fundacion-prueba-flujo' order by 1");
   ok(r.rows.length === 3 && r.rows.find((x) => x.indicator_code === "transformados").value == 25, `indicadores derivados del registro: ${JSON.stringify(r.rows)}`);
+  r = await as(null, "select work_line_codes from public.v_public_organization where slug = 'fundacion-prueba-flujo'");
+  ok(r.rows[0]?.work_line_codes?.join() === "empleo_juvenil,emprendimiento_juvenil", `líneas de trabajo publicadas al aprobar: ${r.rows[0]?.work_line_codes}`);
   r = await as(ORG, "select count(*)::int n from public.organization_member where user_id = $1 and role = 'titular'", [ORG]);
   ok(r.rows[0].n === 1, "el solicitante queda como titular de la organización");
   r = await as(ORG, "select contact_phone from public.organization_private");

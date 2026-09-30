@@ -35,7 +35,7 @@ export function MobileNav({ items, account }: { items: Item[]; account: { href: 
           <Link href={account.href} className={cn(buttonVariants({ variant: "outline" }), "h-11 rounded-full font-semibold")}>
             {account.label}
           </Link>
-          <Link href="/registro" className={cn(buttonVariants(), "h-11 rounded-full bg-goyn-magenta font-bold text-white hover:bg-goyn-magenta/90")}>
+          <Link href="/registro" className={cn(buttonVariants(), "h-11 rounded-full bg-goyn-magenta-a11y font-bold text-white hover:bg-goyn-magenta-a11y/90")}>
             Registra tu organización
           </Link>
         </div>

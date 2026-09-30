@@ -7,12 +7,14 @@ export function KpiCard({
   label,
   value,
   hint,
+  source,
   color = "#9B00FF",
   className,
 }: {
   label: string;
   value: number;
   hint?: string;
+  source?: string;
   color?: string;
   className?: string;
 }) {
@@ -22,6 +24,7 @@ export function KpiCard({
       <span aria-hidden className="absolute -top-14 -right-14 size-36 rounded-full opacity-15 blur-2xl transition-opacity group-hover:opacity-30" style={{ backgroundColor: color }} />
       <p className="text-xs font-bold tracking-wider text-muted-foreground uppercase">{label}</p>
       <AnimatedNumber value={value} className="mt-2 block font-heading text-4xl font-bold tracking-tight text-foreground" />
+      {source && <p className="mt-2 text-[11px] font-semibold text-muted-foreground">{source}</p>}
       {hint && (
         <p className="mt-2 flex items-start gap-1.5 text-xs leading-relaxed text-muted-foreground">
           <InfoIcon className="mt-0.5 size-3.5 shrink-0" aria-hidden />

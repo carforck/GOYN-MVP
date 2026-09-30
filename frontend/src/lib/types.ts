@@ -26,6 +26,7 @@ export type Catalogs = {
   collaborativeTenure: CatalogItem[];
   goynSpaces: CatalogItem[];
   indicators: (CatalogItem & { unit: string; definition: string })[];
+  workLines: CatalogItem[];
 };
 
 export type PublicOrganization = {
@@ -42,6 +43,7 @@ export type PublicOrganization = {
   territory_codes: string[];
   area_codes: string[];
   problem_codes: string[];
+  work_line_codes: string[];
   population_codes: string[];
   scope_code: string | null;
   website: string | null;
@@ -140,6 +142,8 @@ export type EcosystemFilters = {
   area?: string[];
   poblacion?: string[];
   territorio?: string[];
+  linea?: string[];
+  orden?: "nombre" | "reciente" | "programas" | "conexiones";
 };
 
 export type AppRole = "visitante" | "organizacion" | "admin_goyn" | "superadmin";

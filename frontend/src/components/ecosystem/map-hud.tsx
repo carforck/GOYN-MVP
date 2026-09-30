@@ -2,6 +2,7 @@
 
 import { ChevronDownIcon, GlobeIcon, Share2Icon } from "lucide-react";
 import { useState } from "react";
+import type { ColorBy, GroupBy } from "@/components/ecosystem/ecosystem-map";
 import { useLive } from "@/components/live/live-provider";
 import { AnimatedNumber } from "@/components/motion/animated-number";
 import { catalogs } from "@/lib/catalogs";
@@ -15,10 +16,49 @@ const relationLegend = [
 
 // Panel del mapa (referencia: panel por país del cybermap): contadores en vivo por territorio,
 // leyenda de conexiones y controles.
-export function MapHud({ showArcs, onToggleArcs, onReplay }: { showArcs: boolean; onToggleArcs: () => void; onReplay: () => void }) {
+function Segmented<T extends string>({ label, value, options, onChange }: { label: string; value: T; options: { value: T; label: string }[]; onChange: (v: T) => void }) {
+  return (
+    <div>
+      <p className="mb-1.5 text-[11px] font-bold tracking-widest text-white/60 uppercase">{label}</p>
+      <div role="radiogroup" aria-label={label} className="grid grid-flow-col gap-1 rounded-xl bg-white/5 p-1">
+        {options.map((o) => (
+          <button
+            key={o.value}
+            type="button"
+            role="radio"
+            aria-checked={value === o.value}
+            onClick={() => onChange(o.value)}
+            className={cn("rounded-lg px-2 py-1.5 text-xs font-semibold transition-colors", value === o.value ? "bg-goyn-violeta text-white" : "text-white/75 hover:bg-white/10")}
+          >
+            {o.label}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
+export function MapHud({
+  showArcs,
+  onToggleArcs,
+  onReplay,
+  colorBy,
+  onColorBy,
+  groupBy,
+  onGroupBy,
+}: {
+  showArcs: boolean;
+  onToggleArcs: () => void;
+  onReplay: () => void;
+  colorBy: ColorBy;
+  onColorBy: (v: ColorBy) => void;
+  groupBy: GroupBy;
+  onGroupBy: (v: GroupBy) => void;
+}) {
   const live = useLive();
   const [territory, setTerritory] = useState<string>("todo");
-  const [open, setOpen] = useState(true);
+  // null = automático: abierto en pantallas medianas y grandes, plegado en celular.
+  const [open, setOpen] = useState<boolean | null>(null);
 
   const totals =
     territory === "todo"
@@ -35,7 +75,7 @@ export function MapHud({ showArcs, onToggleArcs, onReplay }: { showArcs: boolean
   return (
     <div className="absolute top-3 left-3 z-10 w-[calc(100%-4.5rem)] max-w-xs">
       <div className="overflow-hidden rounded-2xl border border-white/10 bg-[#060a28]/85 shadow-2xl backdrop-blur-md">
-        <button type="button" onClick={() => setOpen((o) => !o)} aria-expanded={open} className="flex w-full items-center justify-between gap-2 border-b border-white/10 px-4 py-3 text-left">
+        <button type="button" onClick={() => setOpen((o) => (o === null ? window.innerWidth < 768 : !o))} aria-expanded={open ?? undefined} className="flex w-full items-center justify-between gap-2 border-b border-white/10 px-4 py-3 text-left">
           <span>
             <span className="flex items-center gap-2 text-[11px] font-bold tracking-widest text-white/60 uppercase">
               <span className="goyn-live-dot" aria-hidden /> {live.source === "demo" ? "En vivo · simulación" : "En vivo"}
@@ -44,11 +84,11 @@ export function MapHud({ showArcs, onToggleArcs, onReplay }: { showArcs: boolean
               {territory === "todo" ? "Todo el ecosistema" : catalogs.territories.find((t) => t.code === territory)?.label}
             </span>
           </span>
-          <ChevronDownIcon className={cn("size-4 shrink-0 transition-transform", open && "rotate-180")} aria-hidden />
+          <ChevronDownIcon className={cn("size-4 shrink-0 transition-transform", open === null ? "md:rotate-180" : open && "rotate-180")} aria-hidden />
         </button>
 
-        {open && (
-          <div className="space-y-4 p-4">
+        {open !== false && (
+          <div className={cn("max-h-[60vh] space-y-4 overflow-y-auto p-4", open === null && "hidden md:block")}>
             <label className="block">
               <span className="sr-only">Territorio</span>
               <select
@@ -77,6 +117,21 @@ export function MapHud({ showArcs, onToggleArcs, onReplay }: { showArcs: boolean
               ))}
             </dl>
 
+            <div className="grid grid-cols-2 gap-2 border-t border-white/10 pt-3">
+              <Segmented label="Agrupar" value={groupBy} onChange={onGroupBy} options={[{ value: "cercania", label: "Cercanía" }, { value: "territorio", label: "Territorio" }]} />
+              <Segmented label="Color" value={colorBy} onChange={onColorBy} options={[{ value: "rol", label: "Rol" }, { value: "area", label: "Área" }]} />
+            </div>
+            {groupBy === "cercania" && (
+              <ul className="grid grid-cols-2 gap-x-2 gap-y-1 text-[11px] text-white/75" aria-label={colorBy === "rol" ? "Colores por rol" : "Colores por área de impacto"}>
+                {(colorBy === "rol" ? catalogs.roles : catalogs.impactAreas).map((c) => (
+                  <li key={c.code} className="flex items-center gap-1.5 truncate">
+                    <span aria-hidden className="size-2 shrink-0 rounded-full" style={{ backgroundColor: c.color === "#060A28" ? "#8A86FF" : c.color }} />
+                    <span className="truncate">{c.label}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+
             <div className="border-t border-white/10 pt-3">
               <div className="mb-2 flex items-center justify-between">
                 <p className="flex items-center gap-1.5 text-[11px] font-bold tracking-widest text-white/60 uppercase">
@@ -87,7 +142,7 @@ export function MapHud({ showArcs, onToggleArcs, onReplay }: { showArcs: boolean
                   role="switch"
                   aria-checked={showArcs}
                   onClick={onToggleArcs}
-                  className={cn("relative h-5 w-9 rounded-full transition-colors", showArcs ? "bg-goyn-magenta" : "bg-white/20")}
+                  className={cn("relative h-5 w-9 rounded-full transition-colors", showArcs ? "bg-goyn-magenta-a11y" : "bg-white/20")}
                 >
                   <span className={cn("absolute top-0.5 size-4 rounded-full bg-white transition-all", showArcs ? "left-4.5" : "left-0.5")} />
                   <span className="sr-only">Mostrar conexiones</span>

@@ -19,6 +19,8 @@ export type MapOrg = {
   org_type_label: string;
   primary_role_code: string;
   primary_role_label: string;
+  area_code: string;
+  territory_code: string;
   territory: string;
   lat: number;
   lng: number;
@@ -38,6 +40,11 @@ const INTRO_KEY = "goyn-intro-globo-visto";
 maplibregl.setWorkerUrl("/maplibre/maplibre-gl-worker.mjs");
 
 const roleColors = catalogs.roles.map((r) => [r.code, r.color ?? "#9B00FF"]).flat();
+const areaColors = catalogs.impactAreas.map((a) => [a.code, a.color === "#060A28" ? "#8A86FF" : (a.color ?? "#9B00FF")]).flat();
+const colorExpr = (by: "rol" | "area") =>
+  (by === "rol" ? ["match", ["get", "primary_role_code"], ...roleColors, "#9B00FF"] : ["match", ["get", "area_code"], ...areaColors, "#9B00FF"]) as never;
+export type ColorBy = "rol" | "area";
+export type GroupBy = "cercania" | "territorio";
 export const relationColors: Record<string, string> = { socio: "#FF01A2", aliado: "#9B00FF", colaborador: "#00A0CC" };
 
 // Tiñe el estilo oscuro de OpenFreeMap con la paleta GOYN (azul noche + morado).
@@ -105,6 +112,26 @@ export function EcosystemMap({ orgs, relations, className }: { orgs: MapOrg[]; r
   const [failed, setFailed] = useState(false);
   const [intro, setIntro] = useState<"desconocido" | "globo" | "listo">("desconocido");
   const [showArcs, setShowArcs] = useState(true);
+  const [colorBy, setColorBy] = useState<ColorBy>("rol");
+  const [groupBy, setGroupBy] = useState<GroupBy>("cercania");
+  const stage = useRef<HTMLDivElement>(null);
+
+  // Agrupación por territorio (FR-001): una burbuja por zona con el número de organizaciones.
+  const territoryBubbles = useMemo<GeoJSON.FeatureCollection<GeoJSON.Point>>(
+    () => ({
+      type: "FeatureCollection",
+      features: catalogs.territories
+        .filter((t) => t.lat != null && t.lng != null)
+        .map((t) => ({ t, count: orgs.filter((o) => o.territory_code === t.code).length }))
+        .filter((x) => x.count > 0)
+        .map(({ t, count }) => ({
+          type: "Feature",
+          geometry: { type: "Point", coordinates: [t.lng!, t.lat!] },
+          properties: { label: t.label.replace(/^(BAQ|AMB) – /, ""), count, code: t.code },
+        })),
+    }),
+    [orgs],
+  );
 
   const geojson = useMemo<GeoJSON.FeatureCollection<GeoJSON.Point>>(
     () => ({
@@ -170,6 +197,8 @@ export function EcosystemMap({ orgs, relations, className }: { orgs: MapOrg[]; r
       });
       map.current = instance;
       instance.addControl(new maplibregl.NavigationControl({ showCompass: true, visualizePitch: true }), "top-right");
+      if (stage.current) instance.addControl(new maplibregl.FullscreenControl({ container: stage.current }), "top-right");
+      instance.addControl(new maplibregl.GlobeControl(), "top-right");
 
       instance.on("load", () => {
         // Proyección de globo al alejarse (empalma con la intro 3D); se aplica tras cargar el estilo.
@@ -182,6 +211,7 @@ export function EcosystemMap({ orgs, relations, className }: { orgs: MapOrg[]; r
         instance.addSource("arcs", { type: "geojson", data: arcs });
         instance.addSource("ripples", { type: "geojson", data: { type: "FeatureCollection", features: [] } });
         instance.addSource("flights", { type: "geojson", data: { type: "FeatureCollection", features: [] }, lineMetrics: true });
+        instance.addSource("territories", { type: "geojson", data: territoryBubbles });
 
         const byType = ["match", ["get", "type"], "socio", relationColors.socio, "aliado", relationColors.aliado, relationColors.colaborador];
         instance.addLayer({ id: "arcs-base", type: "line", source: "arcs", paint: { "line-color": byType as never, "line-width": 0.8, "line-opacity": 0.18 } });
@@ -241,7 +271,40 @@ export function EcosystemMap({ orgs, relations, className }: { orgs: MapOrg[]; r
           layout: { "text-field": ["get", "point_count_abbreviated"], "text-size": 13, "text-font": ["Noto Sans Bold"] },
           paint: { "text-color": "#ffffff" },
         });
-        const color = ["match", ["get", "primary_role_code"], ...roleColors, "#9B00FF"];
+        instance.addLayer({
+          id: "terr-glow",
+          type: "circle",
+          source: "territories",
+          layout: { visibility: "none" },
+          paint: { "circle-color": "#9B00FF", "circle-radius": ["+", 30, ["*", 3.5, ["get", "count"]]], "circle-blur": 1, "circle-opacity": 0.5 },
+        });
+        instance.addLayer({
+          id: "terr-bubbles",
+          type: "circle",
+          source: "territories",
+          layout: { visibility: "none" },
+          paint: {
+            "circle-color": "#FF01A2",
+            "circle-opacity": 0.85,
+            "circle-radius": ["+", 16, ["*", 2, ["get", "count"]]],
+            "circle-stroke-width": 2,
+            "circle-stroke-color": "#ffffff",
+          },
+        });
+        instance.addLayer({
+          id: "terr-labels",
+          type: "symbol",
+          source: "territories",
+          layout: {
+            visibility: "none",
+            "text-field": ["format", ["to-string", ["get", "count"]], { "font-scale": 1.2 }, "\n", {}, ["get", "label"], { "font-scale": 0.75 }],
+            "text-font": ["Noto Sans Bold"],
+            "text-size": 13,
+            "text-allow-overlap": true,
+          },
+          paint: { "text-color": "#ffffff", "text-halo-color": "#060a28", "text-halo-width": 1 },
+        });
+        const color = colorExpr("rol");
         instance.addLayer({
           id: "points-glow",
           type: "circle",
@@ -369,9 +432,25 @@ export function EcosystemMap({ orgs, relations, className }: { orgs: MapOrg[]; r
   useEffect(() => {
     (map.current?.getSource("arcs") as GeoJSONSource | undefined)?.setData(arcs);
   }, [arcs]);
+  // Capas visibles según agrupación (cercanía / territorio) y conexiones.
   useEffect(() => {
-    for (const layer of ["arcs-base", "arcs-flow"]) if (map.current?.getLayer(layer)) map.current.setLayoutProperty(layer, "visibility", showArcs ? "visible" : "none");
-  }, [showArcs]);
+    const m = map.current;
+    if (!m || !ready.current) return;
+    const set = (layers: string[], visible: boolean) => layers.forEach((l) => m.getLayer(l) && m.setLayoutProperty(l, "visibility", visible ? "visible" : "none"));
+    const byTerritory = groupBy === "territorio";
+    set(["clusters-glow", "clusters", "cluster-count", "points-glow", "points"], !byTerritory);
+    set(["terr-glow", "terr-bubbles", "terr-labels"], byTerritory);
+    set(["arcs-base", "arcs-flow"], showArcs && !byTerritory);
+  }, [showArcs, groupBy]);
+  useEffect(() => {
+    const m = map.current;
+    if (!m || !ready.current) return;
+    m.setPaintProperty("points", "circle-color", colorExpr(colorBy));
+    m.setPaintProperty("points-glow", "circle-color", colorExpr(colorBy));
+  }, [colorBy]);
+  useEffect(() => {
+    (map.current?.getSource("territories") as GeoJSONSource | undefined)?.setData(territoryBubbles);
+  }, [territoryBubbles]);
 
   // Cada evento en vivo: onda en la organización y, si es una conexión, un vuelo de luz entre ambas.
   const lastEvent = live.lastEvent;
@@ -387,10 +466,17 @@ export function EcosystemMap({ orgs, relations, className }: { orgs: MapOrg[]; r
   }, [lastEvent]);
 
   return (
-    <div className={cn("relative isolate overflow-hidden rounded-3xl border border-white/10 bg-goyn-navy text-white shadow-2xl shadow-goyn-violeta/20", className)}>
+    <div ref={stage} className={cn("relative isolate overflow-hidden rounded-3xl border border-white/10 bg-goyn-navy text-white shadow-2xl shadow-goyn-violeta/20", className)}>
       <div ref={container} className="h-full w-full" role="region" aria-label="Mapa de organizaciones del ecosistema" />
 
-      <MapHud showArcs={showArcs} onToggleArcs={() => setShowArcs((v) => !v)} onReplay={() => {
+      <MapHud
+        showArcs={showArcs}
+        onToggleArcs={() => setShowArcs((v) => !v)}
+        colorBy={colorBy}
+        onColorBy={setColorBy}
+        groupBy={groupBy}
+        onGroupBy={setGroupBy}
+        onReplay={() => {
           map.current?.jumpTo({ center: CENTER, zoom: 4.2, pitch: 0, bearing: 0 });
           setIntro("globo");
         }}

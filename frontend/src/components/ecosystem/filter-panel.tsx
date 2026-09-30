@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { catalogs } from "@/lib/catalogs";
-import { countActive, filtersToQuery, parseFilters, type FilterKey } from "@/lib/filters";
+import { SORTS, countActive, filtersToQuery, parseFilters, type FilterKey } from "@/lib/filters";
 import type { CatalogItem } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -18,6 +18,7 @@ const groups: { key: FilterKey; title: string; options: CatalogItem[] }[] = [
   { key: "area", title: "Área de impacto", options: catalogs.impactAreas },
   { key: "poblacion", title: "Población objetivo", options: catalogs.populations },
   { key: "territorio", title: "Territorio", options: catalogs.territories },
+  { key: "linea", title: "Línea de trabajo", options: catalogs.workLines },
 ];
 
 function useFilters() {
@@ -131,6 +132,20 @@ export function FilterBar({ view, total, shown, alwaysSheet = false }: { view: "
         <span className={cn("font-semibold text-foreground", pending && "opacity-50")}>
           {shown} de {total} organizaciones
         </span>
+        {view === "lista" && (
+          <label className="ml-auto flex items-center gap-2 text-sm text-muted-foreground">
+            Ordenar por
+            <select
+              value={filters.orden ?? "nombre"}
+              onChange={(e) => apply({ ...filters, orden: e.target.value as typeof filters.orden })}
+              className="h-9 rounded-full border border-input bg-card px-3 text-sm font-semibold text-foreground focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
+            >
+              {SORTS.map((s) => (
+                <option key={s.value} value={s.value}>{s.label}</option>
+              ))}
+            </select>
+          </label>
+        )}
         {active > 0 && (
           <Button variant="ghost" size="sm" className="rounded-full text-goyn-violeta" onClick={() => { setQ(""); apply({}); }}>
             <XIcon aria-hidden /> Limpiar filtros

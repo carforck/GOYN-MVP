@@ -1,6 +1,7 @@
 import "server-only";
 import { cache } from "react";
 import { isSupabaseConfigured } from "@/lib/config";
+import { label as catalogLabel, type CatalogName } from "@/lib/catalogs";
 import { matchesFilters } from "@/lib/filters";
 import type { LiveEvent, LiveSnapshot, TerritoryTotals } from "@/lib/live/types";
 import { createClient } from "@/lib/supabase/server";
@@ -42,6 +43,7 @@ export const listOrganizations = cache(async (filters: EcosystemFilters = {}): P
   if (filters.area?.length) query = query.overlaps("area_codes", filters.area);
   if (filters.poblacion?.length) query = query.overlaps("population_codes", filters.poblacion);
   if (filters.territorio?.length) query = query.overlaps("territory_codes", filters.territorio);
+  if (filters.linea?.length) query = query.overlaps("work_line_codes", filters.linea);
   const { data, error } = await query;
   if (error) throw error;
   return data as PublicOrganization[];
@@ -122,13 +124,21 @@ export const getEcosystemStats = cache(async (): Promise<EcosystemStats> => {
 export const listChangeRequests = cache(async (): Promise<ChangeRequestSummary[]> => {
   if (!isSupabaseConfigured) return (await loadDemo()).sampleRequests;
   const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("change_request")
-    .select("id, entity_type, status, submitted_at, entity_id, payload")
-    .in("status", ["enviada", "ajustes_solicitados"])
-    .order("submitted_at", { ascending: true });
+  const [{ data, error }, { data: reports }] = await Promise.all([
+    supabase
+      .from("change_request")
+      .select("id, entity_type, status, submitted_at, entity_id, payload")
+      .in("status", ["enviada", "ajustes_solicitados"])
+      .order("submitted_at", { ascending: true }),
+    // Reportes de indicador enviados desde el panel (FR-011): se revisan en la misma bandeja.
+    supabase
+      .from("indicator_report")
+      .select("id, created_at, period_label, organization:organization(name, org_type_code, slug)")
+      .eq("status", "enviado")
+      .order("created_at", { ascending: true }),
+  ]);
   if (error) throw error;
-  return (data ?? []).map((r) => ({
+  const requests: ChangeRequestSummary[] = (data ?? []).map((r) => ({
     id: r.id,
     entity_type: r.entity_type,
     status: r.status,
@@ -138,6 +148,81 @@ export const listChangeRequests = cache(async (): Promise<ChangeRequestSummary[]
     territory: r.payload?.territorio?.location_territory_code ?? "",
     kind: r.entity_type === "reporte_indicador" ? "indicador" : r.entity_id ? "actualizacion" : "alta",
   }));
+  const pendingReports: ChangeRequestSummary[] = (reports ?? []).map((r) => {
+    const org = r.organization as unknown as { name: string; org_type_code: string } | null;
+    return {
+      id: `rep_${r.id}`,
+      entity_type: "reporte_indicador",
+      status: "enviada",
+      submitted_at: r.created_at,
+      organization_name: org?.name ?? "Organización",
+      org_type_code: org?.org_type_code ?? "",
+      territory: "",
+      kind: "indicador",
+    };
+  });
+  return [...requests, ...pendingReports].sort((a, b) => a.submitted_at.localeCompare(b.submitted_at));
+});
+
+type FieldChange = { field: string; before: string; after: string };
+
+// Detalle de una solicitud para la vista de cambios (FR-007). En modo conectado compara la
+// propuesta con la versión publicada: solo se muestran los campos que cambian.
+export const getChangeRequestDetail = cache(async (id: string): Promise<(ChangeRequestSummary & { changes: FieldChange[] }) | null> => {
+  const summary = (await listChangeRequests()).find((r) => r.id === id);
+  if (!summary) return null;
+  if (!isSupabaseConfigured) return { ...summary, changes: summary.changes ?? [] };
+
+  const supabase = await createClient();
+  const list = (codes: string[] | undefined, catalog: CatalogName) => (codes ?? []).map((c) => catalogLabel(catalog, c)).join(", ") || "—";
+
+  if (id.startsWith("rep_")) {
+    const { data } = await supabase.from("indicator_report").select("*, program:program(name)").eq("id", id.slice(4)).single();
+    if (!data) return null;
+    return {
+      ...summary,
+      changes: [
+        { field: "Programa", before: "", after: (data.program as { name: string } | null)?.name ?? "—" },
+        { field: "Indicador", before: "", after: catalogLabel("indicators", data.indicator_code) },
+        { field: "Periodo", before: "", after: data.period_label },
+        { field: "Valor reportado", before: "", after: String(data.value ?? `Sin dato: ${data.null_reason ?? ""}`) },
+        { field: "Fuente", before: "", after: data.source ?? "—" },
+      ],
+    };
+  }
+
+  const { data: req } = await supabase.from("change_request").select("payload, entity_id").eq("id", id).single();
+  const p = req?.payload ?? {};
+  const current = req?.entity_id ? await getOrganizationById(req.entity_id) : null;
+  const proposed: FieldChange[] = [
+    { field: "Nombre", before: current?.name ?? "", after: p.identificacion?.name ?? "" },
+    { field: "Descripción", before: current?.description ?? "", after: p.identificacion?.description ?? "" },
+    { field: "Misión", before: current?.mission ?? "", after: p.identificacion?.mission ?? "" },
+    { field: "Correo público", before: current?.contact_email_public ?? "", after: p.identificacion?.contact_email_public ?? "" },
+    { field: "Sitio web", before: current?.website ?? "", after: p.identificacion?.website ?? "" },
+    { field: "Tipo de organización", before: current ? catalogLabel("orgTypes", current.org_type_code) : "", after: catalogLabel("orgTypes", p.caracterizacion?.org_type_code) },
+    { field: "Rol principal", before: current ? catalogLabel("roles", current.primary_role_code) : "", after: catalogLabel("roles", p.caracterizacion?.primary_role_code) },
+    { field: "Otros roles", before: current ? list(current.role_codes, "roles") : "", after: list(p.caracterizacion?.role_codes, "roles") },
+    { field: "Líneas de trabajo", before: current ? list(current.work_line_codes, "workLines") : "", after: list(p.caracterizacion?.work_line_codes, "workLines") },
+    { field: "Territorios", before: current ? list(current.territory_codes, "territories") : "", after: list(p.territorio?.territory_codes, "territories") },
+    { field: "Áreas de impacto", before: current ? list(current.area_codes, "impactAreas") : "", after: list(p.enfoque?.area_codes, "impactAreas") },
+    {
+      field: "Proyectos",
+      before: current ? (await listPrograms(current.id)).map((x) => x.name).join(", ") || "—" : "",
+      after: (p.programas ?? []).map((x: { name: string }) => x.name).join(", ") || "—",
+    },
+    { field: "Alianzas declaradas", before: "", after: `${(p.relaciones ?? []).length} relaciones` },
+  ];
+  // Registro nuevo: se muestra todo lo propuesto. Actualización: solo lo que cambia.
+  const changes = current ? proposed.filter((c) => c.before !== c.after) : proposed.filter((c) => c.after && c.after !== "—");
+  return { ...summary, changes };
+});
+
+export const getOrganizationById = cache(async (id: string): Promise<PublicOrganization | null> => {
+  if (!isSupabaseConfigured) return (await loadDemo()).organizations.find((o) => o.id === id) ?? null;
+  const supabase = await createClient();
+  const { data } = await supabase.from("v_public_organization").select("*").eq("id", id).maybeSingle();
+  return (data as PublicOrganization | null) ?? null;
 });
 
 // Organización del usuario en sesión (panel). En demo se usa la primera organización sintética.

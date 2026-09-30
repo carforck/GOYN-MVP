@@ -19,6 +19,8 @@
   --color-goyn-violeta: #9b00ff;
   --color-goyn-violeta-oscuro: #7a00cc;
   --color-goyn-magenta: #ff01a2;
+  /* Magenta para fondos con texto blanco: 4,8:1 (WCAG AA). El #FF01A2 queda para decoración. */
+  --color-goyn-magenta-a11y: #db0089;
   --color-goyn-navy: #060a28;
   --color-goyn-naranja: #fe5200;
   --color-goyn-amarillo: #ffbd25;
@@ -98,7 +100,7 @@
   --radius: 0.875rem;
   --sidebar: #060a28;
   --sidebar-foreground: #f4f2ff;
-  --sidebar-primary: #ff01a2;
+  --sidebar-primary: #db0089;
   --sidebar-primary-foreground: #ffffff;
   --sidebar-accent: #1a1f4d;
   --sidebar-accent-foreground: #ffffff;

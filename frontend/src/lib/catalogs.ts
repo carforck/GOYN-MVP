@@ -17,6 +17,7 @@ const maps = {
   modalities: index(catalogs.modalities),
   scopes: index(catalogs.scopes),
   indicators: index(catalogs.indicators),
+  workLines: index(catalogs.workLines),
 };
 
 export type CatalogName = keyof typeof maps;

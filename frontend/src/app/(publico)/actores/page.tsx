@@ -3,13 +3,14 @@ import { Suspense } from "react";
 import { FilterBar, FilterSidebar } from "@/components/ecosystem/filter-panel";
 import { OrgCard } from "@/components/ecosystem/org-card";
 import { listOrganizations } from "@/lib/data";
-import { parseFilters } from "@/lib/filters";
+import { parseFilters, sortOrganizations } from "@/lib/filters";
 
 export const metadata: Metadata = { title: "Directorio de actores" };
 
 export default async function ActoresPage(props: PageProps<"/actores">) {
   const filters = parseFilters(await props.searchParams);
-  const [all, orgs] = await Promise.all([listOrganizations(), listOrganizations(filters)]);
+  const [all, found] = await Promise.all([listOrganizations(), listOrganizations(filters)]);
+  const orgs = sortOrganizations(found, filters.orden);
 
   return (
     <div className="goyn-container py-6 sm:py-8">
@@ -17,7 +18,7 @@ export default async function ActoresPage(props: PageProps<"/actores">) {
         <span className="goyn-eyebrow">Quiero conectar</span>
         <h1 className="text-3xl font-extrabold text-foreground sm:text-4xl">Directorio de actores</h1>
         <p className="max-w-2xl text-muted-foreground">
-          Organizaciones del Colaborativo con perfil validado por el equipo GOYN. Filtra por tipo, rol, área de impacto, población y territorio.
+          Organizaciones del Colaborativo con perfil validado por el equipo GOYN. Filtra por tipo, rol, área de impacto, línea de trabajo, población y territorio, y ordena como prefieras.
         </p>
       </div>
       <div className="grid gap-6 xl:grid-cols-[300px_1fr]">

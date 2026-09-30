@@ -22,7 +22,7 @@ export default function RegistroPage() {
         <Image src="/images/fotos/como-funciona.webp" alt="" fill sizes="100vw" className="-z-10 object-cover opacity-20" />
         <Shape name="rompecabezas" size={130} className="right-[6%] bottom-6 hidden brightness-0 invert md:block" />
         <div className="goyn-container py-14 sm:py-20">
-          <span className="goyn-eyebrow bg-goyn-magenta">Únete al mapa del Colaborativo</span>
+          <span className="goyn-eyebrow bg-goyn-magenta-a11y">Únete al mapa del Colaborativo</span>
           <h1 className="mt-4 max-w-3xl text-4xl font-black sm:text-5xl">¿Aún no te ves reflejado?</h1>
           <p className="mt-4 max-w-2xl text-lg text-white/85">
             Si tu organización trabaja con y para jóvenes de Barranquilla y su área metropolitana, regístrala para que el ecosistema sepa quién eres, qué haces y con quién te conectas.
@@ -44,7 +44,7 @@ export default function RegistroPage() {
           <ol className="mt-6 space-y-5">
             {flow.map((s, i) => (
               <li key={s.title} className="flex gap-4">
-                <span className="grid size-10 shrink-0 place-items-center rounded-full bg-goyn-magenta font-heading font-extrabold text-white">{i + 1}</span>
+                <span className="grid size-10 shrink-0 place-items-center rounded-full bg-goyn-magenta-a11y font-heading font-extrabold text-white">{i + 1}</span>
                 <div>
                   <p className="font-heading font-bold text-foreground">{s.title}</p>
                   <p className="text-muted-foreground">{s.text}</p>

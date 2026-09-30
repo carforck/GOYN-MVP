@@ -5,13 +5,14 @@ import { notFound } from "next/navigation";
 import { DecisionPanel } from "@/app/admin/solicitudes/[id]/decision-panel";
 import { statusStyle } from "@/lib/requests";
 import { label } from "@/lib/catalogs";
-import { listChangeRequests } from "@/lib/data";
+import { getChangeRequestDetail } from "@/lib/data";
+import { isDemoMode } from "@/lib/config";
 import { formatDateTime } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = { title: "Revisar solicitud" };
 
-// Filas de ejemplo para un registro nuevo (en modo conectado salen del payload de la solicitud).
+// Filas de ejemplo para el modo demo (en modo conectado salen del payload de la solicitud).
 const newOrgFields = (name: string, type: string) => [
   { field: "Nombre", before: "", after: name },
   { field: "Tipo de organización", before: "", after: label("orgTypes", type) },
@@ -24,11 +25,11 @@ const newOrgFields = (name: string, type: string) => [
 
 export default async function SolicitudPage(props: PageProps<"/admin/solicitudes/[id]">) {
   const { id } = await props.params;
-  const request = (await listChangeRequests()).find((r) => r.id === id);
+  const request = await getChangeRequestDetail(id);
   if (!request) notFound();
 
-  const changes = request.changes ?? newOrgFields(request.organization_name, request.org_type_code);
-  const isNew = request.kind === "alta";
+  const changes = request.changes.length || !isDemoMode ? request.changes : newOrgFields(request.organization_name, request.org_type_code);
+  const isNew = request.kind !== "actualizacion";
 
   return (
     <div className="space-y-6">
@@ -64,7 +65,7 @@ export default async function SolicitudPage(props: PageProps<"/admin/solicitudes
             ))}
           </div>
         </section>
-        <DecisionPanel id={request.id} fields={changes.map((c) => c.field)} disabled={request.status !== "enviada"} />
+        <DecisionPanel id={request.id} fields={changes.map((c) => c.field)} disabled={request.status !== "enviada"} kind={request.kind} />
       </div>
     </div>
   );

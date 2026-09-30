@@ -77,7 +77,7 @@ export function MobileAppNav({ items, areaLabel }: { items: AppNavItem[]; areaLa
         <MenuIcon className="size-6" />
       </SheetTrigger>
       <SheetContent side="left" className="w-[80vw] max-w-xs bg-sidebar p-0 text-sidebar-foreground">
-        <SheetTitle className="p-5 pb-0 text-xs font-bold tracking-widest text-sidebar-primary uppercase">{areaLabel}</SheetTitle>
+        <SheetTitle className="p-5 pb-0 text-xs font-bold tracking-widest text-goyn-magenta uppercase">{areaLabel}</SheetTitle>
         <AppNav items={items} onNavigate={() => setOpen(false)} />
       </SheetContent>
     </Sheet>

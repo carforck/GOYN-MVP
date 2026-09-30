@@ -25,7 +25,7 @@ export function ComingSoon({
       <div className="relative grid overflow-hidden rounded-3xl border-2 border-dashed border-goyn-violeta/30 bg-goyn-lila/40 lg:grid-cols-2">
         <Shape name="asterisco" size={90} className="top-6 right-6 hidden opacity-80 lg:block" />
         <div className="relative space-y-6 p-8 sm:p-12">
-          <span className="goyn-eyebrow bg-goyn-magenta">
+          <span className="goyn-eyebrow bg-goyn-magenta-a11y">
             <SparklesIcon className="size-3.5" aria-hidden /> Próximamente · {phase}
           </span>
           <h1 className="text-3xl font-extrabold text-foreground sm:text-5xl">{title}</h1>

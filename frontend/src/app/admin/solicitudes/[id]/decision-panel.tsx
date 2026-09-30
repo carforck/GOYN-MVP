@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 
-export function DecisionPanel({ id, fields, disabled }: { id: string; fields: string[]; disabled: boolean }) {
+export function DecisionPanel({ id, fields, disabled, kind }: { id: string; fields: string[]; disabled: boolean; kind: "alta" | "actualizacion" | "indicador" }) {
   const router = useRouter();
   const [decision, setDecision] = useState<Decision>("aprobar");
   const [reason, setReason] = useState("");
@@ -25,17 +25,19 @@ export function DecisionPanel({ id, fields, disabled }: { id: string; fields: st
       router.push("/admin/solicitudes");
     });
 
-  const options: { value: Decision; label: string; icon: typeof CheckIcon; className: string }[] = [
+  const allOptions: { value: Decision; label: string; icon: typeof CheckIcon; className: string }[] = [
     { value: "aprobar", label: "Aprobar", icon: CheckIcon, className: "data-[on=true]:border-goyn-violeta data-[on=true]:bg-goyn-lila" },
     { value: "ajustes", label: "Pedir ajustes", icon: MessageSquareIcon, className: "data-[on=true]:border-goyn-cian data-[on=true]:bg-goyn-cian/10" },
     { value: "rechazar", label: "Rechazar", icon: XIcon, className: "data-[on=true]:border-destructive data-[on=true]:bg-destructive/5" },
   ];
+  // Un reporte de indicador se aprueba o se rechaza (no admite ajustes).
+  const options = allOptions.filter((o) => kind !== "indicador" || o.value !== "ajustes");
 
   return (
     <aside className="h-fit space-y-5 rounded-2xl border bg-card p-5 lg:sticky lg:top-20">
       <h2 className="font-heading text-lg font-bold text-foreground">Decisión</h2>
       {disabled && <p className="rounded-xl bg-muted p-3 text-sm text-muted-foreground">Esta solicitud ya no está pendiente.</p>}
-      <div role="radiogroup" className="grid grid-cols-3 gap-2">
+      <div role="radiogroup" className={cn("grid gap-2", options.length === 3 ? "grid-cols-3" : "grid-cols-2")}>
         {options.map((o) => (
           <button key={o.value} type="button" role="radio" aria-checked={decision === o.value} data-on={decision === o.value} disabled={disabled}
             onClick={() => setDecision(o.value)}

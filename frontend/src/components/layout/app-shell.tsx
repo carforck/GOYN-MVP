@@ -36,7 +36,7 @@ export async function AppShell({
         <aside className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col bg-sidebar text-sidebar-foreground lg:flex">
           <div className="border-b border-sidebar-border p-5">
             <ProductLogo inverted />
-            <p className="mt-3 text-xs font-bold tracking-widest text-sidebar-primary uppercase">{areaLabel}</p>
+            <p className="mt-3 text-xs font-bold tracking-widest text-goyn-magenta uppercase">{areaLabel}</p>
           </div>
           <AppNav items={nav} />
           <div className="mt-auto border-t border-sidebar-border p-4 text-sm">

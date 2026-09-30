@@ -7,6 +7,7 @@ insert into public.organization_role select '8d790d05-f30c-4ff8-aad6-9d1937f3e57
 insert into public.organization_territory select '8d790d05-f30c-4ff8-aad6-9d1937f3e578', unnest(array['baq_norte_centro','baq_metropolitana','amb_puerto_colombia']::text[]);
 insert into public.organization_area select '8d790d05-f30c-4ff8-aad6-9d1937f3e578', unnest(array['ingresos','bienestar','orientacion']::text[]);
 insert into public.organization_problem select '8d790d05-f30c-4ff8-aad6-9d1937f3e578', unnest(array['ing_desconexion_sector_productivo','ing_barreras_emprendimiento','ori_rutas_formacion','bie_salud_mental']::text[]);
+insert into public.organization_work_line select '8d790d05-f30c-4ff8-aad6-9d1937f3e578', unnest(array['empleo_juvenil','emprendimiento_juvenil','conexion_directa','orientacion_socio_ocupacional']::text[]);
 insert into public.location (organization_id, is_primary, municipality, territory_code, geom, precision, source)
 values ('8d790d05-f30c-4ff8-aad6-9d1937f3e578', true, 'Barranquilla', 'baq_norte_centro', extensions.st_setsrid(extensions.st_makepoint(-74.78915, 10.97986), 4326)::extensions.geography, 'aproximada', 'demo');
 insert into public.organization (id, slug, name, description, mission, org_type_code, primary_role_code, scope_code, contact_email_public, is_demo, verified_at, updated_at)
@@ -15,6 +16,7 @@ insert into public.organization_role select 'a8219ffd-1768-4240-ac7e-e3a59d92db8
 insert into public.organization_territory select 'a8219ffd-1768-4240-ac7e-e3a59d92db81', unnest(array['amb_galapa','baq_riomar','baq_suroriente','amb_puerto_colombia']::text[]);
 insert into public.organization_area select 'a8219ffd-1768-4240-ac7e-e3a59d92db81', unnest(array['bienestar','orientacion','educacion']::text[]);
 insert into public.organization_problem select 'a8219ffd-1768-4240-ac7e-e3a59d92db81', unnest(array['edu_desconexion_media','edu_desconexion_posmedia','edu_calidad_pertinencia','ori_rutas_empleabilidad','ori_identidad_plan_vida','bie_maternidad_temprana','bie_spa','bie_salud_mental']::text[]);
+insert into public.organization_work_line select 'a8219ffd-1768-4240-ac7e-e3a59d92db81', unnest(array['conexion_directa','orientacion_socio_ocupacional','formacion_cultura']::text[]);
 insert into public.location (organization_id, is_primary, municipality, territory_code, geom, precision, source)
 values ('a8219ffd-1768-4240-ac7e-e3a59d92db81', true, 'Galapa', 'amb_galapa', extensions.st_setsrid(extensions.st_makepoint(-74.89143, 10.90658), 4326)::extensions.geography, 'aproximada', 'demo');
 insert into public.organization (id, slug, name, description, mission, org_type_code, primary_role_code, scope_code, contact_email_public, is_demo, verified_at, updated_at)
@@ -23,6 +25,7 @@ insert into public.organization_role select '3477376f-e1ac-4085-ac6e-016d84c3a29
 insert into public.organization_territory select '3477376f-e1ac-4085-ac6e-016d84c3a29d', unnest(array['amb_soledad','cobertura_general','baq_suroriente','baq_norte_centro']::text[]);
 insert into public.organization_area select '3477376f-e1ac-4085-ac6e-016d84c3a29d', unnest(array['bienestar','entornos']::text[]);
 insert into public.organization_problem select '3477376f-e1ac-4085-ac6e-016d84c3a29d', unnest(array['ent_cultura_deporte_ocio','ent_violencia_identidad','ent_altas_tasas_violencia','bie_maternidad_temprana','bie_spa']::text[]);
+insert into public.organization_work_line select '3477376f-e1ac-4085-ac6e-016d84c3a29d', unnest(array['conexion_directa']::text[]);
 insert into public.location (organization_id, is_primary, municipality, territory_code, geom, precision, source)
 values ('3477376f-e1ac-4085-ac6e-016d84c3a29d', true, 'Soledad', 'amb_soledad', extensions.st_setsrid(extensions.st_makepoint(-74.76234, 10.90641), 4326)::extensions.geography, 'aproximada', 'demo');
 insert into public.organization (id, slug, name, description, mission, org_type_code, primary_role_code, scope_code, contact_email_public, is_demo, verified_at, updated_at)
@@ -31,6 +34,7 @@ insert into public.organization_role select '6fd78973-e2a8-4335-a10c-e52c81abf92
 insert into public.organization_territory select '6fd78973-e2a8-4335-a10c-e52c81abf926', unnest(array['baq_norte_centro','amb_malambo']::text[]);
 insert into public.organization_area select '6fd78973-e2a8-4335-a10c-e52c81abf926', unnest(array['inclusion_digital']::text[]);
 insert into public.organization_problem select '6fd78973-e2a8-4335-a10c-e52c81abf926', unnest(array['dig_acceso_internet']::text[]);
+insert into public.organization_work_line select '6fd78973-e2a8-4335-a10c-e52c81abf926', unnest(array['formacion_cultura']::text[]);
 insert into public.location (organization_id, is_primary, municipality, territory_code, geom, precision, source)
 values ('6fd78973-e2a8-4335-a10c-e52c81abf926', true, 'Barranquilla', 'baq_norte_centro', extensions.st_setsrid(extensions.st_makepoint(-74.79193, 10.98203), 4326)::extensions.geography, 'aproximada', 'demo');
 insert into public.organization (id, slug, name, description, mission, org_type_code, primary_role_code, scope_code, contact_email_public, is_demo, verified_at, updated_at)
@@ -39,6 +43,7 @@ insert into public.organization_role select '85197094-9aa1-4cf7-aca8-6c6868cdbea
 insert into public.organization_territory select '85197094-9aa1-4cf7-aca8-6c6868cdbeaa', unnest(array['baq_riomar','baq_suroriente','baq_metropolitana','cobertura_general']::text[]);
 insert into public.organization_area select '85197094-9aa1-4cf7-aca8-6c6868cdbeaa', unnest(array['educacion']::text[]);
 insert into public.organization_problem select '85197094-9aa1-4cf7-aca8-6c6868cdbeaa', unnest(array['edu_desconexion_media']::text[]);
+insert into public.organization_work_line select '85197094-9aa1-4cf7-aca8-6c6868cdbeaa', unnest(array['formacion_cultura']::text[]);
 insert into public.location (organization_id, is_primary, municipality, territory_code, geom, precision, source)
 values ('85197094-9aa1-4cf7-aca8-6c6868cdbeaa', true, 'Barranquilla', 'baq_riomar', extensions.st_setsrid(extensions.st_makepoint(-74.82994, 11.01408), 4326)::extensions.geography, 'aproximada', 'demo');
 insert into public.organization (id, slug, name, description, mission, org_type_code, primary_role_code, scope_code, contact_email_public, is_demo, verified_at, updated_at)
@@ -47,6 +52,7 @@ insert into public.organization_role select 'd5f4f0a8-fa54-494b-a8fc-346230321e2
 insert into public.organization_territory select 'd5f4f0a8-fa54-494b-a8fc-346230321e27', unnest(array['baq_norte_centro','cobertura_general']::text[]);
 insert into public.organization_area select 'd5f4f0a8-fa54-494b-a8fc-346230321e27', unnest(array['ingresos','educacion','bienestar']::text[]);
 insert into public.organization_problem select 'd5f4f0a8-fa54-494b-a8fc-346230321e27', unnest(array['edu_desconexion_posmedia','edu_calidad_pertinencia','ing_desconexion_sector_productivo','ing_barreras_mercado_laboral','ing_barreras_emprendimiento','bie_salud_mental']::text[]);
+insert into public.organization_work_line select 'd5f4f0a8-fa54-494b-a8fc-346230321e27', unnest(array['empleo_juvenil','emprendimiento_juvenil','formacion_cultura','conexion_directa']::text[]);
 insert into public.location (organization_id, is_primary, municipality, territory_code, geom, precision, source)
 values ('d5f4f0a8-fa54-494b-a8fc-346230321e27', true, 'Barranquilla', 'baq_norte_centro', extensions.st_setsrid(extensions.st_makepoint(-74.78548, 10.97993), 4326)::extensions.geography, 'aproximada', 'demo');
 insert into public.organization (id, slug, name, description, mission, org_type_code, primary_role_code, scope_code, contact_email_public, is_demo, verified_at, updated_at)
@@ -55,6 +61,7 @@ insert into public.organization_role select 'e6e4cd20-8974-4ab3-a31e-bdce279af07
 insert into public.organization_territory select 'e6e4cd20-8974-4ab3-a31e-bdce279af07e', unnest(array['amb_galapa']::text[]);
 insert into public.organization_area select 'e6e4cd20-8974-4ab3-a31e-bdce279af07e', unnest(array['orientacion','ingresos']::text[]);
 insert into public.organization_problem select 'e6e4cd20-8974-4ab3-a31e-bdce279af07e', unnest(array['ori_rutas_formacion','ori_identidad_plan_vida']::text[]);
+insert into public.organization_work_line select 'e6e4cd20-8974-4ab3-a31e-bdce279af07e', unnest(array['orientacion_socio_ocupacional','empleo_juvenil','emprendimiento_juvenil']::text[]);
 insert into public.location (organization_id, is_primary, municipality, territory_code, geom, precision, source)
 values ('e6e4cd20-8974-4ab3-a31e-bdce279af07e', true, 'Galapa', 'amb_galapa', extensions.st_setsrid(extensions.st_makepoint(-74.88439, 10.9042), 4326)::extensions.geography, 'aproximada', 'demo');
 insert into public.organization (id, slug, name, description, mission, org_type_code, primary_role_code, scope_code, contact_email_public, is_demo, verified_at, updated_at)
@@ -62,6 +69,7 @@ values ('afa00f33-6aa3-4363-a24d-7043307a39c2', 'logistica-costa-norte-s-a-s', '
 insert into public.organization_role select 'afa00f33-6aa3-4363-a24d-7043307a39c2', unnest(array['implementador','articulador','generador_conocimiento']::text[]);
 insert into public.organization_territory select 'afa00f33-6aa3-4363-a24d-7043307a39c2', unnest(array['baq_norte_centro','baq_metropolitana']::text[]);
 insert into public.organization_area select 'afa00f33-6aa3-4363-a24d-7043307a39c2', unnest(array['educacion']::text[]);
+insert into public.organization_work_line select 'afa00f33-6aa3-4363-a24d-7043307a39c2', unnest(array['formacion_cultura']::text[]);
 insert into public.location (organization_id, is_primary, municipality, territory_code, geom, precision, source)
 values ('afa00f33-6aa3-4363-a24d-7043307a39c2', true, 'Barranquilla', 'baq_norte_centro', extensions.st_setsrid(extensions.st_makepoint(-74.79495, 10.99153), 4326)::extensions.geography, 'aproximada', 'demo');
 insert into public.organization (id, slug, name, description, mission, org_type_code, primary_role_code, scope_code, contact_email_public, is_demo, verified_at, updated_at)
@@ -70,6 +78,7 @@ insert into public.organization_role select 'c48eee15-1273-41a2-afed-bfb55d27c12
 insert into public.organization_territory select 'c48eee15-1273-41a2-afed-bfb55d27c12b', unnest(array['amb_galapa']::text[]);
 insert into public.organization_area select 'c48eee15-1273-41a2-afed-bfb55d27c12b', unnest(array['educacion','ingresos']::text[]);
 insert into public.organization_problem select 'c48eee15-1273-41a2-afed-bfb55d27c12b', unnest(array['edu_calidad_pertinencia','ing_desconexion_sector_productivo','ing_barreras_mercado_laboral','ing_barreras_emprendimiento']::text[]);
+insert into public.organization_work_line select 'c48eee15-1273-41a2-afed-bfb55d27c12b', unnest(array['formacion_cultura','empleo_juvenil','emprendimiento_juvenil']::text[]);
 insert into public.location (organization_id, is_primary, municipality, territory_code, geom, precision, source)
 values ('c48eee15-1273-41a2-afed-bfb55d27c12b', true, 'Galapa', 'amb_galapa', extensions.st_setsrid(extensions.st_makepoint(-74.88498, 10.90283), 4326)::extensions.geography, 'aproximada', 'demo');
 insert into public.organization (id, slug, name, description, mission, org_type_code, primary_role_code, scope_code, contact_email_public, is_demo, verified_at, updated_at)
@@ -78,6 +87,7 @@ insert into public.organization_role select 'ba0de2a7-0e14-45c8-a380-75052dbdc8c
 insert into public.organization_territory select 'ba0de2a7-0e14-45c8-a380-75052dbdc8cb', unnest(array['amb_galapa','amb_malambo','baq_suroccidente']::text[]);
 insert into public.organization_area select 'ba0de2a7-0e14-45c8-a380-75052dbdc8cb', unnest(array['entornos','educacion']::text[]);
 insert into public.organization_problem select 'ba0de2a7-0e14-45c8-a380-75052dbdc8cb', unnest(array['edu_desconexion_media','edu_calidad_pertinencia','ent_cultura_deporte_ocio']::text[]);
+insert into public.organization_work_line select 'ba0de2a7-0e14-45c8-a380-75052dbdc8cb', unnest(array['conexion_directa','formacion_cultura']::text[]);
 insert into public.location (organization_id, is_primary, municipality, territory_code, geom, precision, source)
 values ('ba0de2a7-0e14-45c8-a380-75052dbdc8cb', true, 'Galapa', 'amb_galapa', extensions.st_setsrid(extensions.st_makepoint(-74.8902, 10.90031), 4326)::extensions.geography, 'aproximada', 'demo');
 insert into public.organization (id, slug, name, description, mission, org_type_code, primary_role_code, scope_code, contact_email_public, is_demo, verified_at, updated_at)
@@ -86,6 +96,7 @@ insert into public.organization_role select '9c9c35fc-9017-41a6-a36e-2bf652f8da4
 insert into public.organization_territory select '9c9c35fc-9017-41a6-a36e-2bf652f8da4f', unnest(array['amb_puerto_colombia','amb_malambo','baq_riomar']::text[]);
 insert into public.organization_area select '9c9c35fc-9017-41a6-a36e-2bf652f8da4f', unnest(array['inclusion_digital','educacion','orientacion']::text[]);
 insert into public.organization_problem select '9c9c35fc-9017-41a6-a36e-2bf652f8da4f', unnest(array['edu_desconexion_media','edu_calidad_pertinencia','ori_rutas_empleabilidad','ori_rutas_formacion','ori_identidad_plan_vida','dig_competencias','dig_costos']::text[]);
+insert into public.organization_work_line select '9c9c35fc-9017-41a6-a36e-2bf652f8da4f', unnest(array['formacion_cultura','orientacion_socio_ocupacional']::text[]);
 insert into public.location (organization_id, is_primary, municipality, territory_code, geom, precision, source)
 values ('9c9c35fc-9017-41a6-a36e-2bf652f8da4f', true, 'Puerto Colombia', 'amb_puerto_colombia', extensions.st_setsrid(extensions.st_makepoint(-74.94978, 10.98868), 4326)::extensions.geography, 'aproximada', 'demo');
 insert into public.organization (id, slug, name, description, mission, org_type_code, primary_role_code, scope_code, contact_email_public, is_demo, verified_at, updated_at)
@@ -94,6 +105,7 @@ insert into public.organization_role select 'c69a630a-f1b4-48b5-ad93-ebf5f8af3dd
 insert into public.organization_territory select 'c69a630a-f1b4-48b5-ad93-ebf5f8af3ddf', unnest(array['amb_soledad','baq_norte_centro']::text[]);
 insert into public.organization_area select 'c69a630a-f1b4-48b5-ad93-ebf5f8af3ddf', unnest(array['educacion','ingresos','participacion']::text[]);
 insert into public.organization_problem select 'c69a630a-f1b4-48b5-ad93-ebf5f8af3ddf', unnest(array['ing_desconexion_sector_productivo','par_liderazgo','par_recursos_iniciativas']::text[]);
+insert into public.organization_work_line select 'c69a630a-f1b4-48b5-ad93-ebf5f8af3ddf', unnest(array['formacion_cultura','empleo_juvenil','emprendimiento_juvenil','agencia_juvenil','narrativas']::text[]);
 insert into public.location (organization_id, is_primary, municipality, territory_code, geom, precision, source)
 values ('c69a630a-f1b4-48b5-ad93-ebf5f8af3ddf', true, 'Soledad', 'amb_soledad', extensions.st_setsrid(extensions.st_makepoint(-74.77635, 10.90522), 4326)::extensions.geography, 'aproximada', 'demo');
 insert into public.organization (id, slug, name, description, mission, org_type_code, primary_role_code, scope_code, contact_email_public, is_demo, verified_at, updated_at)
@@ -102,6 +114,7 @@ insert into public.organization_role select 'b8be1c62-3ea5-4eed-ae8d-61b3fb2e241
 insert into public.organization_territory select 'b8be1c62-3ea5-4eed-ae8d-61b3fb2e2415', unnest(array['amb_puerto_colombia','baq_norte_centro']::text[]);
 insert into public.organization_area select 'b8be1c62-3ea5-4eed-ae8d-61b3fb2e2415', unnest(array['participacion']::text[]);
 insert into public.organization_problem select 'b8be1c62-3ea5-4eed-ae8d-61b3fb2e2415', unnest(array['par_liderazgo','par_recursos_iniciativas']::text[]);
+insert into public.organization_work_line select 'b8be1c62-3ea5-4eed-ae8d-61b3fb2e2415', unnest(array['agencia_juvenil','narrativas']::text[]);
 insert into public.location (organization_id, is_primary, municipality, territory_code, geom, precision, source)
 values ('b8be1c62-3ea5-4eed-ae8d-61b3fb2e2415', true, 'Puerto Colombia', 'amb_puerto_colombia', extensions.st_setsrid(extensions.st_makepoint(-74.9528, 10.97989), 4326)::extensions.geography, 'aproximada', 'demo');
 insert into public.organization (id, slug, name, description, mission, org_type_code, primary_role_code, scope_code, contact_email_public, is_demo, verified_at, updated_at)
@@ -109,6 +122,7 @@ values ('58872de7-485f-4197-a78d-a69c0651f9e8', 'agencia-nacional-de-formacion-d
 insert into public.organization_role select '58872de7-485f-4197-a78d-a69c0651f9e8', unnest(array['implementador','tomador_decision']::text[]);
 insert into public.organization_territory select '58872de7-485f-4197-a78d-a69c0651f9e8', unnest(array['amb_galapa','baq_metropolitana','baq_suroccidente']::text[]);
 insert into public.organization_area select '58872de7-485f-4197-a78d-a69c0651f9e8', unnest(array['ingresos']::text[]);
+insert into public.organization_work_line select '58872de7-485f-4197-a78d-a69c0651f9e8', unnest(array['empleo_juvenil','emprendimiento_juvenil']::text[]);
 insert into public.location (organization_id, is_primary, municipality, territory_code, geom, precision, source)
 values ('58872de7-485f-4197-a78d-a69c0651f9e8', true, 'Galapa', 'amb_galapa', extensions.st_setsrid(extensions.st_makepoint(-74.88823, 10.89749), 4326)::extensions.geography, 'aproximada', 'demo');
 insert into public.organization (id, slug, name, description, mission, org_type_code, primary_role_code, scope_code, contact_email_public, is_demo, verified_at, updated_at)
@@ -117,6 +131,7 @@ insert into public.organization_role select '6952f60c-3317-40e7-aa6a-d435949535d
 insert into public.organization_territory select '6952f60c-3317-40e7-aa6a-d435949535d1', unnest(array['amb_galapa','baq_suroriente','baq_suroccidente']::text[]);
 insert into public.organization_area select '6952f60c-3317-40e7-aa6a-d435949535d1', unnest(array['bienestar']::text[]);
 insert into public.organization_problem select '6952f60c-3317-40e7-aa6a-d435949535d1', unnest(array['bie_spa']::text[]);
+insert into public.organization_work_line select '6952f60c-3317-40e7-aa6a-d435949535d1', unnest(array['conexion_directa']::text[]);
 insert into public.location (organization_id, is_primary, municipality, territory_code, geom, precision, source)
 values ('6952f60c-3317-40e7-aa6a-d435949535d1', true, 'Galapa', 'amb_galapa', extensions.st_setsrid(extensions.st_makepoint(-74.8906, 10.88761), 4326)::extensions.geography, 'aproximada', 'demo');
 insert into public.organization (id, slug, name, description, mission, org_type_code, primary_role_code, scope_code, contact_email_public, is_demo, verified_at, updated_at)
@@ -125,6 +140,7 @@ insert into public.organization_role select '63d50713-5efe-4bc4-a74d-7514702d729
 insert into public.organization_territory select '63d50713-5efe-4bc4-a74d-7514702d7299', unnest(array['baq_norte_centro','baq_riomar','baq_suroccidente','baq_metropolitana']::text[]);
 insert into public.organization_area select '63d50713-5efe-4bc4-a74d-7514702d7299', unnest(array['inclusion_digital','bienestar']::text[]);
 insert into public.organization_problem select '63d50713-5efe-4bc4-a74d-7514702d7299', unnest(array['dig_acceso_internet','dig_competencias']::text[]);
+insert into public.organization_work_line select '63d50713-5efe-4bc4-a74d-7514702d7299', unnest(array['formacion_cultura','conexion_directa','investigacion_mercado']::text[]);
 insert into public.location (organization_id, is_primary, municipality, territory_code, geom, precision, source)
 values ('63d50713-5efe-4bc4-a74d-7514702d7299', true, 'Barranquilla', 'baq_norte_centro', extensions.st_setsrid(extensions.st_makepoint(-74.80349, 10.98141), 4326)::extensions.geography, 'aproximada', 'demo');
 insert into public.organization (id, slug, name, description, mission, org_type_code, primary_role_code, scope_code, contact_email_public, is_demo, verified_at, updated_at)
@@ -133,6 +149,7 @@ insert into public.organization_role select '652c810d-6baa-4054-aa5d-02a77f0a46c
 insert into public.organization_territory select '652c810d-6baa-4054-aa5d-02a77f0a46cb', unnest(array['amb_puerto_colombia','baq_metropolitana']::text[]);
 insert into public.organization_area select '652c810d-6baa-4054-aa5d-02a77f0a46cb', unnest(array['bienestar','orientacion']::text[]);
 insert into public.organization_problem select '652c810d-6baa-4054-aa5d-02a77f0a46cb', unnest(array['ori_rutas_formacion','ori_identidad_plan_vida','bie_maternidad_temprana','bie_spa']::text[]);
+insert into public.organization_work_line select '652c810d-6baa-4054-aa5d-02a77f0a46cb', unnest(array['conexion_directa','orientacion_socio_ocupacional']::text[]);
 insert into public.location (organization_id, is_primary, municipality, territory_code, geom, precision, source)
 values ('652c810d-6baa-4054-aa5d-02a77f0a46cb', true, 'Puerto Colombia', 'amb_puerto_colombia', extensions.st_setsrid(extensions.st_makepoint(-74.96498, 10.98082), 4326)::extensions.geography, 'aproximada', 'demo');
 insert into public.organization (id, slug, name, description, mission, org_type_code, primary_role_code, scope_code, contact_email_public, is_demo, verified_at, updated_at)
@@ -141,6 +158,7 @@ insert into public.organization_role select '030296fe-6d23-4b31-a069-def2c0e51d3
 insert into public.organization_territory select '030296fe-6d23-4b31-a069-def2c0e51d38', unnest(array['amb_puerto_colombia','baq_suroccidente']::text[]);
 insert into public.organization_area select '030296fe-6d23-4b31-a069-def2c0e51d38', unnest(array['ingresos','educacion','orientacion']::text[]);
 insert into public.organization_problem select '030296fe-6d23-4b31-a069-def2c0e51d38', unnest(array['edu_desconexion_posmedia','ing_desconexion_sector_productivo','ori_rutas_empleabilidad','ori_identidad_plan_vida']::text[]);
+insert into public.organization_work_line select '030296fe-6d23-4b31-a069-def2c0e51d38', unnest(array['empleo_juvenil','emprendimiento_juvenil','formacion_cultura','orientacion_socio_ocupacional','investigacion_mercado']::text[]);
 insert into public.location (organization_id, is_primary, municipality, territory_code, geom, precision, source)
 values ('030296fe-6d23-4b31-a069-def2c0e51d38', true, 'Puerto Colombia', 'amb_puerto_colombia', extensions.st_setsrid(extensions.st_makepoint(-74.94461, 10.98904), 4326)::extensions.geography, 'aproximada', 'demo');
 insert into public.organization (id, slug, name, description, mission, org_type_code, primary_role_code, scope_code, contact_email_public, is_demo, verified_at, updated_at)
@@ -149,6 +167,7 @@ insert into public.organization_role select '7e97d341-c072-475f-a297-b3af79fd141
 insert into public.organization_territory select '7e97d341-c072-475f-a297-b3af79fd1419', unnest(array['amb_puerto_colombia']::text[]);
 insert into public.organization_area select '7e97d341-c072-475f-a297-b3af79fd1419', unnest(array['educacion','entornos','ingresos']::text[]);
 insert into public.organization_problem select '7e97d341-c072-475f-a297-b3af79fd1419', unnest(array['edu_desconexion_posmedia','ing_desconexion_sector_productivo','ing_barreras_mercado_laboral','ent_cultura_deporte_ocio','ent_altas_tasas_violencia']::text[]);
+insert into public.organization_work_line select '7e97d341-c072-475f-a297-b3af79fd1419', unnest(array['formacion_cultura','conexion_directa','empleo_juvenil','emprendimiento_juvenil']::text[]);
 insert into public.location (organization_id, is_primary, municipality, territory_code, geom, precision, source)
 values ('7e97d341-c072-475f-a297-b3af79fd1419', true, 'Puerto Colombia', 'amb_puerto_colombia', extensions.st_setsrid(extensions.st_makepoint(-74.96341, 10.99599), 4326)::extensions.geography, 'aproximada', 'demo');
 insert into public.organization (id, slug, name, description, mission, org_type_code, primary_role_code, scope_code, contact_email_public, is_demo, verified_at, updated_at)
@@ -157,6 +176,7 @@ insert into public.organization_role select '8d7d9ebc-56a8-421f-ae8d-4d0c2bece04
 insert into public.organization_territory select '8d7d9ebc-56a8-421f-ae8d-4d0c2bece04b', unnest(array['amb_puerto_colombia','baq_suroccidente','amb_soledad']::text[]);
 insert into public.organization_area select '8d7d9ebc-56a8-421f-ae8d-4d0c2bece04b', unnest(array['entornos','educacion']::text[]);
 insert into public.organization_problem select '8d7d9ebc-56a8-421f-ae8d-4d0c2bece04b', unnest(array['edu_desconexion_media','ent_cultura_deporte_ocio']::text[]);
+insert into public.organization_work_line select '8d7d9ebc-56a8-421f-ae8d-4d0c2bece04b', unnest(array['conexion_directa','formacion_cultura']::text[]);
 insert into public.location (organization_id, is_primary, municipality, territory_code, geom, precision, source)
 values ('8d7d9ebc-56a8-421f-ae8d-4d0c2bece04b', true, 'Puerto Colombia', 'amb_puerto_colombia', extensions.st_setsrid(extensions.st_makepoint(-74.95483, 10.98831), 4326)::extensions.geography, 'aproximada', 'demo');
 insert into public.organization (id, slug, name, description, mission, org_type_code, primary_role_code, scope_code, contact_email_public, is_demo, verified_at, updated_at)
@@ -165,6 +185,7 @@ insert into public.organization_role select '833f0a96-4817-4796-af20-8e6f9847ddb
 insert into public.organization_territory select '833f0a96-4817-4796-af20-8e6f9847ddb1', unnest(array['amb_malambo','baq_suroriente','baq_norte_centro']::text[]);
 insert into public.organization_area select '833f0a96-4817-4796-af20-8e6f9847ddb1', unnest(array['orientacion']::text[]);
 insert into public.organization_problem select '833f0a96-4817-4796-af20-8e6f9847ddb1', unnest(array['ori_rutas_empleabilidad','ori_rutas_formacion','ori_identidad_plan_vida']::text[]);
+insert into public.organization_work_line select '833f0a96-4817-4796-af20-8e6f9847ddb1', unnest(array['orientacion_socio_ocupacional']::text[]);
 insert into public.location (organization_id, is_primary, municipality, territory_code, geom, precision, source)
 values ('833f0a96-4817-4796-af20-8e6f9847ddb1', true, 'Malambo', 'amb_malambo', extensions.st_setsrid(extensions.st_makepoint(-74.77834, 10.86288), 4326)::extensions.geography, 'aproximada', 'demo');
 insert into public.organization (id, slug, name, description, mission, org_type_code, primary_role_code, scope_code, contact_email_public, is_demo, verified_at, updated_at)
@@ -173,6 +194,7 @@ insert into public.organization_role select 'fd7b9901-f289-4e4f-aff6-2a5c7485e77
 insert into public.organization_territory select 'fd7b9901-f289-4e4f-aff6-2a5c7485e771', unnest(array['baq_suroccidente','baq_metropolitana','amb_galapa','baq_riomar']::text[]);
 insert into public.organization_area select 'fd7b9901-f289-4e4f-aff6-2a5c7485e771', unnest(array['inclusion_digital','ingresos','participacion']::text[]);
 insert into public.organization_problem select 'fd7b9901-f289-4e4f-aff6-2a5c7485e771', unnest(array['ing_desconexion_sector_productivo','ing_barreras_mercado_laboral','par_liderazgo','par_espacios_decision','par_recursos_iniciativas','dig_competencias']::text[]);
+insert into public.organization_work_line select 'fd7b9901-f289-4e4f-aff6-2a5c7485e771', unnest(array['formacion_cultura','empleo_juvenil','emprendimiento_juvenil','agencia_juvenil','narrativas']::text[]);
 insert into public.location (organization_id, is_primary, municipality, territory_code, geom, precision, source)
 values ('fd7b9901-f289-4e4f-aff6-2a5c7485e771', true, 'Barranquilla', 'baq_suroccidente', extensions.st_setsrid(extensions.st_makepoint(-74.81839, 10.953), 4326)::extensions.geography, 'aproximada', 'demo');
 insert into public.organization (id, slug, name, description, mission, org_type_code, primary_role_code, scope_code, contact_email_public, is_demo, verified_at, updated_at)
@@ -181,6 +203,7 @@ insert into public.organization_role select '5ab4c8d5-5fd3-41a0-a8ff-db55205e742
 insert into public.organization_territory select '5ab4c8d5-5fd3-41a0-a8ff-db55205e7428', unnest(array['baq_suroccidente','baq_riomar','amb_soledad']::text[]);
 insert into public.organization_area select '5ab4c8d5-5fd3-41a0-a8ff-db55205e7428', unnest(array['educacion']::text[]);
 insert into public.organization_problem select '5ab4c8d5-5fd3-41a0-a8ff-db55205e7428', unnest(array['edu_desconexion_posmedia']::text[]);
+insert into public.organization_work_line select '5ab4c8d5-5fd3-41a0-a8ff-db55205e7428', unnest(array['formacion_cultura']::text[]);
 insert into public.location (organization_id, is_primary, municipality, territory_code, geom, precision, source)
 values ('5ab4c8d5-5fd3-41a0-a8ff-db55205e7428', true, 'Barranquilla', 'baq_suroccidente', extensions.st_setsrid(extensions.st_makepoint(-74.81254, 10.94678), 4326)::extensions.geography, 'aproximada', 'demo');
 insert into public.organization (id, slug, name, description, mission, org_type_code, primary_role_code, scope_code, contact_email_public, is_demo, verified_at, updated_at)
@@ -189,6 +212,7 @@ insert into public.organization_role select 'b39e9c1e-38f1-4b81-ac35-003446fea4f
 insert into public.organization_territory select 'b39e9c1e-38f1-4b81-ac35-003446fea4fe', unnest(array['baq_norte_centro','amb_malambo']::text[]);
 insert into public.organization_area select 'b39e9c1e-38f1-4b81-ac35-003446fea4fe', unnest(array['educacion']::text[]);
 insert into public.organization_problem select 'b39e9c1e-38f1-4b81-ac35-003446fea4fe', unnest(array['edu_calidad_pertinencia']::text[]);
+insert into public.organization_work_line select 'b39e9c1e-38f1-4b81-ac35-003446fea4fe', unnest(array['formacion_cultura']::text[]);
 insert into public.location (organization_id, is_primary, municipality, territory_code, geom, precision, source)
 values ('b39e9c1e-38f1-4b81-ac35-003446fea4fe', true, 'Barranquilla', 'baq_norte_centro', extensions.st_setsrid(extensions.st_makepoint(-74.80308, 10.99996), 4326)::extensions.geography, 'aproximada', 'demo');
 insert into public.organization (id, slug, name, description, mission, org_type_code, primary_role_code, scope_code, contact_email_public, is_demo, verified_at, updated_at)
@@ -197,6 +221,7 @@ insert into public.organization_role select '85d58ea4-67f2-4dfc-afde-790204eb57f
 insert into public.organization_territory select '85d58ea4-67f2-4dfc-afde-790204eb57f2', unnest(array['amb_malambo']::text[]);
 insert into public.organization_area select '85d58ea4-67f2-4dfc-afde-790204eb57f2', unnest(array['educacion','entornos']::text[]);
 insert into public.organization_problem select '85d58ea4-67f2-4dfc-afde-790204eb57f2', unnest(array['edu_desconexion_media','edu_calidad_pertinencia','ent_violencia_identidad','ent_altas_tasas_violencia']::text[]);
+insert into public.organization_work_line select '85d58ea4-67f2-4dfc-afde-790204eb57f2', unnest(array['formacion_cultura','conexion_directa']::text[]);
 insert into public.location (organization_id, is_primary, municipality, territory_code, geom, precision, source)
 values ('85d58ea4-67f2-4dfc-afde-790204eb57f2', true, 'Malambo', 'amb_malambo', extensions.st_setsrid(extensions.st_makepoint(-74.78215, 10.85137), 4326)::extensions.geography, 'aproximada', 'demo');
 insert into public.organization (id, slug, name, description, mission, org_type_code, primary_role_code, scope_code, contact_email_public, is_demo, verified_at, updated_at)
@@ -205,6 +230,7 @@ insert into public.organization_role select '64dd3dba-63e0-4325-a57a-39c49b42731
 insert into public.organization_territory select '64dd3dba-63e0-4325-a57a-39c49b427317', unnest(array['amb_galapa','baq_riomar','baq_suroriente']::text[]);
 insert into public.organization_area select '64dd3dba-63e0-4325-a57a-39c49b427317', unnest(array['inclusion_digital']::text[]);
 insert into public.organization_problem select '64dd3dba-63e0-4325-a57a-39c49b427317', unnest(array['dig_competencias']::text[]);
+insert into public.organization_work_line select '64dd3dba-63e0-4325-a57a-39c49b427317', unnest(array['formacion_cultura']::text[]);
 insert into public.location (organization_id, is_primary, municipality, territory_code, geom, precision, source)
 values ('64dd3dba-63e0-4325-a57a-39c49b427317', true, 'Galapa', 'amb_galapa', extensions.st_setsrid(extensions.st_makepoint(-74.89094, 10.88996), 4326)::extensions.geography, 'aproximada', 'demo');
 insert into public.organization (id, slug, name, description, mission, org_type_code, primary_role_code, scope_code, contact_email_public, is_demo, verified_at, updated_at)
@@ -213,6 +239,7 @@ insert into public.organization_role select 'ca7cfe0e-68a3-4d44-a64b-a308c51629d
 insert into public.organization_territory select 'ca7cfe0e-68a3-4d44-a64b-a308c51629d3', unnest(array['amb_soledad','amb_galapa','baq_riomar']::text[]);
 insert into public.organization_area select 'ca7cfe0e-68a3-4d44-a64b-a308c51629d3', unnest(array['bienestar','educacion','ingresos']::text[]);
 insert into public.organization_problem select 'ca7cfe0e-68a3-4d44-a64b-a308c51629d3', unnest(array['edu_desconexion_posmedia','edu_calidad_pertinencia','ing_desconexion_sector_productivo','ing_barreras_emprendimiento']::text[]);
+insert into public.organization_work_line select 'ca7cfe0e-68a3-4d44-a64b-a308c51629d3', unnest(array['conexion_directa','formacion_cultura','empleo_juvenil','emprendimiento_juvenil']::text[]);
 insert into public.location (organization_id, is_primary, municipality, territory_code, geom, precision, source)
 values ('ca7cfe0e-68a3-4d44-a64b-a308c51629d3', true, 'Soledad', 'amb_soledad', extensions.st_setsrid(extensions.st_makepoint(-74.77257, 10.91135), 4326)::extensions.geography, 'aproximada', 'demo');
 insert into public.organization (id, slug, name, description, mission, org_type_code, primary_role_code, scope_code, contact_email_public, is_demo, verified_at, updated_at)
@@ -221,6 +248,7 @@ insert into public.organization_role select '6ddfd189-5319-4c77-a33e-8d7c62cefa8
 insert into public.organization_territory select '6ddfd189-5319-4c77-a33e-8d7c62cefa89', unnest(array['amb_galapa','baq_suroccidente','baq_norte_centro']::text[]);
 insert into public.organization_area select '6ddfd189-5319-4c77-a33e-8d7c62cefa89', unnest(array['ingresos','educacion','orientacion']::text[]);
 insert into public.organization_problem select '6ddfd189-5319-4c77-a33e-8d7c62cefa89', unnest(array['edu_calidad_pertinencia','ing_desconexion_sector_productivo','ing_barreras_emprendimiento']::text[]);
+insert into public.organization_work_line select '6ddfd189-5319-4c77-a33e-8d7c62cefa89', unnest(array['empleo_juvenil','emprendimiento_juvenil','formacion_cultura','orientacion_socio_ocupacional','investigacion_mercado']::text[]);
 insert into public.location (organization_id, is_primary, municipality, territory_code, geom, precision, source)
 values ('6ddfd189-5319-4c77-a33e-8d7c62cefa89', true, 'Galapa', 'amb_galapa', extensions.st_setsrid(extensions.st_makepoint(-74.89487, 10.89669), 4326)::extensions.geography, 'aproximada', 'demo');
 insert into public.organization (id, slug, name, description, mission, org_type_code, primary_role_code, scope_code, contact_email_public, is_demo, verified_at, updated_at)
@@ -229,6 +257,7 @@ insert into public.organization_role select 'fdcfd148-1445-40f0-a0a2-e6963ea5bc5
 insert into public.organization_territory select 'fdcfd148-1445-40f0-a0a2-e6963ea5bc5e', unnest(array['baq_norte_centro','baq_suroriente','amb_puerto_colombia']::text[]);
 insert into public.organization_area select 'fdcfd148-1445-40f0-a0a2-e6963ea5bc5e', unnest(array['inclusion_digital']::text[]);
 insert into public.organization_problem select 'fdcfd148-1445-40f0-a0a2-e6963ea5bc5e', unnest(array['dig_competencias']::text[]);
+insert into public.organization_work_line select 'fdcfd148-1445-40f0-a0a2-e6963ea5bc5e', unnest(array['formacion_cultura','investigacion_mercado']::text[]);
 insert into public.location (organization_id, is_primary, municipality, territory_code, geom, precision, source)
 values ('fdcfd148-1445-40f0-a0a2-e6963ea5bc5e', true, 'Barranquilla', 'baq_norte_centro', extensions.st_setsrid(extensions.st_makepoint(-74.79707, 10.98225), 4326)::extensions.geography, 'aproximada', 'demo');
 insert into public.organization (id, slug, name, description, mission, org_type_code, primary_role_code, scope_code, contact_email_public, is_demo, verified_at, updated_at)
@@ -237,6 +266,7 @@ insert into public.organization_role select '715f9514-e1db-479e-af33-cd321f148a0
 insert into public.organization_territory select '715f9514-e1db-479e-af33-cd321f148a0c', unnest(array['baq_norte_centro','baq_suroriente','amb_malambo']::text[]);
 insert into public.organization_area select '715f9514-e1db-479e-af33-cd321f148a0c', unnest(array['orientacion','participacion','bienestar']::text[]);
 insert into public.organization_problem select '715f9514-e1db-479e-af33-cd321f148a0c', unnest(array['par_liderazgo','par_espacios_decision','ori_rutas_formacion','bie_maternidad_temprana','bie_spa']::text[]);
+insert into public.organization_work_line select '715f9514-e1db-479e-af33-cd321f148a0c', unnest(array['orientacion_socio_ocupacional','agencia_juvenil','narrativas','conexion_directa']::text[]);
 insert into public.location (organization_id, is_primary, municipality, territory_code, geom, precision, source)
 values ('715f9514-e1db-479e-af33-cd321f148a0c', true, 'Barranquilla', 'baq_norte_centro', extensions.st_setsrid(extensions.st_makepoint(-74.78647, 10.99548), 4326)::extensions.geography, 'aproximada', 'demo');
 insert into public.organization (id, slug, name, description, mission, org_type_code, primary_role_code, scope_code, contact_email_public, is_demo, verified_at, updated_at)
@@ -245,6 +275,7 @@ insert into public.organization_role select '488088dc-4d2e-4312-af77-9c2b942ccea
 insert into public.organization_territory select '488088dc-4d2e-4312-af77-9c2b942cceae', unnest(array['baq_suroriente','baq_riomar','amb_malambo','amb_puerto_colombia']::text[]);
 insert into public.organization_area select '488088dc-4d2e-4312-af77-9c2b942cceae', unnest(array['educacion','ingresos','inclusion_digital']::text[]);
 insert into public.organization_problem select '488088dc-4d2e-4312-af77-9c2b942cceae', unnest(array['edu_desconexion_media','edu_desconexion_posmedia','ing_barreras_emprendimiento','dig_competencias']::text[]);
+insert into public.organization_work_line select '488088dc-4d2e-4312-af77-9c2b942cceae', unnest(array['formacion_cultura','empleo_juvenil','emprendimiento_juvenil']::text[]);
 insert into public.location (organization_id, is_primary, municipality, territory_code, geom, precision, source)
 values ('488088dc-4d2e-4312-af77-9c2b942cceae', true, 'Barranquilla', 'baq_suroriente', extensions.st_setsrid(extensions.st_makepoint(-74.77368, 10.95235), 4326)::extensions.geography, 'aproximada', 'demo');
 insert into public.organization (id, slug, name, description, mission, org_type_code, primary_role_code, scope_code, contact_email_public, is_demo, verified_at, updated_at)
@@ -253,6 +284,7 @@ insert into public.organization_role select '847d9d73-abfa-46dd-a7f6-af2a691b8ef
 insert into public.organization_territory select '847d9d73-abfa-46dd-a7f6-af2a691b8ef7', unnest(array['baq_metropolitana','amb_galapa']::text[]);
 insert into public.organization_area select '847d9d73-abfa-46dd-a7f6-af2a691b8ef7', unnest(array['inclusion_digital','educacion','ingresos']::text[]);
 insert into public.organization_problem select '847d9d73-abfa-46dd-a7f6-af2a691b8ef7', unnest(array['edu_desconexion_media','ing_barreras_mercado_laboral','ing_barreras_emprendimiento','dig_competencias','dig_costos']::text[]);
+insert into public.organization_work_line select '847d9d73-abfa-46dd-a7f6-af2a691b8ef7', unnest(array['formacion_cultura','empleo_juvenil','emprendimiento_juvenil']::text[]);
 insert into public.location (organization_id, is_primary, municipality, territory_code, geom, precision, source)
 values ('847d9d73-abfa-46dd-a7f6-af2a691b8ef7', true, 'Barranquilla', 'baq_metropolitana', extensions.st_setsrid(extensions.st_makepoint(-74.79786, 10.94465), 4326)::extensions.geography, 'aproximada', 'demo');
 insert into public.organization (id, slug, name, description, mission, org_type_code, primary_role_code, scope_code, contact_email_public, is_demo, verified_at, updated_at)
@@ -261,6 +293,7 @@ insert into public.organization_role select 'd441976c-ee77-4314-a441-3df5a4475de
 insert into public.organization_territory select 'd441976c-ee77-4314-a441-3df5a4475de6', unnest(array['amb_puerto_colombia','baq_suroriente','amb_malambo','baq_suroccidente']::text[]);
 insert into public.organization_area select 'd441976c-ee77-4314-a441-3df5a4475de6', unnest(array['orientacion']::text[]);
 insert into public.organization_problem select 'd441976c-ee77-4314-a441-3df5a4475de6', unnest(array['ori_rutas_empleabilidad','ori_identidad_plan_vida']::text[]);
+insert into public.organization_work_line select 'd441976c-ee77-4314-a441-3df5a4475de6', unnest(array['orientacion_socio_ocupacional']::text[]);
 insert into public.location (organization_id, is_primary, municipality, territory_code, geom, precision, source)
 values ('d441976c-ee77-4314-a441-3df5a4475de6', true, 'Puerto Colombia', 'amb_puerto_colombia', extensions.st_setsrid(extensions.st_makepoint(-74.95267, 10.99087), 4326)::extensions.geography, 'aproximada', 'demo');
 insert into public.organization (id, slug, name, description, mission, org_type_code, primary_role_code, scope_code, contact_email_public, is_demo, verified_at, updated_at)
@@ -269,6 +302,7 @@ insert into public.organization_role select '0e9f846c-120d-413b-a880-d24a0b7ec3b
 insert into public.organization_territory select '0e9f846c-120d-413b-a880-d24a0b7ec3b2', unnest(array['baq_suroccidente','baq_riomar']::text[]);
 insert into public.organization_area select '0e9f846c-120d-413b-a880-d24a0b7ec3b2', unnest(array['educacion']::text[]);
 insert into public.organization_problem select '0e9f846c-120d-413b-a880-d24a0b7ec3b2', unnest(array['edu_desconexion_media','edu_desconexion_posmedia']::text[]);
+insert into public.organization_work_line select '0e9f846c-120d-413b-a880-d24a0b7ec3b2', unnest(array['formacion_cultura']::text[]);
 insert into public.location (organization_id, is_primary, municipality, territory_code, geom, precision, source)
 values ('0e9f846c-120d-413b-a880-d24a0b7ec3b2', true, 'Barranquilla', 'baq_suroccidente', extensions.st_setsrid(extensions.st_makepoint(-74.81831, 10.94936), 4326)::extensions.geography, 'aproximada', 'demo');
 insert into public.organization (id, slug, name, description, mission, org_type_code, primary_role_code, scope_code, contact_email_public, is_demo, verified_at, updated_at)
@@ -277,6 +311,7 @@ insert into public.organization_role select '7c92288a-9d9c-4262-a5d7-17ff9dde734
 insert into public.organization_territory select '7c92288a-9d9c-4262-a5d7-17ff9dde734b', unnest(array['amb_soledad','baq_metropolitana','baq_suroriente']::text[]);
 insert into public.organization_area select '7c92288a-9d9c-4262-a5d7-17ff9dde734b', unnest(array['participacion','inclusion_digital','entornos']::text[]);
 insert into public.organization_problem select '7c92288a-9d9c-4262-a5d7-17ff9dde734b', unnest(array['par_espacios_decision','ent_violencia_identidad','dig_competencias','dig_costos']::text[]);
+insert into public.organization_work_line select '7c92288a-9d9c-4262-a5d7-17ff9dde734b', unnest(array['agencia_juvenil','narrativas','formacion_cultura','conexion_directa']::text[]);
 insert into public.location (organization_id, is_primary, municipality, territory_code, geom, precision, source)
 values ('7c92288a-9d9c-4262-a5d7-17ff9dde734b', true, 'Soledad', 'amb_soledad', extensions.st_setsrid(extensions.st_makepoint(-74.77252, 10.91626), 4326)::extensions.geography, 'aproximada', 'demo');
 insert into public.organization (id, slug, name, description, mission, org_type_code, primary_role_code, scope_code, contact_email_public, is_demo, verified_at, updated_at)
@@ -285,6 +320,7 @@ insert into public.organization_role select 'dfa6514f-e4ed-4b8e-ac11-a7e7ab6d2b5
 insert into public.organization_territory select 'dfa6514f-e4ed-4b8e-ac11-a7e7ab6d2b51', unnest(array['amb_puerto_colombia','baq_norte_centro','baq_riomar','baq_suroriente']::text[]);
 insert into public.organization_area select 'dfa6514f-e4ed-4b8e-ac11-a7e7ab6d2b51', unnest(array['bienestar','entornos','orientacion']::text[]);
 insert into public.organization_problem select 'dfa6514f-e4ed-4b8e-ac11-a7e7ab6d2b51', unnest(array['ori_rutas_empleabilidad','ent_altas_tasas_violencia','bie_maternidad_temprana','bie_spa','bie_salud_mental']::text[]);
+insert into public.organization_work_line select 'dfa6514f-e4ed-4b8e-ac11-a7e7ab6d2b51', unnest(array['conexion_directa','orientacion_socio_ocupacional']::text[]);
 insert into public.location (organization_id, is_primary, municipality, territory_code, geom, precision, source)
 values ('dfa6514f-e4ed-4b8e-ac11-a7e7ab6d2b51', true, 'Puerto Colombia', 'amb_puerto_colombia', extensions.st_setsrid(extensions.st_makepoint(-74.95159, 10.99287), 4326)::extensions.geography, 'aproximada', 'demo');
 insert into public.organization (id, slug, name, description, mission, org_type_code, primary_role_code, scope_code, contact_email_public, is_demo, verified_at, updated_at)
@@ -293,6 +329,7 @@ insert into public.organization_role select '996ac158-f8ee-450f-a2e7-cb95c270845
 insert into public.organization_territory select '996ac158-f8ee-450f-a2e7-cb95c2708459', unnest(array['amb_soledad','baq_suroriente','cobertura_general','amb_malambo']::text[]);
 insert into public.organization_area select '996ac158-f8ee-450f-a2e7-cb95c2708459', unnest(array['orientacion','participacion']::text[]);
 insert into public.organization_problem select '996ac158-f8ee-450f-a2e7-cb95c2708459', unnest(array['par_espacios_decision','par_recursos_iniciativas','ori_rutas_empleabilidad','ori_identidad_plan_vida']::text[]);
+insert into public.organization_work_line select '996ac158-f8ee-450f-a2e7-cb95c2708459', unnest(array['orientacion_socio_ocupacional','agencia_juvenil','narrativas']::text[]);
 insert into public.location (organization_id, is_primary, municipality, territory_code, geom, precision, source)
 values ('996ac158-f8ee-450f-a2e7-cb95c2708459', true, 'Soledad', 'amb_soledad', extensions.st_setsrid(extensions.st_makepoint(-74.76766, 10.91479), 4326)::extensions.geography, 'aproximada', 'demo');
 insert into public.organization (id, slug, name, description, mission, org_type_code, primary_role_code, scope_code, contact_email_public, is_demo, verified_at, updated_at)
@@ -301,6 +338,7 @@ insert into public.organization_role select '8e3fa83d-8b58-4827-a7ce-88805defbf0
 insert into public.organization_territory select '8e3fa83d-8b58-4827-a7ce-88805defbf03', unnest(array['baq_riomar','baq_suroriente','cobertura_general','amb_soledad']::text[]);
 insert into public.organization_area select '8e3fa83d-8b58-4827-a7ce-88805defbf03', unnest(array['educacion']::text[]);
 insert into public.organization_problem select '8e3fa83d-8b58-4827-a7ce-88805defbf03', unnest(array['edu_desconexion_posmedia','edu_calidad_pertinencia']::text[]);
+insert into public.organization_work_line select '8e3fa83d-8b58-4827-a7ce-88805defbf03', unnest(array['formacion_cultura','investigacion_mercado']::text[]);
 insert into public.location (organization_id, is_primary, municipality, territory_code, geom, precision, source)
 values ('8e3fa83d-8b58-4827-a7ce-88805defbf03', true, 'Barranquilla', 'baq_riomar', extensions.st_setsrid(extensions.st_makepoint(-74.83277, 11.00837), 4326)::extensions.geography, 'aproximada', 'demo');
 insert into public.organization (id, slug, name, description, mission, org_type_code, primary_role_code, scope_code, contact_email_public, is_demo, verified_at, updated_at)
@@ -309,6 +347,7 @@ insert into public.organization_role select '065e7301-ba6e-4bc7-aac9-6c8274a59c8
 insert into public.organization_territory select '065e7301-ba6e-4bc7-aac9-6c8274a59c86', unnest(array['baq_metropolitana','baq_norte_centro','amb_soledad','amb_puerto_colombia']::text[]);
 insert into public.organization_area select '065e7301-ba6e-4bc7-aac9-6c8274a59c86', unnest(array['orientacion','bienestar','educacion']::text[]);
 insert into public.organization_problem select '065e7301-ba6e-4bc7-aac9-6c8274a59c86', unnest(array['ori_rutas_empleabilidad','ori_rutas_formacion','ori_identidad_plan_vida','bie_salud_mental']::text[]);
+insert into public.organization_work_line select '065e7301-ba6e-4bc7-aac9-6c8274a59c86', unnest(array['orientacion_socio_ocupacional','conexion_directa','formacion_cultura']::text[]);
 insert into public.location (organization_id, is_primary, municipality, territory_code, geom, precision, source)
 values ('065e7301-ba6e-4bc7-aac9-6c8274a59c86', true, 'Barranquilla', 'baq_metropolitana', extensions.st_setsrid(extensions.st_makepoint(-74.80515, 10.92844), 4326)::extensions.geography, 'aproximada', 'demo');
 insert into public.organization (id, slug, name, description, mission, org_type_code, primary_role_code, scope_code, contact_email_public, is_demo, verified_at, updated_at)
@@ -317,6 +356,7 @@ insert into public.organization_role select '1a4e05bb-913c-41cc-a1a9-b906f20f550
 insert into public.organization_territory select '1a4e05bb-913c-41cc-a1a9-b906f20f5505', unnest(array['baq_metropolitana']::text[]);
 insert into public.organization_area select '1a4e05bb-913c-41cc-a1a9-b906f20f5505', unnest(array['educacion']::text[]);
 insert into public.organization_problem select '1a4e05bb-913c-41cc-a1a9-b906f20f5505', unnest(array['edu_desconexion_media','edu_desconexion_posmedia','edu_calidad_pertinencia']::text[]);
+insert into public.organization_work_line select '1a4e05bb-913c-41cc-a1a9-b906f20f5505', unnest(array['formacion_cultura']::text[]);
 insert into public.location (organization_id, is_primary, municipality, territory_code, geom, precision, source)
 values ('1a4e05bb-913c-41cc-a1a9-b906f20f5505', true, 'Barranquilla', 'baq_metropolitana', extensions.st_setsrid(extensions.st_makepoint(-74.79659, 10.93126), 4326)::extensions.geography, 'aproximada', 'demo');
 insert into public.organization (id, slug, name, description, mission, org_type_code, primary_role_code, scope_code, contact_email_public, is_demo, verified_at, updated_at)
@@ -325,6 +365,7 @@ insert into public.organization_role select 'd287ca19-914f-4d6b-a4b1-c769359d4fc
 insert into public.organization_territory select 'd287ca19-914f-4d6b-a4b1-c769359d4fca', unnest(array['amb_puerto_colombia','amb_malambo']::text[]);
 insert into public.organization_area select 'd287ca19-914f-4d6b-a4b1-c769359d4fca', unnest(array['bienestar','entornos','orientacion']::text[]);
 insert into public.organization_problem select 'd287ca19-914f-4d6b-a4b1-c769359d4fca', unnest(array['ori_rutas_empleabilidad','ori_rutas_formacion','ori_identidad_plan_vida','ent_altas_tasas_violencia','bie_spa','bie_salud_mental']::text[]);
+insert into public.organization_work_line select 'd287ca19-914f-4d6b-a4b1-c769359d4fca', unnest(array['conexion_directa','orientacion_socio_ocupacional']::text[]);
 insert into public.location (organization_id, is_primary, municipality, territory_code, geom, precision, source)
 values ('d287ca19-914f-4d6b-a4b1-c769359d4fca', true, 'Puerto Colombia', 'amb_puerto_colombia', extensions.st_setsrid(extensions.st_makepoint(-74.9517, 10.99712), 4326)::extensions.geography, 'aproximada', 'demo');
 insert into public.organization (id, slug, name, description, mission, org_type_code, primary_role_code, scope_code, contact_email_public, is_demo, verified_at, updated_at)
@@ -333,6 +374,7 @@ insert into public.organization_role select 'afd9c82f-3390-430e-ae55-93326e57995
 insert into public.organization_territory select 'afd9c82f-3390-430e-ae55-93326e57995a', unnest(array['baq_norte_centro','amb_puerto_colombia','baq_suroriente','baq_metropolitana']::text[]);
 insert into public.organization_area select 'afd9c82f-3390-430e-ae55-93326e57995a', unnest(array['bienestar','participacion']::text[]);
 insert into public.organization_problem select 'afd9c82f-3390-430e-ae55-93326e57995a', unnest(array['bie_maternidad_temprana','bie_spa']::text[]);
+insert into public.organization_work_line select 'afd9c82f-3390-430e-ae55-93326e57995a', unnest(array['conexion_directa','agencia_juvenil','narrativas']::text[]);
 insert into public.location (organization_id, is_primary, municipality, territory_code, geom, precision, source)
 values ('afd9c82f-3390-430e-ae55-93326e57995a', true, 'Barranquilla', 'baq_norte_centro', extensions.st_setsrid(extensions.st_makepoint(-74.79509, 10.99422), 4326)::extensions.geography, 'aproximada', 'demo');
 insert into public.program (id, organization_id, name, description, modality_code, primary_area_code, start_date, end_date, annual_goal)

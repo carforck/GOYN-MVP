@@ -43,7 +43,7 @@ export async function SiteHeader() {
           </Link>
           <Link
             href="/registro"
-            className={cn(buttonVariants(), "hidden h-10 rounded-full bg-goyn-magenta px-5 font-bold text-white hover:bg-goyn-magenta/90 md:inline-flex")}
+            className={cn(buttonVariants(), "hidden h-10 rounded-full bg-goyn-magenta-a11y px-5 font-bold text-white hover:bg-goyn-magenta-a11y/90 md:inline-flex")}
           >
             Registra tu organización
           </Link>

@@ -23,6 +23,8 @@ export default async function MapaPage(props: PageProps<"/mapa">) {
       org_type_label: o.org_type_label,
       primary_role_code: o.primary_role_code,
       primary_role_label: o.primary_role_label,
+      area_code: o.area_codes[0] ?? "",
+      territory_code: o.location_territory_code ?? "",
       territory: o.location_territory_code ? shortTerritory(o.location_territory_code) : "",
       lat: o.lat!,
       lng: o.lng!,
@@ -65,7 +67,7 @@ export default async function MapaPage(props: PageProps<"/mapa">) {
         <h2 id="lista-mapa" className="font-heading text-xl font-bold text-foreground">Organizaciones en el mapa ({orgs.length})</h2>
         <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           {orgs.map((o, i) => (
-            <Reveal as="li" key={o.id} delay={(i % 6) * 0.04}>
+            <Reveal as="li" key={o.id} delay={(i % 6) * 0.04} className="min-w-0">
               <Link href={`/actores/${o.slug}`} className="flex items-center gap-3 rounded-2xl border bg-card p-3.5 transition-all hover:-translate-y-0.5 hover:border-goyn-violeta/50 hover:shadow-md">
                 <RoleIcon code={o.primary_role_code} size={34} />
                 <span className="min-w-0">

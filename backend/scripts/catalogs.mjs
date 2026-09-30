@@ -164,7 +164,19 @@ export const indicators = [
     definition: "Jóvenes con mejora sostenible laboral o económica: empleo formal con permanencia mínima, formalización de emprendimiento o mejora estable de ingresos." },
 ];
 
+// Líneas de trabajo (presentación del Colaborativo S1-042026). Tabla en la migración 010.
+export const workLines = [
+  { code: "emprendimiento_juvenil", label: "Emprendimiento juvenil" },
+  { code: "empleo_juvenil", label: "Empleo juvenil" },
+  { code: "orientacion_socio_ocupacional", label: "Orientación socio-ocupacional" },
+  { code: "conexion_directa", label: "Conexión directa con jóvenes" },
+  { code: "narrativas", label: "Comunicación y cambio de narrativas" },
+  { code: "formacion_cultura", label: "Formación educativa, idiomas y actividades culturales" },
+  { code: "agencia_juvenil", label: "Agencia juvenil" },
+  { code: "investigacion_mercado", label: "Investigación aplicada sobre el mercado laboral juvenil" },
+];
+
 export const allCatalogs = {
   orgTypes, roles, scopes, territories, impactAreas, problems, populations,
-  relationTypes, modalities, dataManagementLevels, collaborativeTenure, goynSpaces, indicators,
+  relationTypes, modalities, dataManagementLevels, collaborativeTenure, goynSpaces, indicators, workLines,
 };

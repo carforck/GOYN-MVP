@@ -14,6 +14,14 @@ export async function decideRequest(id: string, decision: Decision, reason: stri
   if (!isSupabaseConfigured) return { ok: true as const };
 
   const supabase = await createClient();
+  // Reportes de indicador (FR-011): se aprueban o rechazan con review_indicator_report.
+  if (id.startsWith("rep_")) {
+    const { error } = await supabase.rpc("review_indicator_report", { p_id: id.slice(4), p_approve: decision === "aprobar", p_comment: reason || null });
+    if (error) return { ok: false as const, error: error.message };
+    revalidatePath("/admin/solicitudes");
+    revalidatePath("/", "layout");
+    return { ok: true as const };
+  }
   const { error } = await supabase.rpc("decide_change_request", {
     p_id: id,
     p_decision: decision,
