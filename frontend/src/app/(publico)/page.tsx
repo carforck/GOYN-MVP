@@ -4,6 +4,7 @@ import Link from "next/link";
 import { RoleIcon } from "@/components/ecosystem/role-badge";
 import { LiveGlobe } from "@/components/globe/live-globe";
 import { HeroBackground, HeroPhotoRail } from "@/components/home/hero-slideshow";
+import { BrushHighlight } from "@/components/motion/brush-highlight";
 import { LiveBigStats, LiveKpiStrip } from "@/components/live/live-kpis";
 import { LiveFeed } from "@/components/live/live-ticker";
 import { AnimatedNumber } from "@/components/motion/animated-number";
@@ -54,7 +55,7 @@ export default async function HomePage() {
             <div className="goyn-enter" style={{ ["--d" as string]: "0.15s" }}>
               <h1 className="text-4xl leading-[1.05] font-bold tracking-tight uppercase sm:text-6xl">
                 El espejo digital del{" "}
-                <span className="bg-goyn-magenta-a11y box-decoration-clone px-2 leading-[1.25]">ecosistema juvenil</span> de Barranquilla
+                <BrushHighlight className="leading-[1.25]">ecosistema juvenil</BrushHighlight> de Barranquilla
               </h1>
             </div>
             <div className="goyn-enter" style={{ ["--d" as string]: "0.3s" }}>
