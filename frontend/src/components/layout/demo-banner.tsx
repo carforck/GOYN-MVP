@@ -1,9 +1,9 @@
 import { FlaskConicalIcon } from "lucide-react";
-import { isDemoMode } from "@/lib/config";
+import { showsSyntheticData } from "@/lib/config";
 
 // Aviso permanente mientras la plataforma use el conjunto sintético (arquitectura de datos §9).
 export function DemoBanner() {
-  if (!isDemoMode) return null;
+  if (!showsSyntheticData) return null;
   return (
     <div className="bg-goyn-naranja text-goyn-navy">
       <p className="goyn-container flex items-center justify-center gap-2 py-1.5 text-center text-xs font-semibold">
