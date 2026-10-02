@@ -270,7 +270,7 @@ export default async function HomePage() {
             </Link>
           </div>
           <div className="relative min-h-64 overflow-hidden">
-            <Image src="/images/fotos/jovenes-grupo.webp" alt="Jóvenes de Barranquilla sonriendo" fill sizes="(min-width: 1024px) 50vw, 100vw" className="object-cover transition-transform duration-[2s] hover:scale-105" />
+            <Image src="/images/fotos/jovenes-grupo.webp" alt="Jóvenes de Barranquilla sonriendo" fill sizes="(min-width: 1024px) 50vw, 100vw" className="object-cover object-[50%_10%] transition-transform duration-[2s] hover:scale-105" />
           </div>
         </Reveal>
       </section>
