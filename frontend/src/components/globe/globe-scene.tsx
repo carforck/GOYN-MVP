@@ -4,6 +4,7 @@ import { Stars, useTexture } from "@react-three/drei";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
+import { ErrorBoundary } from "@/components/common/error-boundary";
 import { cn } from "@/lib/utils";
 import { BARRANQUILLA, EARTH_RADIUS, GOYN_BOGOTA, arcCurve, easeInOutCubic, latLngToVector3 } from "@/components/globe/geo";
 
@@ -337,6 +338,15 @@ function Points({ points }: { points: GlobePoint[] }) {
 }
 
 // Luz que acompaña a la cámara: el hemisferio visible siempre está iluminado, como en earth3dmap.
+function PlainEarth() {
+  return (
+    <mesh>
+      <sphereGeometry args={[EARTH_RADIUS, 64, 64]} />
+      <meshPhongMaterial color="#1b1060" emissive="#2a0a5e" shininess={10} />
+    </mesh>
+  );
+}
+
 function CameraLight() {
   const light = useRef<THREE.DirectionalLight>(null);
   useFrame(({ camera }) => {
@@ -361,9 +371,12 @@ function Scene({ variant, points, pulseKey, reduce, hd, onArrive, onProgress, la
       <hemisphereLight args={["#ffffff", "#3b1a66", 0.6]} />
       <CameraLight />
       <Stars radius={70} depth={45} count={hd ? 5000 : 2500} factor={3.2} saturation={0.6} fade speed={0.6} />
-      <Suspense fallback={null}>
-        <Earth hd={hd} />
-      </Suspense>
+      {/* Si las texturas no llegan, el globo queda como esfera de marca en vez de romper la escena. */}
+      <ErrorBoundary fallback={<PlainEarth />}>
+        <Suspense fallback={<PlainEarth />}>
+          <Earth hd={hd} />
+        </Suspense>
+      </ErrorBoundary>
       <Beacon pulseKey={pulseKey} labelRef={labelRef} />
       <Points points={points} />
       <Arc from={BARRANQUILLA} to={GOYN_BOGOTA} color="#ff01a2" lift={0.5} width={0.004} />

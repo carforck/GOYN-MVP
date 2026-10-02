@@ -49,5 +49,5 @@ function redirectToLogin(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!_next/static|_next/image|images|maplibre|icon.webp|.*\\.(?:webp|png|jpg|svg|ico|mjs)$).*)"],
+  matcher: ["/((?!_next/static|_next/image|images|maplibre|fonts|globe|icon.webp|.*\\.(?:webp|png|jpg|svg|ico|mjs)$).*)"],
 };

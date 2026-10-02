@@ -2,10 +2,12 @@
 
 import { useInView } from "motion/react";
 import dynamic from "next/dynamic";
-import { useMemo, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { ErrorBoundary } from "@/components/common/error-boundary";
 import { useLive } from "@/components/live/live-provider";
 import { catalogs } from "@/lib/catalogs";
 import { cn } from "@/lib/utils";
+import { webglSupported } from "@/lib/webgl";
 
 // three.js solo existe en el navegador: se carga bajo demanda y sin SSR.
 const GlobeScene = dynamic(() => import("@/components/globe/globe-scene"), {
@@ -30,6 +32,14 @@ export function LiveGlobe({ variant = "home", className, onArrive }: { variant?:
   const seen = useInView(ref, { once: true, margin: "-10%" });
   const visible = useInView(ref);
   const [arrived, setArrived] = useState(false);
+  const [canDraw, setCanDraw] = useState(true);
+  useEffect(() => {
+    if (webglSupported()) return;
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- capacidad del navegador, solo se conoce en el cliente
+    setCanDraw(false);
+    onArrive?.();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const points = useMemo(
     () => live.orgs.filter((o) => o.lat != null && o.lng != null).map((o) => ({ lat: o.lat!, lng: o.lng!, color: roleColor.get(o.role) ?? "#9B00FF" })),
@@ -38,7 +48,9 @@ export function LiveGlobe({ variant = "home", className, onArrive }: { variant?:
 
   return (
     <div ref={ref} className={cn("relative", className)}>
-      {seen && (
+      {!canDraw && <GlobeFallback />}
+      {seen && canDraw && (
+        <ErrorBoundary fallback={<GlobeFallback />} onError={() => onArrive?.()}>
         <GlobeScene
           variant={variant}
           points={points}
@@ -50,6 +62,7 @@ export function LiveGlobe({ variant = "home", className, onArrive }: { variant?:
           }}
           className="absolute inset-0"
         />
+        </ErrorBoundary>
       )}
     </div>
   );

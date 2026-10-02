@@ -1,17 +1,20 @@
 "use client";
 
-import { GlobeIcon, Loader2Icon, SkipForwardIcon } from "lucide-react";
+import { Loader2Icon, MapIcon, SkipForwardIcon, TriangleAlertIcon } from "lucide-react";
 import * as maplibregl from "maplibre-gl";
-import type { GeoJSONSource, Map as MapLibreMap, StyleSpecification } from "maplibre-gl";
+import type { GeoJSONSource, Map as MapLibreMap } from "maplibre-gl";
 import { AnimatePresence, motion } from "motion/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
+import { ErrorBoundary } from "@/components/common/error-boundary";
 import { LiveGlobe } from "@/components/globe/live-globe";
 import { useLive } from "@/components/live/live-provider";
 import { LiveFeed } from "@/components/live/live-ticker";
 import { MapHud } from "@/components/ecosystem/map-hud";
+import { type BasemapProvider, loadBasemap } from "@/components/ecosystem/map-style";
 import { catalogs } from "@/lib/catalogs";
 import { cn } from "@/lib/utils";
+import { webglSupported } from "@/lib/webgl";
 
 export type MapOrg = {
   slug: string;
@@ -32,10 +35,11 @@ export type MapRelation = { type: string; from: [number, number]; to: [number, n
 // Mapa del ecosistema en vivo ("sala de control", referencia: cybermap de Kaspersky):
 //  intro con el globo 3D → el mapa oscuro de la marca vuela hasta Barranquilla → actores con brillo,
 //  arcos animados por tipo de relación y ondas por cada evento en vivo.
-// Teselas: OpenFreeMap (OSM, sin llave). Cambiar aquí si GOYN contrata otro proveedor (ADR 005).
-const STYLE_URL = "https://tiles.openfreemap.org/styles/dark";
+// Mapa base con respaldo en cadena (OpenFreeMap → CARTO → fondo local): ver map-style.ts (ADR 005).
 const CENTER: [number, number] = [-74.82, 10.955];
 const INTRO_KEY = "goyn-intro-globo-visto";
+// Tope de la intro: si el globo no termina (equipo lento, texturas que no llegan), se pasa al mapa igual.
+const INTRO_MAX_MS = 14000;
 
 maplibregl.setWorkerUrl("/maplibre/maplibre-gl-worker.mjs");
 
@@ -46,33 +50,6 @@ const colorExpr = (by: "rol" | "area") =>
 export type ColorBy = "rol" | "area";
 export type GroupBy = "cercania" | "territorio";
 export const relationColors: Record<string, string> = { socio: "#FF01A2", aliado: "#9B00FF", colaborador: "#00A0CC" };
-
-// Tiñe el estilo oscuro de OpenFreeMap con la paleta GOYN (azul noche + morado).
-function brandStyle(style: StyleSpecification): StyleSpecification {
-  const layers = style.layers.map((layer) => {
-    const l = structuredClone(layer) as maplibregl.LayerSpecification & { paint?: Record<string, unknown>; layout?: Record<string, unknown> };
-    const id = l.id;
-    const paint = (l.paint ??= {});
-    if (l.type === "background") paint["background-color"] = "#060a28";
-    else if (id === "water" || id.startsWith("water")) {
-      if (l.type === "fill") paint["fill-color"] = "#0b1348";
-      if (l.type === "line") paint["line-color"] = "#0b1348";
-    } else if (l.type === "fill" && (id.startsWith("landcover") || id.startsWith("landuse") || id.startsWith("park"))) paint["fill-color"] = "#0a0f35";
-    else if (l.type === "fill" && id.startsWith("building")) {
-      paint["fill-color"] = "#10164a";
-      paint["fill-outline-color"] = "#1b2266";
-    } else if (l.type === "line" && id.includes("boundary")) paint["line-color"] = "#4a2c9c";
-    else if (l.type === "line" && (id.includes("motorway") || id.includes("major"))) paint["line-color"] = "rgba(155,0,255,0.45)";
-    else if (l.type === "line" && (id.startsWith("highway") || id.startsWith("road") || id.startsWith("railway") || id.startsWith("aeroway")))
-      paint["line-color"] = "#1a2060";
-    else if (l.type === "symbol") {
-      paint["text-color"] = id.startsWith("place") ? "#c9c3f5" : "#6f6aa8";
-      paint["text-halo-color"] = "#060a28";
-    }
-    return l;
-  });
-  return { ...style, layers } as StyleSpecification;
-}
 
 // Curva entre dos actores (bezier cuadrática en lon/lat) para dibujar arcos.
 function arc(from: [number, number], to: [number, number], steps = 40): [number, number][] {
@@ -101,7 +78,24 @@ const DASHES = [
 
 type Ripple = { id: string; lng: number; lat: number; color: string; start: number; big: boolean };
 
-export function EcosystemMap({ orgs, relations, className }: { orgs: MapOrg[]; relations: MapRelation[]; className?: string }) {
+type MapProps = { orgs: MapOrg[]; relations: MapRelation[]; className?: string };
+
+// Envoltorio de seguridad: si algo del mapa falla, la página y la lista siguen funcionando.
+export function EcosystemMap(props: MapProps) {
+  return (
+    <ErrorBoundary
+      fallback={
+        <div className={cn("grid place-items-center rounded-3xl bg-goyn-navy p-6 text-center text-sm text-white/80", props.className)}>
+          <p>El mapa interactivo no está disponible en este momento. Las {props.orgs.length} organizaciones están en la lista de abajo.</p>
+        </div>
+      }
+    >
+      <EcosystemMapInner {...props} />
+    </ErrorBoundary>
+  );
+}
+
+function EcosystemMapInner({ orgs, relations, className }: MapProps) {
   const container = useRef<HTMLDivElement>(null);
   const map = useRef<MapLibreMap | null>(null);
   const ready = useRef(false);
@@ -109,7 +103,8 @@ export function EcosystemMap({ orgs, relations, className }: { orgs: MapOrg[]; r
   const flights = useRef<{ id: string; coords: [number, number][]; start: number }[]>([]);
   const router = useRouter();
   const live = useLive();
-  const [failed, setFailed] = useState(false);
+  const [basemap, setBasemap] = useState<BasemapProvider | null>(null);
+  const [noWebgl, setNoWebgl] = useState(false);
   const [intro, setIntro] = useState<"desconocido" | "globo" | "listo">("desconocido");
   const [showArcs, setShowArcs] = useState(true);
   const [colorBy, setColorBy] = useState<ColorBy>("rol");
@@ -157,9 +152,15 @@ export function EcosystemMap({ orgs, relations, className }: { orgs: MapOrg[]; r
     } catch {
       /* sin almacenamiento */
     }
-    // eslint-disable-next-line react-hooks/set-state-in-effect -- decisión única al montar según preferencias del navegador
-    setIntro(reduce || seen ? "listo" : "globo");
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- decisión única al montar según preferencias y capacidades del navegador
+    setIntro(reduce || seen || !webglSupported() ? "listo" : "globo");
   }, []);
+
+  useEffect(() => {
+    if (intro !== "globo") return;
+    const id = setTimeout(() => setIntro("listo"), INTRO_MAX_MS);
+    return () => clearTimeout(id);
+  }, [intro]);
 
   const finishIntro = () => {
     try {
@@ -177,24 +178,30 @@ export function EcosystemMap({ orgs, relations, className }: { orgs: MapOrg[]; r
     let raf = 0;
 
     (async () => {
-      let style: StyleSpecification | string = STYLE_URL;
-      try {
-        style = brandStyle(await (await fetch(STYLE_URL)).json());
-      } catch {
-        setFailed(true);
+      if (!webglSupported()) {
+        setNoWebgl(true);
+        return;
       }
+      const { style, provider } = await loadBasemap();
       if (cancelled || !container.current) return;
-      const instance = new maplibregl.Map({
-        container: container.current,
-        style,
-        center: CENTER,
-        zoom: 4.2,
-        minZoom: 2,
-        maxZoom: 17,
-        pitch: 0,
-        attributionControl: { compact: true },
-        cooperativeGestures: window.matchMedia("(pointer: coarse)").matches,
-      });
+      setBasemap(provider);
+      let instance: MapLibreMap;
+      try {
+        instance = new maplibregl.Map({
+          container: container.current,
+          style,
+          center: CENTER,
+          zoom: 4.2,
+          minZoom: 2,
+          maxZoom: 17,
+          pitch: 0,
+          attributionControl: { compact: true },
+          cooperativeGestures: window.matchMedia("(pointer: coarse)").matches,
+        });
+      } catch {
+        setNoWebgl(true);
+        return;
+      }
       map.current = instance;
       instance.addControl(new maplibregl.NavigationControl({ showCompass: true, visualizePitch: true }), "top-right");
       if (stage.current) instance.addControl(new maplibregl.FullscreenControl({ container: stage.current }), "top-right");
@@ -357,6 +364,22 @@ export function EcosystemMap({ orgs, relations, className }: { orgs: MapOrg[]; r
         const loop = (now: number) => {
           raf = requestAnimationFrame(loop);
           if (document.hidden) return;
+          // Vigilante: si la cámara queda en un estado inválido, se reubica en Barranquilla.
+          if (!Number.isFinite(instance.getZoom())) {
+            try {
+              instance.stop();
+              instance.jumpTo({ center: CENTER, zoom: 10.6, pitch: 0, bearing: 0 });
+            } catch {
+              /* se reintenta en el siguiente cuadro */
+            }
+          }
+          try {
+            frame(now);
+          } catch {
+            /* un cuadro fallido no detiene el mapa */
+          }
+        };
+        const frame = (now: number) => {
           const s = Math.floor(now / 70) % DASHES.length;
           if (s !== step && instance.getLayer("arcs-flow")) {
             step = s;
@@ -388,9 +411,9 @@ export function EcosystemMap({ orgs, relations, className }: { orgs: MapOrg[]; r
         raf = requestAnimationFrame(loop);
       });
 
-      instance.on("error", (e) => {
-        if (!instance.isStyleLoaded() && String(e.error?.message ?? "").includes("Failed to fetch")) setFailed(true);
-      });
+      // Errores de teselas o recursos externos: el mapa sigue funcionando con las capas propias.
+      instance.on("error", (e) => console.warn("[mapa]", e.error?.message ?? e));
+
     })();
 
     return () => {
@@ -410,7 +433,9 @@ export function EcosystemMap({ orgs, relations, className }: { orgs: MapOrg[]; r
     const go = () => {
       const m = map.current;
       if (!m) return;
-      m.flyTo({ center: CENTER, zoom: 10.6, pitch: 0, bearing: 0, duration: 3200, essential: true, curve: 1.6 });
+      // easeTo y no flyTo: en MapLibre 6.11 el flyTo con proyección de globo deja el zoom en NaN
+      // en ciertos altos de pantalla (~15 % de los tamaños probados) y el mapa queda congelado.
+      m.easeTo({ center: CENTER, zoom: 10.6, pitch: 0, bearing: 0, duration: 3200, essential: true, easing: (t) => 1 - Math.pow(1 - t, 3) });
       // La inclinación 3D se aplica al terminar el vuelo (en vista cercana), no durante la proyección de globo.
       m.once("moveend", () => m.easeTo({ pitch: 40, bearing: -10, duration: 1600 }));
     };
@@ -521,12 +546,19 @@ export function EcosystemMap({ orgs, relations, className }: { orgs: MapOrg[]; r
         )}
       </AnimatePresence>
 
-      {failed && (
-        <div className="absolute inset-0 z-30 grid place-items-center bg-goyn-navy/90 p-6 text-center text-sm text-white/80">
-          <p>
-            <GlobeIcon className="mx-auto mb-2 size-6" aria-hidden />
-            No pudimos cargar el mapa. El directorio sigue disponible en la vista de lista.
-          </p>
+      {basemap === "local" && (
+        <p role="status" className="pointer-events-none absolute bottom-8 left-1/2 z-10 inline-flex -translate-x-1/2 items-center gap-1.5 rounded-full border border-white/15 bg-[#060a28]/85 px-3 py-1.5 text-xs text-white/80 backdrop-blur">
+          <TriangleAlertIcon className="size-3.5 text-goyn-amarillo" aria-hidden /> Calles no disponibles por ahora · las organizaciones se muestran igual
+        </p>
+      )}
+
+      {noWebgl && (
+        <div className="absolute inset-0 z-30 grid place-items-center bg-goyn-navy p-6 text-center text-sm text-white/80">
+          <div className="max-w-sm">
+            <MapIcon className="mx-auto mb-3 size-8 text-goyn-lila" aria-hidden />
+            <p className="font-heading text-base font-bold text-white">Este navegador no puede dibujar el mapa interactivo</p>
+            <p className="mt-2">Activa la aceleración por hardware o prueba con otro navegador. Las {orgs.length} organizaciones están en la lista de abajo.</p>
+          </div>
         </div>
       )}
     </div>

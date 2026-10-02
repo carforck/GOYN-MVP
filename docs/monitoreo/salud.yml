@@ -1,0 +1,31 @@
+# Monitoreo del despliegue: cada 30 min revisa que el sitio, el mapa y los datos respondan.
+# Si algo falla, el workflow queda en rojo y GitHub avisa por correo al dueño del repositorio.
+name: Salud del sitio
+
+on:
+  schedule:
+    - cron: "*/30 * * * *"
+  workflow_dispatch:
+
+jobs:
+  salud:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      SITE: ${{ vars.SITE_URL || 'https://goyn-conecta-baq.vercel.app' }}
+    steps:
+      - name: Páginas principales
+        run: |
+          for path in / /mapa /actores /impacto /maplibre/maplibre-gl-worker.mjs /fonts/Noto%20Sans%20Regular/0-255.pbf /globe/tierra-dia-2k.webp; do
+            code=$(curl -s -o /dev/null -w '%{http_code}' --max-time 20 "$SITE$path")
+            echo "$code $path"
+            [ "$code" = "200" ] || { echo "::error::$path respondió $code"; exit 1; }
+          done
+      - name: Estado de datos y mapa base
+        run: |
+          body=$(curl -s --max-time 20 "$SITE/api/salud")
+          echo "$body"
+          estado=$(echo "$body" | jq -r .estado)
+          [ "$estado" = "caido" ] && { echo "::error::Datos no disponibles"; exit 1; }
+          [ "$estado" = "degradado" ] && echo "::warning::OpenFreeMap no responde: el mapa está usando el respaldo"
+          exit 0
