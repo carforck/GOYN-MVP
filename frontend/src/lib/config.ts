@@ -9,6 +9,9 @@ export const isSupabaseConfigured = Boolean(supabaseUrl && supabasePublishableKe
 export const isDemoMode = !isSupabaseConfigured;
 // La base conectada aún puede tener el conjunto sintético (seed con is_demo = true): el aviso se mantiene.
 export const showsSyntheticData = isDemoMode || process.env.NEXT_PUBLIC_DATOS_SINTETICOS === "1";
+// Recorrido por roles sin cuenta ("Entrar como…"): solo mientras los datos sean sintéticos.
+// Con la base conectada es de solo lectura: las acciones no escriben en Supabase.
+export const allowsDemoRoles = showsSyntheticData;
 
 // Módulos visibles en navegación pero no incluidos en el MVP (PRD §5.2, backlog E9–E13).
 // Se muestran como "Próximamente" hasta que su bandera se active.

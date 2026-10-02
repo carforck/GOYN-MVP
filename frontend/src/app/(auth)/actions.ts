@@ -2,7 +2,7 @@
 
 import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
-import { DEMO_ROLE_COOKIE, isSupabaseConfigured } from "@/lib/config";
+import { allowsDemoRoles, DEMO_ROLE_COOKIE, isSupabaseConfigured } from "@/lib/config";
 import { createClient } from "@/lib/supabase/server";
 
 export type AuthState = { error?: string; message?: string };
@@ -14,7 +14,7 @@ const safeNext = (value: FormDataEntryValue | null, fallback: string) => {
 
 // Modo demo: elegir un rol para recorrer las maquetas de panel y consola.
 export async function enterDemo(formData: FormData) {
-  if (isSupabaseConfigured) redirect("/ingresar");
+  if (!allowsDemoRoles) redirect("/ingresar");
   const role = String(formData.get("role"));
   if (!["organizacion", "admin_goyn", "superadmin"].includes(role)) redirect("/ingresar");
   (await cookies()).set(DEMO_ROLE_COOKIE, role, { path: "/", httpOnly: true, sameSite: "lax", maxAge: 60 * 60 * 8 });
@@ -28,6 +28,7 @@ export async function signIn(_: AuthState, formData: FormData): Promise<AuthStat
     password: String(formData.get("password")),
   });
   if (error) return { error: "Correo o contraseña incorrectos." };
+  (await cookies()).delete(DEMO_ROLE_COOKIE);
   redirect(safeNext(formData.get("siguiente"), "/panel"));
 }
 
@@ -61,8 +62,7 @@ export async function signOut() {
   if (isSupabaseConfigured) {
     const supabase = await createClient();
     await supabase.auth.signOut();
-  } else {
-    (await cookies()).delete(DEMO_ROLE_COOKIE);
   }
+  (await cookies()).delete(DEMO_ROLE_COOKIE);
   redirect("/");
 }

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { PageHeader } from "@/components/ecosystem/page-header";
-import { isSupabaseConfigured } from "@/lib/config";
+import { isDemoSession } from "@/lib/auth";
 import { formatDateTime } from "@/lib/format";
 import { createClient } from "@/lib/supabase/server";
 
@@ -27,7 +27,7 @@ const demoEntries: Entry[] = [
 ];
 
 async function loadEntries(): Promise<Entry[]> {
-  if (!isSupabaseConfigured) return demoEntries;
+  if (await isDemoSession()) return demoEntries;
   const supabase = await createClient();
   const { data } = await supabase.from("audit_log").select("id, created_at, action, entity_type, reason, actor:profile(full_name, email)").order("created_at", { ascending: false }).limit(200);
   return (data ?? []).map((d) => {

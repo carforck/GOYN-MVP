@@ -7,18 +7,25 @@ import { NextResponse, type NextRequest } from "next/server";
 const url = process.env.NEXT_PUBLIC_SUPABASE_URL ?? "";
 const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ?? "";
 
+const demoRolesAllowed = !url || !key || process.env.NEXT_PUBLIC_DATOS_SINTETICOS === "1";
+
+// Recorrido demo: el rol se elige con una cookie en /ingresar.
+function demoAllows(request: NextRequest, pathname: string) {
+  if (!demoRolesAllowed) return false;
+  const demoRole = request.cookies.get("goyn_demo_role")?.value;
+  return (
+    (pathname.startsWith("/panel") && demoRole === "organizacion") ||
+    (pathname.startsWith("/admin") && (demoRole === "admin_goyn" || demoRole === "superadmin"))
+  );
+}
+
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
   const needsSession = pathname.startsWith("/panel") || pathname.startsWith("/admin");
 
-  // Modo demo: el rol se elige con una cookie; sin ella se envía a /ingresar.
+  // Sin base de datos: solo existe el recorrido demo.
   if (!url || !key) {
-    const demoRole = request.cookies.get("goyn_demo_role")?.value;
-    const allowed =
-      !needsSession ||
-      (pathname.startsWith("/panel") && demoRole === "organizacion") ||
-      (pathname.startsWith("/admin") && (demoRole === "admin_goyn" || demoRole === "superadmin"));
-    if (!allowed) return redirectToLogin(request);
+    if (needsSession && !demoAllows(request, pathname)) return redirectToLogin(request);
     return NextResponse.next();
   }
 
@@ -37,7 +44,7 @@ export async function proxy(request: NextRequest) {
   });
 
   const { data } = await supabase.auth.getClaims();
-  if (needsSession && !data?.claims) return redirectToLogin(request);
+  if (needsSession && !data?.claims && !demoAllows(request, pathname)) return redirectToLogin(request);
   return response;
 }
 

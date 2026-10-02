@@ -1,6 +1,6 @@
 "use server";
 
-import { isSupabaseConfigured } from "@/lib/config";
+import { isDemoSession } from "@/lib/auth";
 import type { RegistrationPayload } from "@/lib/registration";
 import { createClient } from "@/lib/supabase/server";
 
@@ -8,7 +8,7 @@ type Result = { ok: true; id: string | null } | { ok: false; error: string };
 
 // Guarda el borrador (paso a paso). En modo demo el borrador vive en el navegador.
 export async function saveDraft(id: string | null, payload: RegistrationPayload, step: number): Promise<Result> {
-  if (!isSupabaseConfigured) return { ok: true, id };
+  if (await isDemoSession()) return { ok: true, id };
   const supabase = await createClient();
   const { data: claims } = await supabase.auth.getClaims();
   const userId = claims?.claims?.sub;
@@ -27,7 +27,7 @@ export async function saveDraft(id: string | null, payload: RegistrationPayload,
 }
 
 export async function submitRegistration(id: string | null, payload: RegistrationPayload): Promise<Result> {
-  if (!isSupabaseConfigured) return { ok: true, id };
+  if (await isDemoSession()) return { ok: true, id };
   const saved = await saveDraft(id, payload, 9);
   if (!saved.ok || !saved.id) return saved.ok ? { ok: false, error: "No se pudo guardar" } : saved;
   const supabase = await createClient();
@@ -37,7 +37,7 @@ export async function submitRegistration(id: string | null, payload: Registratio
 
 // Borrador activo del usuario para retomar donde quedó.
 export async function loadDraft(): Promise<{ id: string; payload: RegistrationPayload; step: number; status: string; comments: Record<string, string> } | null> {
-  if (!isSupabaseConfigured) return null;
+  if (await isDemoSession()) return null;
   const supabase = await createClient();
   const { data } = await supabase
     .from("change_request")

@@ -5,7 +5,7 @@ import { enterDemo } from "@/app/(auth)/actions";
 import { LoginForms } from "@/app/(auth)/ingresar/login-forms";
 import { ProductLogo } from "@/components/brand/logo";
 import { Shape } from "@/components/brand/shape";
-import { isDemoMode } from "@/lib/config";
+import { allowsDemoRoles, isDemoMode, isSupabaseConfigured } from "@/lib/config";
 
 export const metadata: Metadata = { title: "Ingresar" };
 
@@ -37,10 +37,13 @@ export default async function IngresarPage(props: PageProps<"/ingresar">) {
           <h1 className="text-3xl font-extrabold text-foreground">Ingresa a GOYN Conecta</h1>
           <p className="mt-2 text-muted-foreground">Accede al panel de tu organización o a la consola del equipo GOYN.</p>
 
-          {isDemoMode ? (
+          {allowsDemoRoles && (
             <div className="mt-8 space-y-3">
               <p className="rounded-xl bg-goyn-naranja/15 p-3 text-sm text-goyn-navy">
-                <strong>Modo demostración.</strong> Aún no hay base de datos conectada: elige un rol para recorrer las pantallas.
+                <strong>Recorrido de demostración.</strong>{" "}
+                {isDemoMode
+                  ? "Aún no hay base de datos conectada: elige un rol para recorrer las pantallas."
+                  : "Elige un rol para ver la plataforma con datos de ejemplo, sin crear cuenta. Lo que hagas en el recorrido no se guarda."}
               </p>
               {demoRoles.map((r) => (
                 <form key={r.role} action={enterDemo}>
@@ -58,8 +61,12 @@ export default async function IngresarPage(props: PageProps<"/ingresar">) {
                 </form>
               ))}
             </div>
-          ) : (
-            <LoginForms siguiente={siguiente} />
+          )}
+          {isSupabaseConfigured && (
+            <div className={allowsDemoRoles ? "mt-10 border-t pt-8" : undefined}>
+              {allowsDemoRoles && <p className="mb-4 text-sm font-semibold text-foreground">¿Ya tienes cuenta? Ingresa con tu correo</p>}
+              <LoginForms siguiente={siguiente} />
+            </div>
           )}
         </div>
       </div>

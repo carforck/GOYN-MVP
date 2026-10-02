@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { isSupabaseConfigured } from "@/lib/config";
+import { isDemoSession } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 
 export type Decision = "aprobar" | "ajustes" | "rechazar";
@@ -11,7 +11,7 @@ export async function decideRequest(id: string, decision: Decision, reason: stri
   if (decision === "rechazar" && !reason.trim()) return { ok: false as const, error: "El rechazo requiere un motivo." };
   if (decision === "ajustes" && !Object.keys(fieldComments).length && !reason.trim())
     return { ok: false as const, error: "Indica qué debe ajustar la organización." };
-  if (!isSupabaseConfigured) return { ok: true as const };
+  if (await isDemoSession()) return { ok: true as const, demo: true };
 
   const supabase = await createClient();
   // Reportes de indicador (FR-011): se aprueban o rechazan con review_indicator_report.

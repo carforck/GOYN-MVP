@@ -1,5 +1,6 @@
 import "server-only";
 import { cache } from "react";
+import { isDemoSession } from "@/lib/auth";
 import { isSupabaseConfigured } from "@/lib/config";
 import { label as catalogLabel, type CatalogName } from "@/lib/catalogs";
 import { matchesFilters } from "@/lib/filters";
@@ -120,9 +121,12 @@ export const getEcosystemStats = cache(async (): Promise<EcosystemStats> => {
   return data as EcosystemStats;
 });
 
-// ─── Consola GOYN ───────────────────────────────────────────────────────────
+// ─── Consola GOYN y panel ────────────────────────────────────────────────────
+// Datos privados: en el recorrido demo (o sin base) salen del conjunto de ejemplo.
+const usePrivateDemo = async () => !isSupabaseConfigured || (await isDemoSession());
+
 export const listChangeRequests = cache(async (): Promise<ChangeRequestSummary[]> => {
-  if (!isSupabaseConfigured) return (await loadDemo()).sampleRequests;
+  if (await usePrivateDemo()) return (await loadDemo()).sampleRequests;
   const supabase = await createClient();
   const [{ data, error }, { data: reports }] = await Promise.all([
     supabase
@@ -171,7 +175,7 @@ type FieldChange = { field: string; before: string; after: string };
 export const getChangeRequestDetail = cache(async (id: string): Promise<(ChangeRequestSummary & { changes: FieldChange[] }) | null> => {
   const summary = (await listChangeRequests()).find((r) => r.id === id);
   if (!summary) return null;
-  if (!isSupabaseConfigured) return { ...summary, changes: summary.changes ?? [] };
+  if (await usePrivateDemo()) return { ...summary, changes: summary.changes ?? [] };
 
   const supabase = await createClient();
   const list = (codes: string[] | undefined, catalog: CatalogName) => (codes ?? []).map((c) => catalogLabel(catalog, c)).join(", ") || "—";
@@ -227,7 +231,7 @@ export const getOrganizationById = cache(async (id: string): Promise<PublicOrgan
 
 // Organización del usuario en sesión (panel). En demo se usa la primera organización sintética.
 export const getOwnOrganization = cache(async (organizationIds: string[]): Promise<PublicOrganization | null> => {
-  if (!isSupabaseConfigured) {
+  if (await usePrivateDemo()) {
     const { organizations } = await loadDemo();
     return organizations.find((o) => o.slug === "fundacion-semillas-del-caribe") ?? organizations[0];
   }

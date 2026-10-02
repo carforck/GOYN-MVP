@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
   const { columns, rows } = await buildRows(dataset, filters);
 
   // Registro de la exportación (quién, qué conjunto, con qué filtros). El archivo no se guarda.
-  if (isSupabaseConfigured && viewer.userId) {
+  if (isSupabaseConfigured && viewer.userId && !viewer.demo) {
     const supabase = await createClient();
     await supabase.from("export_job").insert({ requested_by: viewer.userId, format, dataset, filters, status: "listo" });
   }

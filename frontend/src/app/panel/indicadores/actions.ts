@@ -1,8 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { getViewer } from "@/lib/auth";
-import { isSupabaseConfigured } from "@/lib/config";
+import { getViewer, isDemoSession } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 
 type Result = { ok: true; count: number } | { ok: false; error: string };
@@ -34,7 +33,7 @@ export async function submitIndicatorReport(_: unknown, formData: FormData): Pro
   if (!values.length) return { ok: false, error: "Reporta al menos un indicador (0 también es un dato)." };
   if (values.some((v) => !/^\d+$/.test(v.raw))) return { ok: false, error: "Los valores deben ser números enteros." };
 
-  if (!isSupabaseConfigured) return { ok: true, count: values.length };
+  if (await isDemoSession()) return { ok: true, count: values.length };
 
   const viewer = await getViewer();
   const organizationId = viewer.organizationIds[0];

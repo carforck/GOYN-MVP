@@ -31,7 +31,7 @@ export async function AppShell({
     <AccountThemeProvider>
     <LiveProvider snapshot={snapshot} focusSlug={focusSlug}>
     <div className="flex min-h-screen flex-col">
-      <DemoBanner />
+      <DemoBanner session={viewer.demo && viewer.role !== "visitante"} />
       <div className="flex flex-1 bg-sidebar">
         <aside className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col bg-sidebar text-sidebar-foreground lg:flex">
           <div className="border-b border-sidebar-border p-5">

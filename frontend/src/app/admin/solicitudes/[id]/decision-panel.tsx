@@ -21,6 +21,7 @@ export function DecisionPanel({ id, fields, disabled, kind }: { id: string; fiel
       const clean = Object.fromEntries(Object.entries(comments).filter(([, v]) => v.trim()));
       const res = await decideRequest(id, decision, reason, clean);
       if (!res.ok) return void toast.error(res.error);
+      if ("demo" in res && res.demo) return void toast.info("Recorrido de demostración: la decisión no se guardó.");
       toast.success(decision === "aprobar" ? "Aprobada y publicada. Se notificó a la organización." : decision === "ajustes" ? "Se solicitaron ajustes." : "Solicitud rechazada.");
       router.push("/admin/solicitudes");
     });

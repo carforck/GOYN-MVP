@@ -6,7 +6,7 @@ import { DecisionPanel } from "@/app/admin/solicitudes/[id]/decision-panel";
 import { statusStyle } from "@/lib/requests";
 import { label } from "@/lib/catalogs";
 import { getChangeRequestDetail } from "@/lib/data";
-import { isDemoMode } from "@/lib/config";
+import { isDemoSession } from "@/lib/auth";
 import { formatDateTime } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
@@ -28,7 +28,7 @@ export default async function SolicitudPage(props: PageProps<"/admin/solicitudes
   const request = await getChangeRequestDetail(id);
   if (!request) notFound();
 
-  const changes = request.changes.length || !isDemoMode ? request.changes : newOrgFields(request.organization_name, request.org_type_code);
+  const changes = request.changes.length || !(await isDemoSession()) ? request.changes : newOrgFields(request.organization_name, request.org_type_code);
   const isNew = request.kind !== "actualizacion";
 
   return (
