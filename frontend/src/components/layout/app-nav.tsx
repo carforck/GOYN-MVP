@@ -11,6 +11,7 @@ import {
   InboxIcon,
   LayoutDashboardIcon,
   LayoutTemplateIcon,
+  LogOutIcon,
   MenuIcon,
   Share2Icon,
   UserCircleIcon,
@@ -18,6 +19,7 @@ import {
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useState } from "react";
+import { signOut } from "@/app/(auth)/actions";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
@@ -69,16 +71,25 @@ export function AppNav({ items, onNavigate }: { items: AppNavItem[]; onNavigate?
   );
 }
 
-export function MobileAppNav({ items, areaLabel }: { items: AppNavItem[]; areaLabel: string }) {
+export function MobileAppNav({ items, areaLabel, userName, userEmail }: { items: AppNavItem[]; areaLabel: string; userName?: string | null; userEmail?: string | null }) {
   const [open, setOpen] = useState(false);
   return (
     <Sheet open={open} onOpenChange={setOpen}>
       <SheetTrigger render={<Button variant="ghost" size="icon-lg" aria-label="Abrir menú del área" />}>
         <MenuIcon className="size-6" />
       </SheetTrigger>
-      <SheetContent side="left" className="w-[80vw] max-w-xs bg-sidebar p-0 text-sidebar-foreground">
+      <SheetContent side="left" className="flex w-[80vw] max-w-xs flex-col bg-sidebar p-0 text-sidebar-foreground">
         <SheetTitle className="p-5 pb-0 text-xs font-bold tracking-widest text-goyn-magenta uppercase">{areaLabel}</SheetTitle>
         <AppNav items={items} onNavigate={() => setOpen(false)} />
+        <div className="mt-auto border-t border-sidebar-border p-4 text-sm">
+          {userName && <p className="truncate font-semibold">{userName}</p>}
+          {userEmail && <p className="truncate text-xs text-sidebar-foreground/60">{userEmail}</p>}
+          <form action={signOut} className="mt-3">
+            <Button type="submit" variant="ghost" size="sm" className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent hover:text-white">
+              <LogOutIcon aria-hidden /> Cerrar sesión
+            </Button>
+          </form>
+        </div>
       </SheetContent>
     </Sheet>
   );

@@ -96,8 +96,9 @@ export function PanelActivity({ slug }: { slug: string }) {
               <motion.li
                 key={e.id}
                 layout
-                initial={reduce ? false : { opacity: 0, x: -12 }}
+                initial={{ opacity: 0, x: -12 }}
                 animate={{ opacity: 1, x: 0 }}
+                transition={reduce ? { duration: 0 } : undefined}
                 className="relative rounded-2xl border bg-card p-3 text-sm"
               >
                 <span aria-hidden className="absolute top-4 -left-[27px] size-3 rounded-full border-2 border-background bg-goyn-magenta" />

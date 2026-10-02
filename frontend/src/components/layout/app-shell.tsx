@@ -43,7 +43,8 @@ export async function AppShell({
             <p className="truncate font-semibold">{viewer.name ?? viewer.email}</p>
             <p className="truncate text-xs text-sidebar-foreground/60">{viewer.email}</p>
             <form action={signOut} className="mt-3">
-              <Button variant="ghost" size="sm" className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent hover:text-white">
+              {/* type="submit" explícito: el Button de Base UI es type="button" por defecto y no enviaría el formulario. */}
+              <Button type="submit" variant="ghost" size="sm" className="w-full justify-start text-sidebar-foreground hover:bg-sidebar-accent hover:text-white">
                 <LogOutIcon aria-hidden /> Cerrar sesión
               </Button>
             </form>
@@ -55,7 +56,7 @@ export async function AppShell({
             <ProductLogo />
             <div className="flex items-center gap-1">
               <ThemeToggle />
-              <MobileAppNav items={nav} areaLabel={areaLabel} />
+              <MobileAppNav items={nav} areaLabel={areaLabel} userName={viewer.name ?? viewer.email} userEmail={viewer.email} />
             </div>
           </header>
           <div className="hidden h-14 items-center justify-end gap-4 border-b bg-card px-8 text-sm lg:flex">

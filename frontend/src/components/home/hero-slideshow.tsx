@@ -17,7 +17,7 @@ const backgrounds = [
 const columnA = ["enfoque-1", "pilar-liderazgo", "enfoque-3", "pilar-datos", "blog-2", "pilar-aprendizaje"];
 const columnB = ["enfoque-2", "pilar-equidad", "banner-trabajo", "pilar-financiacion", "enfoque-4", "blog-3"];
 
-// Fondo: fundido entre fotos con Ken Burns, en duotono morado (Manual §7 Fotografía).
+// Fondo: fundido entre fotos con Ken Burns y velo de marca morado (Manual §7 Fotografía).
 export function HeroBackground({ interval = 6000 }: { interval?: number }) {
   const [index, setIndex] = useState(0);
   const reduce = useReducedMotion();
@@ -45,13 +45,16 @@ export function HeroBackground({ interval = 6000 }: { interval?: number }) {
             fill
             priority={index === 0}
             sizes="100vw"
-            className="object-cover opacity-80 mix-blend-multiply grayscale motion-safe:animate-[kenburns_9s_ease-out_forwards]"
+            className="object-cover saturate-[0.85] motion-safe:animate-[kenburns_9s_ease-out_forwards]"
             style={{ objectPosition: backgrounds[index].position }}
           />
         </motion.div>
       </AnimatePresence>
-      <div className="absolute inset-0 bg-linear-to-r from-goyn-violeta via-goyn-violeta/75 to-goyn-magenta/25" />
-      <div className="absolute inset-x-0 bottom-0 h-40 bg-linear-to-t from-goyn-violeta/80 to-transparent" />
+      {/* Foto a color con velo de marca suave; el degradado oscuro solo cubre la zona del texto (contraste AA). */}
+      <div className="absolute inset-0 bg-goyn-violeta/25 mix-blend-multiply" />
+      <div className="absolute inset-0 bg-linear-to-r from-goyn-navy/85 via-goyn-violeta/40 to-transparent" />
+      <div className="absolute inset-0 bg-goyn-navy/30 lg:hidden" />
+      <div className="absolute inset-x-0 bottom-0 h-40 bg-linear-to-t from-goyn-navy/60 to-transparent" />
       <div className="absolute bottom-24 left-1/2 flex -translate-x-1/2 gap-2 sm:left-8 sm:translate-x-0 lg:left-[max(2rem,calc((100vw-80rem)/2+2rem))]">
         {backgrounds.map((b, i) => (
           <span key={b.src} className={cn("h-1.5 rounded-full bg-white transition-all duration-700", i === index ? "w-8 opacity-100" : "w-3 opacity-40")} />

@@ -22,10 +22,12 @@ export function Reveal({
   return (
     <Component
       className={className}
-      initial={reduce ? false : { opacity: 0, y }}
+      // El estado inicial es el mismo en servidor y cliente (evita el desajuste de hidratación);
+      // con "reducir movimiento" el cambio es instantáneo.
+      initial={{ opacity: 0, y }}
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true, margin: "-60px" }}
-      transition={{ duration: 0.7, delay, ease: [0.16, 1, 0.3, 1] }}
+      transition={reduce ? { duration: 0 } : { duration: 0.7, delay, ease: [0.16, 1, 0.3, 1] }}
       {...rest}
     >
       {children}
