@@ -10,6 +10,8 @@ import { ErrorBoundary } from "@/components/common/error-boundary";
 import { LiveGlobe } from "@/components/globe/live-globe";
 import { useLive } from "@/components/live/live-provider";
 import { LiveFeed } from "@/components/live/live-ticker";
+import { ActiveFilterChips } from "@/components/ecosystem/filter-panel";
+import { MapGuide } from "@/components/ecosystem/map-guide";
 import { MapHud } from "@/components/ecosystem/map-hud";
 import { type BasemapProvider, loadBasemap } from "@/components/ecosystem/map-style";
 import { catalogs } from "@/lib/catalogs";
@@ -48,6 +50,14 @@ const areaColors = catalogs.impactAreas.map((a) => [a.code, a.color === "#060A28
 const colorExpr = (by: "rol" | "area") =>
   (by === "rol" ? ["match", ["get", "primary_role_code"], ...roleColors, "#9B00FF"] : ["match", ["get", "area_code"], ...areaColors, "#9B00FF"]) as never;
 export type ColorBy = "rol" | "area";
+// Cifra que dibujan las burbujas por localidad (la elige el usuario en el panel "Cifras").
+export type Metric = "orgs" | "conectados" | "fortalecidos" | "transformados";
+export const METRICS: { key: Metric; label: string; color: string }[] = [
+  { key: "orgs", label: "Organizaciones", color: "#6A00C2" },
+  { key: "conectados", label: "Jóvenes conectados", color: "#9B00FF" },
+  { key: "fortalecidos", label: "Jóvenes fortalecidos", color: "#0089B0" },
+  { key: "transformados", label: "Jóvenes transformados", color: "#DB0089" },
+];
 export type GroupBy = "cercania" | "territorio";
 export const relationColors: Record<string, string> = { socio: "#FF01A2", aliado: "#9B00FF", colaborador: "#00A0CC" };
 
@@ -56,7 +66,7 @@ const LOCALITIES: GeoJSON.FeatureCollection<GeoJSON.Point> = {
   type: "FeatureCollection",
   features: catalogs.territories
     .filter((t) => t.lat != null && t.lng != null && t.code !== "cobertura_general")
-    .map((t) => ({ type: "Feature", geometry: { type: "Point", coordinates: [t.lng!, t.lat!] }, properties: { label: t.label.replace(/^(BAQ|AMB) – /, "") } })),
+    .map((t) => ({ type: "Feature", geometry: { type: "Point", coordinates: [t.lng!, t.lat!] }, properties: { label: t.label.replace(/^(BAQ|AMB) – /, ""), code: t.code } })),
 };
 
 // Curva entre dos actores (bezier cuadrática en lon/lat) para dibujar arcos.
@@ -118,24 +128,57 @@ function EcosystemMapInner({ orgs, relations, className }: MapProps) {
   const [showArcs, setShowArcs] = useState(false);
   const [colorBy, setColorBy] = useState<ColorBy>("rol");
   const [groupBy, setGroupBy] = useState<GroupBy>("cercania");
+  const [metric, setMetric] = useState<Metric>("orgs");
+  const [focus, setFocus] = useState<string>("todo");
+  const [areas, setAreas] = useState<GeoJSON.FeatureCollection | null>(null);
   const stage = useRef<HTMLDivElement>(null);
+  const setFocusRef = useRef(setFocus);
 
-  // Agrupación por territorio (FR-001): una burbuja por zona con el número de organizaciones.
-  const territoryBubbles = useMemo<GeoJSON.FeatureCollection<GeoJSON.Point>>(
-    () => ({
+  // Elegir una cifra la dibuja por localidad: las burbujas crecen según ese valor.
+  const chooseMetric = (m: Metric) => {
+    setMetric(m);
+    setGroupBy("territorio");
+  };
+
+  // Agrupación por territorio (FR-001): una burbuja por localidad con la cifra elegida
+  // (organizaciones visibles con los filtros o jóvenes conectados / fortalecidos / transformados).
+  const territoryBubbles = useMemo<GeoJSON.FeatureCollection<GeoJSON.Point>>(() => {
+    const rows = catalogs.territories
+      .filter((t) => t.lat != null && t.lng != null && t.code !== "cobertura_general")
+      .map((t) => {
+        const orgsHere = orgs.filter((o) => o.territory_code === t.code).length;
+        const tl = live.territories[t.code];
+        const value = metric === "orgs" ? orgsHere : (tl?.[metric] ?? 0);
+        return { t, value };
+      })
+      .filter((x) => x.value > 0);
+    const max = Math.max(1, ...rows.map((r) => r.value));
+    const color = METRICS.find((m) => m.key === metric)!.color;
+    return {
       type: "FeatureCollection",
-      features: catalogs.territories
-        .filter((t) => t.lat != null && t.lng != null)
-        .map((t) => ({ t, count: orgs.filter((o) => o.territory_code === t.code).length }))
-        .filter((x) => x.count > 0)
-        .map(({ t, count }) => ({
-          type: "Feature",
-          geometry: { type: "Point", coordinates: [t.lng!, t.lat!] },
-          properties: { label: t.label.replace(/^(BAQ|AMB) – /, ""), count, code: t.code },
-        })),
-    }),
-    [orgs],
-  );
+      features: rows.map(({ t, value }) => ({
+        type: "Feature",
+        geometry: { type: "Point", coordinates: [t.lng!, t.lat!] },
+        properties: { label: t.label.replace(/^(BAQ|AMB) – /, ""), code: t.code, value, display: value.toLocaleString("es-CO"), size: value / max, color },
+      })),
+    };
+  }, [orgs, live.territories, metric]);
+
+  // Contornos de localidades (OSM): las 5 de Barranquilla siempre; los municipios vecinos solo
+  // cuando tienen organizaciones con los filtros actuales.
+  const areaData = useMemo<GeoJSON.FeatureCollection>(() => {
+    if (!areas) return { type: "FeatureCollection", features: [] };
+    return {
+      type: "FeatureCollection",
+      features: areas.features
+        .map((f) => {
+          const code = String(f.properties?.code ?? "");
+          const count = orgs.filter((o) => o.territory_code === code).length;
+          return { ...f, properties: { code, count, city: code.startsWith("baq_") } };
+        })
+        .filter((f) => f.properties.city || f.properties.count > 0),
+    };
+  }, [areas, orgs]);
 
   const geojson = useMemo<GeoJSON.FeatureCollection<GeoJSON.Point>>(
     () => ({
@@ -230,20 +273,49 @@ function EcosystemMapInner({ orgs, relations, className }: MapProps) {
         instance.addSource("territories", { type: "geojson", data: territoryBubbles });
         instance.addSource("localities", { type: "geojson", data: LOCALITIES });
 
-        // Localidades: zona suave + nombre, para ubicarse sin calles (ajustes 06-oct).
+        // Localidades delimitadas (croquis): relleno suave según presencia + contorno; la elegida en fucsia.
+        instance.addSource("loc-areas", { type: "geojson", data: { type: "FeatureCollection", features: [] } });
         instance.addLayer({
-          id: "loc-zone",
-          type: "circle",
-          source: "localities",
+          id: "loc-fill",
+          type: "fill",
+          source: "loc-areas",
           paint: {
-            "circle-radius": ["interpolate", ["exponential", 2], ["zoom"], 8, 10, 11, 46, 13, 180],
-            "circle-color": "#9B00FF",
-            "circle-opacity": 0.07,
-            "circle-stroke-color": "#9B00FF",
-            "circle-stroke-opacity": 0.3,
-            "circle-stroke-width": 1.5,
+            "fill-color": "#9B00FF",
+            "fill-opacity": ["case", [">", ["get", "count"], 0], ["interpolate", ["linear"], ["get", "count"], 1, 0.07, 12, 0.2], 0.025],
           },
         });
+        instance.addLayer({
+          id: "loc-line",
+          type: "line",
+          source: "loc-areas",
+          paint: {
+            "line-color": "#7A00CC",
+            "line-opacity": ["case", ["get", "city"], 0.6, 0.45],
+            "line-width": ["interpolate", ["linear"], ["zoom"], 9, 1, 13, 2.2],
+            "line-dasharray": ["case", ["get", "city"], ["literal", [1, 0]], ["literal", [3, 2]]],
+          },
+        });
+        instance.addLayer({
+          id: "loc-focus",
+          type: "line",
+          source: "loc-areas",
+          filter: ["==", ["get", "code"], "__ninguna__"],
+          paint: { "line-color": "#DB0089", "line-width": 3.5 },
+        });
+        fetch("/geo/localidades.geojson")
+          .then((r) => (r.ok ? r.json() : null))
+          .then((fc) => fc && setAreas(fc))
+          .catch(() => {
+            /* sin contornos: el mapa sigue con nombres y puntos */
+          });
+        // Clic en una localidad (fuera de los puntos): se enfoca y las cifras se ajustan a ella.
+        instance.on("click", "loc-fill", (e) => {
+          if (instance.queryRenderedFeatures(e.point, { layers: ["points", "clusters", "terr-bubbles"] }).length) return;
+          const code = e.features?.[0]?.properties?.code;
+          if (code) setFocusRef.current(code);
+        });
+        instance.on("mouseenter", "loc-fill", () => (instance.getCanvas().style.cursor = "pointer"));
+        instance.on("mouseleave", "loc-fill", () => (instance.getCanvas().style.cursor = ""));
         instance.addLayer({
           id: "loc-label",
           type: "symbol",
@@ -323,7 +395,7 @@ function EcosystemMapInner({ orgs, relations, className }: MapProps) {
           type: "circle",
           source: "territories",
           layout: { visibility: "none" },
-          paint: { "circle-color": "#9B00FF", "circle-radius": ["+", 30, ["*", 3.5, ["get", "count"]]], "circle-blur": 1, "circle-opacity": 0.5 },
+          paint: { "circle-color": ["get", "color"], "circle-radius": ["+", 34, ["*", 56, ["sqrt", ["get", "size"]]]], "circle-blur": 1, "circle-opacity": 0.35 },
         });
         instance.addLayer({
           id: "terr-bubbles",
@@ -331,9 +403,9 @@ function EcosystemMapInner({ orgs, relations, className }: MapProps) {
           source: "territories",
           layout: { visibility: "none" },
           paint: {
-            "circle-color": "#FF01A2",
-            "circle-opacity": 0.85,
-            "circle-radius": ["+", 16, ["*", 2, ["get", "count"]]],
+            "circle-color": ["get", "color"],
+            "circle-opacity": 0.88,
+            "circle-radius": ["+", 18, ["*", 38, ["sqrt", ["get", "size"]]]],
             "circle-stroke-width": 2,
             "circle-stroke-color": "#ffffff",
           },
@@ -344,7 +416,7 @@ function EcosystemMapInner({ orgs, relations, className }: MapProps) {
           source: "territories",
           layout: {
             visibility: "none",
-            "text-field": ["format", ["to-string", ["get", "count"]], { "font-scale": 1.2 }, "\n", {}, ["get", "label"], { "font-scale": 0.75 }],
+            "text-field": ["format", ["get", "display"], { "font-scale": 1.2 }, "\n", {}, ["get", "label"], { "font-scale": 0.75 }],
             "text-font": ["Noto Sans Bold"],
             "text-size": 13,
             "text-allow-overlap": true,
@@ -505,7 +577,7 @@ function EcosystemMapInner({ orgs, relations, className }: MapProps) {
     const byTerritory = groupBy === "territorio";
     set(["clusters-glow", "clusters", "cluster-count", "points-glow", "points"], !byTerritory);
     set(["terr-glow", "terr-bubbles", "terr-labels"], byTerritory);
-    set(["loc-zone", "loc-label"], !byTerritory);
+    set(["loc-label"], !byTerritory);
     set(["arcs-base", "arcs-flow"], showArcs && !byTerritory);
   }, [showArcs, groupBy]);
   useEffect(() => {
@@ -517,6 +589,22 @@ function EcosystemMapInner({ orgs, relations, className }: MapProps) {
   useEffect(() => {
     (map.current?.getSource("territories") as GeoJSONSource | undefined)?.setData(territoryBubbles);
   }, [territoryBubbles]);
+  useEffect(() => {
+    const m = map.current;
+    if (!m || !ready.current) return;
+    (m.getSource("loc-areas") as GeoJSONSource | undefined)?.setData(areaData);
+    // Nombres: las localidades de Barranquilla siempre; los municipios solo si tienen presencia.
+    if (areas) m.setFilter("loc-label", ["in", ["get", "code"], ["literal", areaData.features.map((f) => f.properties?.code)]]);
+  }, [areaData, areas]);
+  // Localidad elegida: el mapa vuela hasta ella y la resalta ("todo" vuelve a la vista general).
+  useEffect(() => {
+    const m = map.current;
+    if (!m || !ready.current) return;
+    const t = catalogs.territories.find((x) => x.code === focus && x.lat != null && x.lng != null);
+    m.setFilter("loc-focus", ["==", ["get", "code"], t ? t.code : "__ninguna__"]);
+    // easeTo (no flyTo): ver la nota del vuelo de llegada sobre el globo de MapLibre 6.11.
+    m.easeTo(t ? { center: [t.lng!, t.lat!], zoom: 12.4, duration: 1400 } : { center: CENTER, zoom: 10.6, duration: 1400 });
+  }, [focus]);
 
   // Cada evento en vivo: onda en la organización y, si es una conexión, un vuelo de luz entre ambas.
   const lastEvent = live.lastEvent;
@@ -533,7 +621,20 @@ function EcosystemMapInner({ orgs, relations, className }: MapProps) {
 
   return (
     <div ref={stage} className={cn("relative isolate overflow-hidden rounded-3xl border border-goyn-navy/10 bg-[#F6F3FD] text-goyn-navy shadow-xl shadow-goyn-violeta/10", className)}>
-      <div ref={container} className="h-full w-full" role="region" aria-label="Mapa de organizaciones del ecosistema" />
+      <div ref={container} data-tour="mapa" className="h-full w-full" role="region" aria-label="Mapa de organizaciones del ecosistema" />
+
+      <ActiveFilterChips className="absolute top-3 right-16 left-[22rem] z-10 hidden md:flex" />
+
+      {orgs.length === 0 && (
+        <div className="pointer-events-none absolute inset-0 z-10 grid place-items-center p-6">
+          <div className="pointer-events-auto max-w-sm rounded-2xl border bg-white/95 p-5 text-center shadow-xl backdrop-blur">
+            <p className="font-heading text-base font-bold">Ninguna organización coincide</p>
+            <p className="mt-1 text-sm text-goyn-navy/70">Prueba quitando algún filtro (arriba en el mapa o en el panel «Filtros»).</p>
+          </div>
+        </div>
+      )}
+
+      <MapGuide autoStart={intro === "listo"} />
 
       <MapHud
         showArcs={showArcs}
@@ -542,13 +643,18 @@ function EcosystemMapInner({ orgs, relations, className }: MapProps) {
         onColorBy={setColorBy}
         groupBy={groupBy}
         onGroupBy={setGroupBy}
+        metric={metric}
+        onMetric={chooseMetric}
+        territory={focus}
+        onTerritory={setFocus}
+        shown={orgs.length}
         onReplay={() => {
           map.current?.jumpTo({ center: CENTER, zoom: 4.2, pitch: 0, bearing: 0 });
           setIntro("globo");
         }}
       />
 
-      <div className="pointer-events-none absolute right-3 bottom-8 hidden w-80 lg:block">
+      <div data-tour="feed" className="pointer-events-none absolute right-3 bottom-8 hidden w-80 lg:block">
         <div className="pointer-events-auto rounded-2xl border border-goyn-navy/10 bg-white/92 p-3 shadow-xl shadow-goyn-violeta/10 backdrop-blur-md">
           <LiveFeed limit={4} />
         </div>

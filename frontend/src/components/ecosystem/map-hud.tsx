@@ -3,7 +3,7 @@
 import { ChevronDownIcon, GlobeIcon, LayersIcon, Share2Icon, SlidersHorizontalIcon } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { useState } from "react";
-import type { ColorBy, GroupBy } from "@/components/ecosystem/ecosystem-map";
+import { METRICS, type ColorBy, type GroupBy, type Metric } from "@/components/ecosystem/ecosystem-map";
 import { FilterGroups, FilterHeader } from "@/components/ecosystem/filter-panel";
 import { useLive } from "@/components/live/live-provider";
 import { AnimatedNumber } from "@/components/motion/animated-number";
@@ -42,9 +42,9 @@ function Segmented<T extends string>({ label, value, options, onChange }: { labe
 }
 
 // Sección desplegable del panel (cifras, filtros, capas): se abre solo lo que se necesita.
-function Section({ title, icon, badge, defaultOpen = false, children }: { title: string; icon: React.ReactNode; badge?: number; defaultOpen?: boolean; children: React.ReactNode }) {
+function Section({ title, icon, badge, hint, tour, defaultOpen = false, children }: { title: string; icon: React.ReactNode; badge?: number; hint?: string; tour?: string; defaultOpen?: boolean; children: React.ReactNode }) {
   return (
-    <details open={defaultOpen || undefined} className="group border-t border-goyn-navy/10 first:border-t-0">
+    <details open={defaultOpen || undefined} data-tour={tour} className="group border-t border-goyn-navy/10 first:border-t-0">
       <summary className="flex cursor-pointer list-none items-center justify-between gap-2 px-4 py-3 font-heading text-sm font-bold text-goyn-violeta [&::-webkit-details-marker]:hidden">
         <span className="flex items-center gap-2">
           {icon}
@@ -53,7 +53,10 @@ function Section({ title, icon, badge, defaultOpen = false, children }: { title:
         </span>
         <ChevronDownIcon className="size-4 shrink-0 transition-transform group-open:rotate-180" aria-hidden />
       </summary>
-      <div className="space-y-4 px-4 pb-4">{children}</div>
+      <div className="space-y-4 px-4 pb-4">
+        {hint && <p className="-mt-1 rounded-lg bg-goyn-lila/60 px-2.5 py-1.5 text-[11px] leading-snug text-goyn-navy/80">{hint}</p>}
+        {children}
+      </div>
     </details>
   );
 }
@@ -66,6 +69,11 @@ export function MapHud({
   onColorBy,
   groupBy,
   onGroupBy,
+  metric,
+  onMetric,
+  territory,
+  onTerritory,
+  shown,
 }: {
   showArcs: boolean;
   onToggleArcs: () => void;
@@ -74,25 +82,24 @@ export function MapHud({
   onColorBy: (v: ColorBy) => void;
   groupBy: GroupBy;
   onGroupBy: (v: GroupBy) => void;
+  metric: Metric;
+  onMetric: (v: Metric) => void;
+  territory: string;
+  onTerritory: (v: string) => void;
+  shown: number;
 }) {
   const live = useLive();
   const params = useSearchParams();
   const activeFilters = countActive(parseFilters(Object.fromEntries(params.entries())));
-  const [territory, setTerritory] = useState<string>("todo");
   // null = automático: abierto en pantallas medianas y grandes, plegado en celular.
   const [open, setOpen] = useState<boolean | null>(null);
 
   const totals =
     territory === "todo"
-      ? { orgs: live.stats.organizations, conectados: live.stats.conectados, fortalecidos: live.stats.fortalecidos, transformados: live.stats.transformados }
+      ? { orgs: shown, conectados: live.stats.conectados, fortalecidos: live.stats.fortalecidos, transformados: live.stats.transformados }
       : (live.territories[territory] ?? { orgs: 0, conectados: 0, fortalecidos: 0, transformados: 0 });
 
-  const rows = [
-    { key: "orgs", label: "Organizaciones", color: "#060A28", value: totals.orgs },
-    { key: "conectados", label: "Jóvenes conectados", color: "#B44DFF", value: totals.conectados },
-    { key: "fortalecidos", label: "Jóvenes fortalecidos", color: "#00A0CC", value: totals.fortalecidos },
-    { key: "transformados", label: "Jóvenes transformados", color: "#DB0089", value: totals.transformados },
-  ];
+  const rows = METRICS.map((m) => ({ ...m, value: totals[m.key] }));
 
   return (
     <div className="absolute top-3 left-3 z-10 w-[calc(100%-4.5rem)] max-w-xs">
@@ -111,12 +118,18 @@ export function MapHud({
 
         {open !== false && (
           <div className={cn("max-h-[62vh] overflow-y-auto", open === null && "hidden md:block")}>
-            <Section title="Cifras" icon={<span className="goyn-live-dot" aria-hidden />} defaultOpen>
+            <Section
+              title="Cifras"
+              tour="cifras"
+              icon={<span className="goyn-live-dot" aria-hidden />}
+              hint="Elige una localidad para ir a ella. Toca una cifra para verla en el mapa por localidad."
+              defaultOpen
+            >
               <label className="block">
                 <span className="sr-only">Territorio</span>
                 <select
                   value={territory}
-                  onChange={(e) => setTerritory(e.target.value)}
+                  onChange={(e) => onTerritory(e.target.value)}
                   className="h-9 w-full rounded-lg border border-goyn-navy/15 bg-white px-2.5 text-sm text-goyn-navy focus-visible:ring-2 focus-visible:ring-goyn-violeta focus-visible:outline-none"
                 >
                   <option value="todo">Todo el ecosistema</option>
@@ -125,27 +138,50 @@ export function MapHud({
                   ))}
                 </select>
               </label>
-              <dl className="space-y-2.5">
-                {rows.map((r) => (
-                  <div key={r.key} className="flex items-baseline justify-between gap-3">
-                    <dt className="flex items-center gap-2 text-xs font-semibold text-goyn-navy/75">
-                      <span aria-hidden className="size-2 rounded-full" style={{ backgroundColor: r.color }} />
-                      {r.label}
-                    </dt>
-                    <dd>
+              <div role="radiogroup" aria-label="Cifra que se dibuja en el mapa" className="space-y-1">
+                {rows.map((r) => {
+                  const active = groupBy === "territorio" && metric === r.key;
+                  return (
+                    <button
+                      key={r.key}
+                      type="button"
+                      role="radio"
+                      aria-checked={active}
+                      onClick={() => onMetric(r.key)}
+                      className={cn(
+                        "flex w-full items-baseline justify-between gap-3 rounded-xl border px-2.5 py-1.5 text-left transition-colors",
+                        active ? "border-goyn-violeta bg-goyn-lila" : "border-transparent hover:border-goyn-violeta/30 hover:bg-goyn-lila/40",
+                      )}
+                    >
+                      <span className="flex items-center gap-2 text-xs font-semibold text-goyn-navy/80">
+                        <span aria-hidden className="size-2.5 rounded-full" style={{ backgroundColor: r.color }} />
+                        {r.label}
+                      </span>
                       <AnimatedNumber key={`${territory}-${r.key}`} value={r.value} duration={1.1} className="font-heading text-lg font-bold" />
-                    </dd>
-                  </div>
-                ))}
-              </dl>
+                    </button>
+                  );
+                })}
+              </div>
             </Section>
 
-            <Section title="Filtros" icon={<SlidersHorizontalIcon className="size-4" aria-hidden />} badge={activeFilters}>
+            <Section
+              title="Filtros"
+              tour="filtros"
+              icon={<SlidersHorizontalIcon className="size-4" aria-hidden />}
+              badge={activeFilters}
+              hint="Muestra solo las organizaciones que te interesan: el mapa, las cifras y las gráficas se actualizan."
+            >
               <FilterHeader compact />
               <FilterGroups compact />
             </Section>
 
-            <Section title="Capas" icon={<LayersIcon className="size-4" aria-hidden />} defaultOpen>
+            <Section
+              title="Capas"
+              tour="capas"
+              icon={<LayersIcon className="size-4" aria-hidden />}
+              hint="Cambia cómo se ve el mapa: puntos o localidades, colores y conexiones."
+              defaultOpen
+            >
               <div className="grid grid-cols-2 gap-2">
                 <Segmented label="Agrupar" value={groupBy} onChange={onGroupBy} options={[{ value: "cercania", label: "Cercanía" }, { value: "territorio", label: "Localidad" }]} />
                 <Segmented label="Color" value={colorBy} onChange={onColorBy} options={[{ value: "rol", label: "Rol" }, { value: "area", label: "Área" }]} />

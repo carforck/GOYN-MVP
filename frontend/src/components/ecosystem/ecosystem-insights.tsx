@@ -716,7 +716,7 @@ export function EcosystemInsights({
   shown: number;
 }) {
   return (
-    <section aria-labelledby="insights" className="space-y-5 pt-6">
+    <section aria-labelledby="insights" data-tour="graficas" className="space-y-5 pt-6">
       <div className="space-y-2">
         <span className="goyn-eyebrow">Análisis del ecosistema</span>
         <h2

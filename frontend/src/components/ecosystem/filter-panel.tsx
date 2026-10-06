@@ -84,6 +84,33 @@ export function FilterGroups({ compact = false }: { compact?: boolean }) {
   );
 }
 
+// Filtros activos como chips sobre el mapa: se ve qué se está mostrando y se quita con un clic.
+export function ActiveFilterChips({ className }: { className?: string }) {
+  const { filters, toggle, apply } = useFilters();
+  const chips = groups.flatMap((g) =>
+    (filters[g.key] ?? []).map((code) => ({ key: g.key, code, text: g.options.find((o) => o.code === code)?.label.replace(/^(BAQ|AMB) – /, "") ?? code, group: g.title })),
+  );
+  if (filters.q) chips.unshift({ key: "q" as FilterKey, code: filters.q, text: `“${filters.q}”`, group: "Búsqueda" });
+  if (!chips.length) return null;
+  return (
+    <div className={cn("flex flex-wrap items-center gap-1.5", className)} aria-label="Filtros activos">
+      <span className="rounded-full bg-goyn-navy px-2.5 py-1 text-[11px] font-bold tracking-wide text-white uppercase">Filtrando</span>
+      {chips.map((c) => (
+        <button
+          key={`${c.key}-${c.code}`}
+          type="button"
+          title={`${c.group}: quitar`}
+          onClick={() => (c.key === ("q" as FilterKey) ? apply({ ...filters, q: undefined }) : toggle(c.key, c.code))}
+          className="inline-flex items-center gap-1 rounded-full border border-goyn-violeta/30 bg-white/95 px-2.5 py-1 text-xs font-semibold text-goyn-navy shadow-sm backdrop-blur hover:border-goyn-violeta"
+        >
+          {c.text} <XIcon className="size-3 text-goyn-violeta" aria-hidden />
+          <span className="sr-only">(quitar filtro)</span>
+        </button>
+      ))}
+    </div>
+  );
+}
+
 // Encabezado del panel de filtros con "Limpiar filtros" al lado (junto a lo que limpia).
 export function FilterHeader({ compact = false }: { compact?: boolean }) {
   const { filters, apply } = useFilters();
@@ -109,7 +136,7 @@ export function FilterBar({ view, total, shown, filterButton = "auto" }: { view:
 
   return (
     <div className="space-y-3">
-      <div className="flex flex-wrap items-center gap-2">
+      <div data-tour="buscar" className="flex flex-wrap items-center gap-2">
         <form
           role="search"
           className="relative min-w-0 flex-1 basis-64"
