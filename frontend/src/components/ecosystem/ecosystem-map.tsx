@@ -635,7 +635,7 @@ function EcosystemMapInner({ orgs, relations, className }: MapProps) {
     <div ref={stage} className={cn("relative isolate overflow-hidden rounded-3xl border border-goyn-navy/10 bg-[#F6F3FD] text-goyn-navy shadow-xl shadow-goyn-violeta/10", className)}>
       <div ref={container} data-tour="mapa" className="h-full w-full" role="region" aria-label="Mapa de organizaciones del ecosistema" />
 
-      <ActiveFilterChips className="absolute top-3 right-16 left-[22rem] z-10 hidden md:flex" />
+      <ActiveFilterChips className="absolute top-3 right-[16rem] left-[22rem] z-10 hidden md:flex" />
 
       {orgs.length === 0 && (
         <div className="pointer-events-none absolute inset-0 z-10 grid place-items-center p-6">

@@ -102,9 +102,10 @@ export function MapGuide({ autoStart }: { autoStart: boolean }) {
     <button
       type="button"
       onClick={() => go(0, 1)}
-      className="absolute bottom-3 left-3 z-10 inline-flex items-center gap-1.5 rounded-full border border-goyn-navy/10 bg-white/95 px-3.5 py-2 text-sm font-bold text-goyn-violeta shadow-lg shadow-goyn-violeta/15 backdrop-blur transition-colors hover:bg-goyn-lila"
+      aria-label="¿Cómo usar el mapa?"
+      className="absolute top-[11.5rem] right-3 z-10 inline-flex size-10 items-center justify-center gap-1.5 rounded-full border border-goyn-navy/10 bg-white/95 text-sm font-bold text-goyn-violeta shadow-lg shadow-goyn-violeta/15 backdrop-blur transition-colors hover:bg-goyn-lila md:top-3 md:right-14 md:size-auto md:px-3.5 md:py-2"
     >
-      <CompassIcon className="size-4" aria-hidden /> ¿Cómo usar el mapa?
+      <CompassIcon className="size-4" aria-hidden /> <span className="hidden md:inline">¿Cómo usar el mapa?</span>
     </button>
   );
 
