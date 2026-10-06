@@ -36,10 +36,10 @@ export function LiveProvider({ snapshot, focusSlug, children }: { snapshot: Live
 
 function startRealtime() {
   let stopped = false;
-  const refresh = async (event?: LiveEvent) => {
+  const refresh = async () => {
     try {
       const res = await fetch("/api/ecosistema", { cache: "no-store" });
-      if (!stopped && res.ok) replaceSnapshot((await res.json()) as LiveSnapshot, event);
+      if (!stopped && res.ok) replaceSnapshot((await res.json()) as LiveSnapshot);
     } catch {
       /* sin conexión: se reintenta en el siguiente ciclo */
     }
@@ -52,24 +52,9 @@ function startRealtime() {
     const client = createClient(supabaseUrl, supabasePublishableKey);
     const channel = client
       .channel("ecosistema")
-      .on("broadcast", { event: "cambio" }, ({ payload }) => {
-        const p = payload as Partial<LiveEvent> & { kind?: LiveEvent["kind"] };
-        refresh(
-          p.kind
-            ? {
-                id: crypto.randomUUID(),
-                at: new Date().toISOString(),
-                kind: p.kind,
-                orgSlug: p.orgSlug ?? "",
-                orgName: p.orgName ?? "Organización del ecosistema",
-                territory: p.territory ?? null,
-                lat: p.lat ?? null,
-                lng: p.lng ?? null,
-                indicator: p.indicator,
-                delta: p.delta,
-              }
-            : undefined,
-        );
+      // El contenido del aviso no se usa: solo indica que hay que recargar los datos publicados.
+      .on("broadcast", { event: "cambio" }, () => {
+        void refresh();
       })
       .subscribe();
     cleanup = () => void client.removeChannel(channel);

@@ -9,10 +9,11 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { ErrorBoundary } from "@/components/common/error-boundary";
 import { LiveGlobe } from "@/components/globe/live-globe";
 import { useLive } from "@/components/live/live-provider";
-import { LiveFeed } from "@/components/live/live-ticker";
 import { ActiveFilterChips } from "@/components/ecosystem/filter-panel";
 import { MapGuide } from "@/components/ecosystem/map-guide";
 import { MapHud } from "@/components/ecosystem/map-hud";
+import { MapNotifications } from "@/components/ecosystem/map-notifications";
+import type { LiveEvent } from "@/lib/live/types";
 import { type BasemapProvider, loadBasemap } from "@/components/ecosystem/map-style";
 import { catalogs } from "@/lib/catalogs";
 import { cn } from "@/lib/utils";
@@ -606,14 +607,25 @@ function EcosystemMapInner({ orgs, relations, className }: MapProps) {
     m.easeTo(t ? { center: [t.lng!, t.lat!], zoom: 12.4, duration: 1400 } : { center: CENTER, zoom: 10.6, duration: 1400 });
   }, [focus]);
 
+  // Novedad elegida en la campana: el mapa va al lugar y lo marca con ondas.
+  const locateEvent = (e: LiveEvent) => {
+    const m = map.current;
+    if (!m || e.lat == null || e.lng == null) return;
+    m.easeTo({ center: [e.lng, e.lat], zoom: 13, duration: 1400 });
+    const now = performance.now() + 900;
+    for (let i = 0; i < 4; i++) ripples.current.push({ id: `${e.id}-ver-${i}-${now}`, lng: e.lng, lat: e.lat, color: "#DB0089", start: now + i * 450, big: true });
+  };
+
   // Cada evento en vivo: onda en la organización y, si es una conexión, un vuelo de luz entre ambas.
   const lastEvent = live.lastEvent;
   useEffect(() => {
     if (!lastEvent || lastEvent.lat == null || lastEvent.lng == null) return;
     const now = performance.now();
-    const color = lastEvent.kind === "conexion" ? "#FFBD25" : lastEvent.indicator === "fortalecidos" ? "#00A0CC" : lastEvent.indicator === "transformados" ? "#FF01A2" : "#B44DFF";
+    const color = lastEvent.kind === "registro" ? "#DB0089" : lastEvent.kind === "conexion" ? "#FE5200" : lastEvent.indicator === "fortalecidos" ? "#00A0CC" : lastEvent.indicator === "transformados" ? "#FF01A2" : "#B44DFF";
     ripples.current.push({ id: lastEvent.id, lng: lastEvent.lng, lat: lastEvent.lat, color, start: now, big: false });
     ripples.current.push({ id: `${lastEvent.id}-b`, lng: lastEvent.lng, lat: lastEvent.lat, color, start: now + 350, big: true });
+    // Organización nueva: ondas extra para que se note en el mapa.
+    if (lastEvent.kind === "registro") for (let i = 2; i < 5; i++) ripples.current.push({ id: `${lastEvent.id}-${i}`, lng: lastEvent.lng, lat: lastEvent.lat, color, start: now + i * 450, big: true });
     if (lastEvent.kind === "conexion" && lastEvent.targetLat != null && lastEvent.targetLng != null) {
       flights.current.push({ id: lastEvent.id, coords: arc([lastEvent.lng, lastEvent.lat], [lastEvent.targetLng, lastEvent.targetLat], 60), start: now });
     }
@@ -654,11 +666,7 @@ function EcosystemMapInner({ orgs, relations, className }: MapProps) {
         }}
       />
 
-      <div data-tour="feed" className="pointer-events-none absolute right-3 bottom-8 hidden w-80 lg:block">
-        <div className="pointer-events-auto rounded-2xl border border-goyn-navy/10 bg-white/92 p-3 shadow-xl shadow-goyn-violeta/10 backdrop-blur-md">
-          <LiveFeed limit={4} />
-        </div>
-      </div>
+      <MapNotifications onLocate={locateEvent} />
 
       <AnimatePresence>
         {intro !== "listo" && (

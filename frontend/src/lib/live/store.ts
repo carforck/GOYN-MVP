@@ -18,12 +18,26 @@ export function initLive(snapshot: LiveSnapshot) {
   emit();
 }
 
-export function replaceSnapshot(snapshot: LiveSnapshot, event?: LiveEvent) {
+// Nueva instantánea del servidor. Las novedades se DEDUCEN comparando con la anterior
+// (organizaciones y reportes que no estaban): el aviso de Realtime es solo una señal para
+// recargar, así nadie puede inyectar eventos falsos desde el canal público.
+export function replaceSnapshot(snapshot: LiveSnapshot) {
   if (!state) return initLive(snapshot);
+  const prevOrgs = new Set(state.orgs.map((o) => o.slug));
+  const prevEvents = new Set(state.events.map((e) => e.id));
+  const now = new Date().toISOString();
+  const fresh: LiveEvent[] = [
+    ...snapshot.orgs
+      .filter((o) => !prevOrgs.has(o.slug))
+      .map((o): LiveEvent => ({ id: `registro-${o.id}`, at: now, kind: "registro", orgSlug: o.slug, orgName: o.name, territory: o.territory, lat: o.lat, lng: o.lng })),
+    ...snapshot.events.filter((e) => !prevEvents.has(e.id)).map((e) => ({ ...e, historic: false })),
+  ];
+  const rest = state.events.filter((e) => !e.historic && !fresh.some((f) => f.id === e.id));
+  const merged = [...fresh, ...rest, ...snapshot.events.filter((e) => prevEvents.has(e.id) && !rest.some((r) => r.id === e.id))];
   state = {
     ...snapshot,
-    events: event ? [event, ...snapshot.events].slice(0, 20) : snapshot.events,
-    lastEvent: event ?? state.lastEvent,
+    events: merged.slice(0, 20),
+    lastEvent: fresh.find((e) => e.kind === "registro") ?? fresh[0] ?? state.lastEvent,
     version: state.version + 1,
   };
   emit();

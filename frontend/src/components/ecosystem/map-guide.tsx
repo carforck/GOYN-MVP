@@ -14,7 +14,7 @@ const STEPS = [
   { target: "filtros", title: "Filtra lo que ves", text: "Muestra solo las organizaciones que te interesan: por tipo, rol, área, población, territorio o línea de trabajo. El mapa, las cifras y las gráficas se actualizan con tus filtros." },
   { target: "capas", title: "Suma capas", text: "Ve organizaciones una a una o agrupadas por localidad, coloréalas por rol o por área y enciende las conexiones (socios, aliados, colaboradores) cuando las necesites." },
   { target: "buscar", title: "Busca o cambia de vista", text: "Escribe el nombre de una organización o un tema. Con «Vista lista» ves los mismos resultados como directorio." },
-  { target: "feed", title: "Actividad en vivo", text: "Aquí aparece lo que pasa en el ecosistema: nuevos registros, reportes y conexiones. En el mapa se ven como ondas." },
+  { target: "feed", title: "Novedades en vivo", text: "La campana te avisa cuando se registra una organización, llega un reporte o nace una conexión. Ábrela y toca una novedad para verla en el mapa: se marca con ondas." },
   { target: "graficas", title: "Lo que el mapa no muestra", text: "Más abajo encuentras dónde falta oferta, quién colabora con quién y qué organizaciones articulan el ecosistema." },
 ] as const;
 
