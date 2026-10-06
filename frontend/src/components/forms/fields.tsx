@@ -135,7 +135,7 @@ export function Scale({
           </button>
         ))}
       </div>
-      <div className="flex justify-between gap-4 text-xs font-semibold text-foreground/75 sm:text-sm">
+      <div className="flex justify-between gap-4 text-sm font-bold text-foreground/80">
         <span>1 · No se ha fortalecido</span>
         <span>10 · Se ha fortalecido mucho</span>
       </div>
