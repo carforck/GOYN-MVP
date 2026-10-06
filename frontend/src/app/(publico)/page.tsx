@@ -53,7 +53,7 @@ export default async function HomePage() {
             <div className="goyn-enter" style={{ ["--d" as string]: "0.15s" }}>
               <h1 className="text-4xl leading-[1.05] font-bold tracking-tight uppercase sm:text-6xl">
                 El espejo digital del{" "}
-                <span className="bg-goyn-magenta-a11y box-decoration-clone px-2 leading-[1.25]">ecosistema juvenil</span> <span className="whitespace-nowrap">de Barranquilla</span>
+                <span className="text-goyn-amarillo">ecosistema juvenil</span> <span className="whitespace-nowrap">de Barranquilla</span>
               </h1>
             </div>
             <div className="goyn-enter" style={{ ["--d" as string]: "0.3s" }}>
