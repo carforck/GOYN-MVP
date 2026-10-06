@@ -87,4 +87,40 @@ export default async function (db) {
   err = null;
   try { await as(ORG, "update public.profile set platform_role = 'superadmin' where id = $1", [ORG]); } catch (e) { err = e.message; }
   ok(!!err, "nadie se autoasigna superadmin");
+
+  // ─── Programas por separado (migración 011) ───
+  r = await as(null, "select id from public.organization where slug = 'fundacion-prueba-flujo'");
+  r = await db.query("select id, version from public.organization where slug = 'fundacion-prueba-flujo'");
+  const orgId = r.rows[0].id;
+  r = await db.query("select id, version from public.program where organization_id = $1", [orgId]);
+  const progId = r.rows[0].id, progVersion = r.rows[0].version;
+
+  await as(ORG, "select public.set_program_visibility($1, false)", [progId]);
+  r = await as(null, "select count(*)::int n from public.v_public_program where id = $1", [progId]);
+  ok(r.rows[0].n === 0, "la organización oculta un programa y sale de la vista pública");
+  err = null;
+  try { await as(OTRA, "select public.set_program_visibility($1, true)", [progId]); } catch (e) { err = e.message; }
+  ok(err && err.includes("Solo la organización"), "otro usuario no puede mostrar/ocultar programas ajenos");
+  await as(ORG, "select public.set_program_visibility($1, true)", [progId]);
+  r = await as(null, "select count(*)::int n from public.v_public_program where id = $1", [progId]);
+  ok(r.rows[0].n === 1, "la organización vuelve a mostrar el programa");
+
+  const progPayload = { name: "Empleo joven 2.0", description: "Versión editada desde el panel", modality_code: "virtual", primary_area_code: "ingresos",
+    area_codes: ["ingresos"], population_codes: ["general"], territory_codes: ["amb_soledad"], start_date: "2026-03-01", annual_goal: 300 };
+  r = await as(ORG, "insert into public.change_request (entity_type, entity_id, organization_id, base_version, payload, requested_by) values ('programa', $1, $2, $3, $4, $5) returning id", [progId, orgId, progVersion, progPayload, ORG]);
+  const editId = r.rows[0].id;
+  await as(ORG, "select public.submit_change_request($1)", [editId]);
+  await as(ADM, "select public.decide_change_request($1, 'aprobar', 'Ok')", [editId]);
+  r = await as(null, "select name, modality_code, territory_codes, annual_goal from public.v_public_program where id = $1", [progId]);
+  ok(r.rows[0]?.name === "Empleo joven 2.0" && r.rows[0].territory_codes.join() === "amb_soledad" && r.rows[0].annual_goal === 300, `edición de un programa aprobada sin rehacer el registro: ${JSON.stringify(r.rows[0])}`);
+
+  r = await as(ORG, "insert into public.change_request (entity_type, organization_id, payload, requested_by) values ('programa', $1, $2, $3) returning id", [orgId, { ...progPayload, name: "Programa nuevo desde el panel" }, ORG]);
+  await as(ORG, "select public.submit_change_request($1)", [r.rows[0].id]);
+  await as(ADM, "select public.decide_change_request($1, 'aprobar', 'Ok')", [r.rows[0].id]);
+  r = await as(null, "select count(*)::int n from public.v_public_program where organization_id = $1", [orgId]);
+  ok(r.rows[0].n === 2, "programa nuevo agregado desde el panel y publicado");
+
+  err = null;
+  try { await as(OTRA, "insert into public.change_request (entity_type, organization_id, payload, requested_by) values ('programa', $1, $2, $3)", [orgId, progPayload, OTRA]); } catch (e) { err = e.message; }
+  ok(!!err, "un no-miembro no puede proponer programas a otra organización");
 }

@@ -80,6 +80,9 @@ export type PublicProgram = {
   link: string | null;
 };
 
+// Programa visto por su propia organización (incluye ocultos y cambios en revisión).
+export type OwnProgram = PublicProgram & { is_visible: boolean; pending: boolean; version: number };
+
 export type PublicRelation = {
   id: string;
   source_org_id: string;
@@ -130,7 +133,7 @@ export type ChangeRequestSummary = {
   org_type_code: string;
   territory: string;
   submitted_at: string;
-  kind: "alta" | "actualizacion" | "indicador";
+  kind: "alta" | "actualizacion" | "indicador" | "programa";
   changes?: { field: string; before: string; after: string }[];
 };
 

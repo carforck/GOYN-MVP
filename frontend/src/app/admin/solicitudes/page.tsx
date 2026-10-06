@@ -14,6 +14,7 @@ const kindLabel: Record<ChangeRequestSummary["kind"], string> = {
   alta: "Registro nuevo",
   actualizacion: "Actualización",
   indicador: "Indicador",
+  programa: "Programa",
 };
 
 export default async function SolicitudesPage(props: PageProps<"/admin/solicitudes">) {
@@ -25,7 +26,7 @@ export default async function SolicitudesPage(props: PageProps<"/admin/solicitud
     <div className="space-y-6">
       <PageHeader title="Bandeja de validación" description="Solo se publica información aprobada. La vista de cada solicitud muestra únicamente lo que cambió frente a lo publicado." />
       <div className="flex flex-wrap gap-2" role="group" aria-label="Filtrar por tipo">
-        {[["", "Todas"], ["alta", "Registros nuevos"], ["actualizacion", "Actualizaciones"], ["indicador", "Indicadores"]].map(([value, text]) => (
+        {[["", "Todas"], ["alta", "Registros nuevos"], ["actualizacion", "Actualizaciones"], ["programa", "Programas"], ["indicador", "Indicadores"]].map(([value, text]) => (
           <Link key={value} href={value ? `?tipo=${value}` : "?"} aria-current={tipo === value ? "page" : undefined}
             className={cn("rounded-full border px-4 py-2 text-sm font-semibold", tipo === value ? "border-goyn-navy bg-goyn-navy text-white" : "bg-card")}>
             {text}

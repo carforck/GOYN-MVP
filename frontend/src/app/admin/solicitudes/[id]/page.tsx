@@ -38,7 +38,7 @@ export default async function SolicitudPage(props: PageProps<"/admin/solicitudes
       </Link>
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <p className="text-sm font-semibold text-muted-foreground">{isNew ? "Registro nuevo" : request.kind === "actualizacion" ? "Actualización de perfil" : "Reporte de indicador"} · enviada {formatDateTime(request.submitted_at)}</p>
+          <p className="text-sm font-semibold text-muted-foreground">{isNew ? "Registro nuevo" : request.kind === "actualizacion" ? "Actualización de perfil" : request.kind === "programa" ? "Programa" : "Reporte de indicador"} · enviada {formatDateTime(request.submitted_at)}</p>
           <h1 className="text-2xl font-extrabold text-foreground sm:text-3xl">{request.organization_name}</h1>
         </div>
         <span className={cn("rounded-full px-3 py-1 text-sm font-bold", statusStyle[request.status]?.className)}>{statusStyle[request.status]?.label}</span>

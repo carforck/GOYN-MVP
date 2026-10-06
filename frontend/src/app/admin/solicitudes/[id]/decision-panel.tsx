@@ -9,7 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
 
-export function DecisionPanel({ id, fields, disabled, kind }: { id: string; fields: string[]; disabled: boolean; kind: "alta" | "actualizacion" | "indicador" }) {
+export function DecisionPanel({ id, fields, disabled, kind }: { id: string; fields: string[]; disabled: boolean; kind: "alta" | "actualizacion" | "indicador" | "programa" }) {
   const router = useRouter();
   const [decision, setDecision] = useState<Decision>("aprobar");
   const [reason, setReason] = useState("");

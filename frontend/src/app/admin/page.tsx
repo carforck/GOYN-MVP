@@ -59,7 +59,7 @@ export default async function AdminHome() {
                   <span>
                     <span className="block font-semibold text-foreground">{r.organization_name}</span>
                     <span className="text-xs text-muted-foreground">
-                      {r.kind === "alta" ? "Registro nuevo" : r.kind === "actualizacion" ? "Actualización de perfil" : "Reporte de indicador"} · {label("orgTypes", r.org_type_code)}
+                      {r.kind === "alta" ? "Registro nuevo" : r.kind === "actualizacion" ? "Actualización de perfil" : r.kind === "programa" ? "Programa" : "Reporte de indicador"} · {label("orgTypes", r.org_type_code)}
                     </span>
                   </span>
                   <span className="text-xs text-muted-foreground">{formatDateTime(r.submitted_at)}</span>

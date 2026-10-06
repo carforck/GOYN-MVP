@@ -11,6 +11,7 @@ import type {
   EcosystemFilters,
   EcosystemStats,
   IndicatorReport,
+  OwnProgram,
   PublicOrganization,
   PublicProgram,
   PublicRelation,
@@ -131,7 +132,7 @@ export const listChangeRequests = cache(async (): Promise<ChangeRequestSummary[]
   const [{ data, error }, { data: reports }] = await Promise.all([
     supabase
       .from("change_request")
-      .select("id, entity_type, status, submitted_at, entity_id, payload")
+      .select("id, entity_type, status, submitted_at, entity_id, payload, organization:organization(name, org_type_code)")
       .in("status", ["enviada", "ajustes_solicitados"])
       .order("submitted_at", { ascending: true }),
     // Reportes de indicador enviados desde el panel (FR-011): se revisan en la misma bandeja.
@@ -142,16 +143,20 @@ export const listChangeRequests = cache(async (): Promise<ChangeRequestSummary[]
       .order("created_at", { ascending: true }),
   ]);
   if (error) throw error;
-  const requests: ChangeRequestSummary[] = (data ?? []).map((r) => ({
-    id: r.id,
-    entity_type: r.entity_type,
-    status: r.status,
-    submitted_at: r.submitted_at,
-    organization_name: r.payload?.identificacion?.name ?? "Sin nombre",
-    org_type_code: r.payload?.caracterizacion?.org_type_code ?? "",
-    territory: r.payload?.territorio?.location_territory_code ?? "",
-    kind: r.entity_type === "reporte_indicador" ? "indicador" : r.entity_id ? "actualizacion" : "alta",
-  }));
+  const requests: ChangeRequestSummary[] = (data ?? []).map((r) => {
+    const org = r.organization as unknown as { name: string; org_type_code: string } | null;
+    const program = r.entity_type === "programa";
+    return {
+      id: r.id,
+      entity_type: r.entity_type,
+      status: r.status,
+      submitted_at: r.submitted_at,
+      organization_name: program ? `${org?.name ?? "Organización"} · ${r.payload?.name ?? "Programa"}` : (r.payload?.identificacion?.name ?? "Sin nombre"),
+      org_type_code: program ? (org?.org_type_code ?? "") : (r.payload?.caracterizacion?.org_type_code ?? ""),
+      territory: r.payload?.territorio?.location_territory_code ?? "",
+      kind: r.entity_type === "reporte_indicador" ? "indicador" : program ? "programa" : r.entity_id ? "actualizacion" : "alta",
+    };
+  });
   const pendingReports: ChangeRequestSummary[] = (reports ?? []).map((r) => {
     const org = r.organization as unknown as { name: string; org_type_code: string } | null;
     return {
@@ -195,7 +200,29 @@ export const getChangeRequestDetail = cache(async (id: string): Promise<(ChangeR
     };
   }
 
-  const { data: req } = await supabase.from("change_request").select("payload, entity_id").eq("id", id).single();
+  const { data: req } = await supabase.from("change_request").select("payload, entity_id, entity_type").eq("id", id).single();
+
+  // Programa: compara con la versión publicada del programa (o muestra todo si es nuevo).
+  if (req?.entity_type === "programa") {
+    const p = req.payload ?? {};
+    const { data: cur } = req.entity_id
+      ? await supabase.from("program").select("*, program_area(area_code), program_population(population_code), program_territory(territory_code)").eq("id", req.entity_id).maybeSingle()
+      : { data: null };
+    const codes = (rows: Record<string, string>[] | undefined, key: string) => (rows ?? []).map((x) => x[key]);
+    const fields: FieldChange[] = [
+      { field: "Nombre del programa", before: cur?.name ?? "", after: p.name ?? "" },
+      { field: "Descripción", before: cur?.description ?? "", after: p.description ?? "" },
+      { field: "Modalidad", before: cur ? catalogLabel("modalities", cur.modality_code) : "", after: catalogLabel("modalities", p.modality_code) },
+      { field: "Área principal", before: cur ? catalogLabel("impactAreas", cur.primary_area_code) : "", after: catalogLabel("impactAreas", p.primary_area_code) },
+      { field: "Otras áreas", before: cur ? list(codes(cur.program_area, "area_code"), "impactAreas") : "", after: list(p.area_codes, "impactAreas") },
+      { field: "Población", before: cur ? list(codes(cur.program_population, "population_code"), "populations") : "", after: list(p.population_codes, "populations") },
+      { field: "Territorios", before: cur ? list(codes(cur.program_territory, "territory_code"), "territories") : "", after: list(p.territory_codes, "territories") },
+      { field: "Vigencia", before: cur ? `${cur.start_date} – ${cur.end_date ?? "sin cierre"}` : "", after: `${p.start_date ?? ""} – ${p.end_date || "sin cierre"}` },
+      { field: "Meta anual", before: cur?.annual_goal != null ? String(cur.annual_goal) : "", after: p.annual_goal != null && p.annual_goal !== "" ? String(p.annual_goal) : "" },
+      { field: "Enlace", before: cur?.link ?? "", after: p.link ?? "" },
+    ];
+    return { ...summary, changes: cur ? fields.filter((c) => c.before !== c.after) : fields.filter((c) => c.after && c.after !== "—") };
+  }
   const p = req?.payload ?? {};
   const current = req?.entity_id ? await getOrganizationById(req.entity_id) : null;
   const proposed: FieldChange[] = [
@@ -239,6 +266,60 @@ export const getOwnOrganization = cache(async (organizationIds: string[]): Promi
   const supabase = await createClient();
   const { data } = await supabase.from("v_public_organization").select("*").eq("id", organizationIds[0]).maybeSingle();
   return (data as PublicOrganization | null) ?? null;
+});
+
+// Programas de la organización para su panel: incluye los ocultos y si hay un cambio en revisión.
+export const listOwnPrograms = cache(async (organizationId: string): Promise<OwnProgram[]> => {
+  if (await usePrivateDemo()) {
+    const { programs } = await loadDemo();
+    return programs.filter((p) => p.organization_id === organizationId).map((p) => ({ ...p, is_visible: true, pending: false, version: 1 }));
+  }
+  const supabase = await createClient();
+  const [{ data, error }, { data: pending }] = await Promise.all([
+    supabase
+      .from("program")
+      .select("id, organization_id, name, description, modality_code, primary_area_code, start_date, end_date, annual_goal, link, is_visible, version, program_area(area_code), program_population(population_code), program_territory(territory_code)")
+      .eq("organization_id", organizationId)
+      .eq("status", "publicado")
+      .order("name"),
+    supabase.from("change_request").select("entity_id").eq("entity_type", "programa").eq("organization_id", organizationId).in("status", ["borrador", "enviada", "ajustes_solicitados"]),
+  ]);
+  if (error) throw error;
+  const inReview = new Set((pending ?? []).map((r) => r.entity_id));
+  return (data ?? []).map((p) => ({
+    id: p.id,
+    organization_id: p.organization_id,
+    organization_slug: "",
+    organization_name: "",
+    name: p.name,
+    description: p.description,
+    modality_code: p.modality_code,
+    primary_area_code: p.primary_area_code,
+    area_codes: (p.program_area ?? []).map((x: { area_code: string }) => x.area_code),
+    population_codes: (p.program_population ?? []).map((x: { population_code: string }) => x.population_code),
+    territory_codes: (p.program_territory ?? []).map((x: { territory_code: string }) => x.territory_code),
+    start_date: p.start_date,
+    end_date: p.end_date,
+    annual_goal: p.annual_goal,
+    link: p.link,
+    is_visible: p.is_visible,
+    version: p.version,
+    pending: inReview.has(p.id),
+  }));
+});
+
+// Programas nuevos propuestos que aún esperan validación (se listan aparte en el panel).
+export const listPendingNewPrograms = cache(async (organizationId: string): Promise<{ id: string; name: string; status: string }[]> => {
+  if (await usePrivateDemo()) return [];
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("change_request")
+    .select("id, payload, status")
+    .eq("entity_type", "programa")
+    .eq("organization_id", organizationId)
+    .is("entity_id", null)
+    .in("status", ["borrador", "enviada", "ajustes_solicitados"]);
+  return (data ?? []).map((r) => ({ id: r.id, name: r.payload?.name ?? "Programa nuevo", status: r.status }));
 });
 
 // ─── Datos en vivo ──────────────────────────────────────────────────────────
