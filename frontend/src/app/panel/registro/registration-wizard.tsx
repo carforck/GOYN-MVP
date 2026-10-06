@@ -200,7 +200,7 @@ export function RegistrationWizard({
           </div>
         )}
 
-        <div className="mt-8 space-y-7">
+        <div className="mt-8 space-y-10">
           {step.id === "identificacion" && (
             <>
               <Field label="Nombre de la organización" required error={errors.name} htmlFor="name">

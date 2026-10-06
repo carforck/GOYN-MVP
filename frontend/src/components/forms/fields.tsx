@@ -22,10 +22,10 @@ export function Field({
 }) {
   return (
     <div className="space-y-1.5">
-      <label htmlFor={htmlFor} className="block text-sm font-bold text-foreground">
+      <label htmlFor={htmlFor} className="block font-heading text-base font-bold text-foreground sm:text-lg">
         {label} {required && <span className="text-goyn-magenta" aria-hidden>*</span>}
       </label>
-      {hint && <p className="text-xs text-muted-foreground">{hint}</p>}
+      {hint && <p className="text-sm text-muted-foreground">{hint}</p>}
       {children}
       {error && <p role="alert" className="text-xs font-semibold text-destructive">{error}</p>}
     </div>
@@ -62,11 +62,11 @@ export function ChoiceGroup({
     onChange(value.includes(code) ? value.filter((v) => v !== code) : [...value, code]);
   };
   return (
-    <fieldset className="space-y-2" aria-describedby={hint ? `${id}-hint` : undefined}>
-      <legend className="text-sm font-bold text-foreground">
+    <fieldset className="space-y-3" aria-describedby={hint ? `${id}-hint` : undefined}>
+      <legend className="font-heading text-base font-bold text-foreground sm:text-lg">
         {label} {required && <span className="text-goyn-magenta" aria-hidden>*</span>}
       </legend>
-      {hint && <p id={`${id}-hint`} className="text-xs text-muted-foreground">{hint}</p>}
+      {hint && <p id={`${id}-hint`} className="text-sm text-muted-foreground">{hint}</p>}
       <div role={multiple ? "group" : "radiogroup"} className={cn(columns ? "grid gap-2 sm:grid-cols-2" : "flex flex-wrap gap-2")}>
         {options.map((o) => {
           const checked = value.includes(o.code);
@@ -116,7 +116,7 @@ export function Scale({
 }) {
   return (
     <fieldset className="space-y-2">
-      <legend className="text-sm font-bold text-foreground">{label}</legend>
+      <legend className="font-heading text-base font-bold text-foreground sm:text-lg">{label}</legend>
       <div role="radiogroup" className="grid grid-cols-10 gap-1">
         {Array.from({ length: 10 }, (_, i) => i + 1).map((n) => (
           <button
@@ -135,7 +135,7 @@ export function Scale({
           </button>
         ))}
       </div>
-      <div className="flex justify-between text-[11px] text-muted-foreground">
+      <div className="flex justify-between gap-4 text-xs font-semibold text-foreground/75 sm:text-sm">
         <span>1 · No se ha fortalecido</span>
         <span>10 · Se ha fortalecido mucho</span>
       </div>

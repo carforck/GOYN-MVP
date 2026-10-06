@@ -162,11 +162,15 @@
   }
 }
 
-@layer utilities {
-  /* Rótulo de sección al estilo de la presentación del Colaborativo: píldora violeta en mayúsculas. */
+/* Rótulo de sección al estilo de la presentación del Colaborativo: píldora violeta en mayúsculas.
+   En la capa components para que bg-* / text-* lo puedan recolorear (p. ej. bg-goyn-magenta-a11y). */
+@layer components {
   .goyn-eyebrow {
     @apply inline-flex items-center gap-2 rounded-full bg-goyn-violeta px-4 py-1 font-heading text-xs font-bold tracking-wider text-white uppercase;
   }
+}
+
+@layer utilities {
   /* Franja multicolor de las piezas del manual (§7 Elementos gráficos). */
   .goyn-stripe {
     background: linear-gradient(90deg, #0aa066 0 25%, #9b00ff 25% 50%, #fe5200 50% 75%, #ff01a2 75% 100%);

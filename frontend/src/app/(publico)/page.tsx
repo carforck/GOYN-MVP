@@ -42,7 +42,6 @@ export default async function HomePage() {
         <HeroBackground />
         <HeroPhotoRail />
         <FloatingShape name="asterisco" size={96} white className="top-10 left-[46%] hidden md:block" spin={360} duration={9} />
-        <FloatingShape name="rayo" size={70} white className="bottom-32 left-[4%] hidden opacity-90 md:block" float={18} delay={0.4} />
         <FloatingShape name="aro_rayado" size={190} className="-bottom-16 left-[38%] hidden opacity-70 md:block" parallax={120} delay={0.2} />
         <FloatingShape name="mas" size={54} white className="top-24 right-[5%] opacity-80 lg:hidden" float={10} />
         <div className="goyn-container relative py-20 sm:py-28 lg:py-36">
@@ -55,7 +54,7 @@ export default async function HomePage() {
             <div className="goyn-enter" style={{ ["--d" as string]: "0.15s" }}>
               <h1 className="text-4xl leading-[1.05] font-bold tracking-tight uppercase sm:text-6xl">
                 El espejo digital del{" "}
-                <BrushHighlight className="leading-[1.25]">ecosistema juvenil</BrushHighlight> de Barranquilla
+                <BrushHighlight className="leading-[1.25]">ecosistema juvenil</BrushHighlight> <span className="whitespace-nowrap">de Barranquilla</span>
               </h1>
             </div>
             <div className="goyn-enter" style={{ ["--d" as string]: "0.3s" }}>

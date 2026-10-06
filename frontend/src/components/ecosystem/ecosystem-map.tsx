@@ -51,6 +51,14 @@ export type ColorBy = "rol" | "area";
 export type GroupBy = "cercania" | "territorio";
 export const relationColors: Record<string, string> = { socio: "#FF01A2", aliado: "#9B00FF", colaborador: "#00A0CC" };
 
+// Localidades del catálogo (centroides) para la capa de referencia del mapa claro.
+const LOCALITIES: GeoJSON.FeatureCollection<GeoJSON.Point> = {
+  type: "FeatureCollection",
+  features: catalogs.territories
+    .filter((t) => t.lat != null && t.lng != null && t.code !== "cobertura_general")
+    .map((t) => ({ type: "Feature", geometry: { type: "Point", coordinates: [t.lng!, t.lat!] }, properties: { label: t.label.replace(/^(BAQ|AMB) – /, "") } })),
+};
+
 // Curva entre dos actores (bezier cuadrática en lon/lat) para dibujar arcos.
 function arc(from: [number, number], to: [number, number], steps = 40): [number, number][] {
   const [x1, y1] = from;
@@ -106,7 +114,8 @@ function EcosystemMapInner({ orgs, relations, className }: MapProps) {
   const [basemap, setBasemap] = useState<BasemapProvider | null>(null);
   const [noWebgl, setNoWebgl] = useState(false);
   const [intro, setIntro] = useState<"desconocido" | "globo" | "listo">("desconocido");
-  const [showArcs, setShowArcs] = useState(true);
+  // De menos a más: arranca solo con organizaciones y localidades; las conexiones se suman como capa.
+  const [showArcs, setShowArcs] = useState(false);
   const [colorBy, setColorBy] = useState<ColorBy>("rol");
   const [groupBy, setGroupBy] = useState<GroupBy>("cercania");
   const stage = useRef<HTMLDivElement>(null);
@@ -219,14 +228,45 @@ function EcosystemMapInner({ orgs, relations, className }: MapProps) {
         instance.addSource("ripples", { type: "geojson", data: { type: "FeatureCollection", features: [] } });
         instance.addSource("flights", { type: "geojson", data: { type: "FeatureCollection", features: [] }, lineMetrics: true });
         instance.addSource("territories", { type: "geojson", data: territoryBubbles });
+        instance.addSource("localities", { type: "geojson", data: LOCALITIES });
+
+        // Localidades: zona suave + nombre, para ubicarse sin calles (ajustes 06-oct).
+        instance.addLayer({
+          id: "loc-zone",
+          type: "circle",
+          source: "localities",
+          paint: {
+            "circle-radius": ["interpolate", ["exponential", 2], ["zoom"], 8, 10, 11, 46, 13, 180],
+            "circle-color": "#9B00FF",
+            "circle-opacity": 0.07,
+            "circle-stroke-color": "#9B00FF",
+            "circle-stroke-opacity": 0.3,
+            "circle-stroke-width": 1.5,
+          },
+        });
+        instance.addLayer({
+          id: "loc-label",
+          type: "symbol",
+          source: "localities",
+          minzoom: 8.5,
+          layout: {
+            "text-field": ["upcase", ["get", "label"]],
+            "text-font": ["Noto Sans Bold"],
+            "text-size": ["interpolate", ["linear"], ["zoom"], 9, 10, 13, 14],
+            "text-letter-spacing": 0.08,
+            "text-offset": [0, -2.4],
+            "text-allow-overlap": false,
+          },
+          paint: { "text-color": "#6A00C2", "text-halo-color": "#FFFFFF", "text-halo-width": 1.5 },
+        });
 
         const byType = ["match", ["get", "type"], "socio", relationColors.socio, "aliado", relationColors.aliado, relationColors.colaborador];
-        instance.addLayer({ id: "arcs-base", type: "line", source: "arcs", paint: { "line-color": byType as never, "line-width": 0.8, "line-opacity": 0.18 } });
+        instance.addLayer({ id: "arcs-base", type: "line", source: "arcs", layout: { visibility: "none" }, paint: { "line-color": byType as never, "line-width": 0.8, "line-opacity": 0.18 } });
         instance.addLayer({
           id: "arcs-flow",
           type: "line",
           source: "arcs",
-          layout: { "line-cap": "round" },
+          layout: { "line-cap": "round", visibility: "none" },
           paint: { "line-color": byType as never, "line-width": 1.8, "line-opacity": 0.75, "line-blur": 0.5, "line-dasharray": DASHES[0] },
         });
         instance.addLayer({
@@ -236,7 +276,7 @@ function EcosystemMapInner({ orgs, relations, className }: MapProps) {
           layout: { "line-cap": "round" },
           paint: {
             "line-width": 3.5,
-            "line-gradient": ["interpolate", ["linear"], ["line-progress"], 0, "rgba(255,189,37,0)", 0.7, "rgba(255,189,37,0.9)", 1, "#ffffff"],
+            "line-gradient": ["interpolate", ["linear"], ["line-progress"], 0, "rgba(155,0,255,0)", 0.7, "rgba(155,0,255,0.85)", 1, "#DB0089"],
           },
         });
         instance.addLayer({
@@ -465,6 +505,7 @@ function EcosystemMapInner({ orgs, relations, className }: MapProps) {
     const byTerritory = groupBy === "territorio";
     set(["clusters-glow", "clusters", "cluster-count", "points-glow", "points"], !byTerritory);
     set(["terr-glow", "terr-bubbles", "terr-labels"], byTerritory);
+    set(["loc-zone", "loc-label"], !byTerritory);
     set(["arcs-base", "arcs-flow"], showArcs && !byTerritory);
   }, [showArcs, groupBy]);
   useEffect(() => {
@@ -491,7 +532,7 @@ function EcosystemMapInner({ orgs, relations, className }: MapProps) {
   }, [lastEvent]);
 
   return (
-    <div ref={stage} className={cn("relative isolate overflow-hidden rounded-3xl border border-white/10 bg-goyn-navy text-white shadow-2xl shadow-goyn-violeta/20", className)}>
+    <div ref={stage} className={cn("relative isolate overflow-hidden rounded-3xl border border-goyn-navy/10 bg-[#F6F3FD] text-goyn-navy shadow-xl shadow-goyn-violeta/10", className)}>
       <div ref={container} className="h-full w-full" role="region" aria-label="Mapa de organizaciones del ecosistema" />
 
       <MapHud
@@ -508,8 +549,8 @@ function EcosystemMapInner({ orgs, relations, className }: MapProps) {
       />
 
       <div className="pointer-events-none absolute right-3 bottom-8 hidden w-80 lg:block">
-        <div className="pointer-events-auto rounded-2xl border border-white/10 bg-[#060a28]/80 p-3 backdrop-blur-md">
-          <LiveFeed limit={4} dark />
+        <div className="pointer-events-auto rounded-2xl border border-goyn-navy/10 bg-white/92 p-3 shadow-xl shadow-goyn-violeta/10 backdrop-blur-md">
+          <LiveFeed limit={4} />
         </div>
       </div>
 

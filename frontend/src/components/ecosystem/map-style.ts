@@ -1,8 +1,10 @@
 import type { LayerSpecification, StyleSpecification } from "maplibre-gl";
 
-// Mapa base con respaldo en cadena para que el mapa funcione SIEMPRE:
-//   1. OpenFreeMap "dark" (OSM, sin llave)  → principal
-//   2. CARTO "dark-matter"                 → respaldo si OpenFreeMap no responde
+// Mapa base CLARO y mínimo (ajustes 06-oct: "ir de menos a más"): sin calles, edificios ni
+// puntos de interés; solo agua, límites y nombres de lugares, para que resalten las localidades
+// y las capas de datos. Respaldo en cadena para que el mapa funcione SIEMPRE:
+//   1. OpenFreeMap "positron" (OSM, sin llave)  → principal
+//   2. CARTO "positron"                          → respaldo si OpenFreeMap no responde
 //   3. Estilo local (solo fondo de marca)  → último recurso: sin calles, pero organizaciones,
 //      clústeres, arcos y territorios siguen funcionando porque son capas propias.
 // En los respaldos, las tipografías de las etiquetas se sirven desde /fonts (no dependen de terceros).
@@ -10,8 +12,8 @@ import type { LayerSpecification, StyleSpecification } from "maplibre-gl";
 export type BasemapProvider = "openfreemap" | "carto" | "local";
 
 const PROVIDERS: { id: Exclude<BasemapProvider, "local">; url: string }[] = [
-  { id: "openfreemap", url: "https://tiles.openfreemap.org/styles/dark" },
-  { id: "carto", url: "https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json" },
+  { id: "openfreemap", url: "https://tiles.openfreemap.org/styles/positron" },
+  { id: "carto", url: "https://basemaps.cartocdn.com/gl/positron-gl-style/style.json" },
 ];
 
 const TIMEOUT_MS = 5000;
@@ -26,30 +28,36 @@ function localFont(fonts: unknown): string[] {
   return ["Noto Sans Regular"];
 }
 
-// Tiñe cualquier estilo oscuro con la paleta GOYN (azul noche + morado).
+// Capas que se omiten: el mapa arranca limpio y los datos se suman como capas propias.
+const HIDDEN = /^(building|highway|road|tunnel|bridge|rail|aeroway|airport|poi|housenumber|roadname|transportation)/;
+
+export const BASEMAP_BG = "#F6F3FD";
+
+// Tiñe el estilo claro con la paleta GOYN (lila suave + morado).
 function brand(style: StyleSpecification, provider: BasemapProvider): StyleSpecification {
-  const layers = style.layers.map((layer) => {
-    const l = structuredClone(layer) as LayerSpecification & { paint?: Record<string, unknown>; layout?: Record<string, unknown> };
-    const id = l.id;
-    const paint = (l.paint ??= {});
-    if (l.type === "symbol") {
-      paint["text-color"] = id.startsWith("place") ? "#c9c3f5" : "#6f6aa8";
-      paint["text-halo-color"] = "#060a28";
-      if (l.layout?.["text-font"]) l.layout["text-font"] = localFont(l.layout["text-font"]);
-    } else if (l.type === "background") paint["background-color"] = "#060a28";
-    else if (id === "water" || id.startsWith("water")) {
-      if (l.type === "fill") paint["fill-color"] = "#0b1348";
-      if (l.type === "line") paint["line-color"] = "#0b1348";
-    } else if (l.type === "fill" && (id.startsWith("landcover") || id.startsWith("landuse") || id.startsWith("park"))) paint["fill-color"] = "#0a0f35";
-    else if (l.type === "fill" && id.startsWith("building")) {
-      paint["fill-color"] = "#10164a";
-      paint["fill-outline-color"] = "#1b2266";
-    } else if (l.type === "line" && id.includes("boundary")) paint["line-color"] = "#4a2c9c";
-    else if (l.type === "line" && (id.includes("motorway") || id.includes("major") || id.includes("pri"))) paint["line-color"] = "rgba(155,0,255,0.45)";
-    else if (l.type === "line" && (id.startsWith("highway") || id.startsWith("road") || id.startsWith("railway") || id.startsWith("aeroway") || id.startsWith("tunnel") || id.startsWith("bridge")))
-      paint["line-color"] = "#1a2060";
-    return l;
-  });
+  const layers = style.layers
+    .filter((layer) => !HIDDEN.test(layer.id))
+    .map((layer) => {
+      const l = structuredClone(layer) as LayerSpecification & { paint?: Record<string, unknown>; layout?: Record<string, unknown> };
+      const id = l.id;
+      const paint = (l.paint ??= {});
+      if (l.type === "symbol") {
+        const place = id.startsWith("place") || id.startsWith("label");
+        paint["text-color"] = place ? "#3B2A6B" : "#7A73A0";
+        paint["text-halo-color"] = "#FFFFFF";
+        paint["text-halo-width"] = 1.2;
+        if (l.layout?.["text-font"]) l.layout["text-font"] = localFont(l.layout["text-font"]);
+      } else if (l.type === "background") paint["background-color"] = BASEMAP_BG;
+      else if (id.startsWith("water")) {
+        if (l.type === "fill") paint["fill-color"] = "#DCD3F5";
+        if (l.type === "line") paint["line-color"] = "#DCD3F5";
+      } else if (l.type === "fill") paint["fill-color"] = "#EEE9FA";
+      else if (l.type === "line" && id.includes("boundary")) {
+        paint["line-color"] = "#B39DEB";
+        paint["line-opacity"] = 0.8;
+      }
+      return l;
+    });
   // OpenFreeMap sirve Noto Sans completa (todos los alfabetos); en los respaldos se usa la copia local
   // (latín y signos), y MapLibre dibuja en el navegador cualquier otro carácter.
   const glyphs = provider === "openfreemap" && style.glyphs ? style.glyphs : glyphsUrl();
@@ -61,7 +69,7 @@ export function localStyle(): StyleSpecification {
     version: 8,
     glyphs: glyphsUrl(),
     sources: {},
-    layers: [{ id: "background", type: "background", paint: { "background-color": "#060a28" } }],
+    layers: [{ id: "background", type: "background", paint: { "background-color": BASEMAP_BG } }],
   };
 }
 

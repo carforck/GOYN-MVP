@@ -57,6 +57,10 @@ export default function RegistroPage() {
             <li className="rounded-2xl bg-muted p-4 text-sm"><SaveIcon className="mb-2 size-5 text-goyn-violeta" aria-hidden />Guardado automático por paso</li>
             <li className="rounded-2xl bg-muted p-4 text-sm"><ShieldCheckIcon className="mb-2 size-5 text-goyn-violeta" aria-hidden />Tu celular nunca se publica</li>
           </ul>
+          {/* Se repite el llamado: al bajar, el botón del encabezado ya no se ve. */}
+          <Link href="/panel/registro" className={cn(buttonVariants(), "mt-8 h-12 rounded-full bg-goyn-magenta-a11y px-6 text-base font-bold text-white hover:bg-goyn-magenta-a11y/90")}>
+            Empezar el registro <ArrowRightIcon aria-hidden />
+          </Link>
         </div>
         <div className="rounded-3xl border bg-card p-6 sm:p-8">
           <h2 className="text-lg font-extrabold text-foreground">Lo que te vamos a preguntar</h2>

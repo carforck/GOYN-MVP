@@ -1,65 +1,25 @@
 "use client";
 
-import { AnimatePresence, motion, useReducedMotion } from "motion/react";
 import Image from "next/image";
-import { useEffect, useState } from "react";
 import { cn } from "@/lib/utils";
-
-// Fotografías de goynbarranquilla.com (jóvenes y actividades del Colaborativo).
-const backgrounds = [
-  { src: "/images/fotos/hero-jovenes.webp", alt: "Jóvenes del Colaborativo con camisetas rosadas", position: "50% 30%" },
-  { src: "/images/fotos/sesion-colaborativo-2026.webp", alt: "Sesión de co-creación del Colaborativo, 9 de abril de 2026", position: "50% 40%" },
-  { src: "/images/fotos/jovenes-grupo.webp", alt: "Jóvenes de Barranquilla sonriendo", position: "50% 35%" },
-  { src: "/images/fotos/nosotros-banner.webp", alt: "Encuentro de jóvenes y organizaciones", position: "50% 50%" },
-  { src: "/images/fotos/pilar-territorio.webp", alt: "Grupo de jóvenes en el territorio", position: "50% 40%" },
-];
 
 const columnA = ["enfoque-1", "pilar-liderazgo", "enfoque-3", "pilar-datos", "blog-2", "pilar-aprendizaje"];
 const columnB = ["enfoque-2", "pilar-equidad", "banner-trabajo", "pilar-financiacion", "enfoque-4", "blog-3"];
 
-// Fondo: fundido entre fotos con Ken Burns y velo de marca morado (Manual §7 Fotografía).
-export function HeroBackground({ interval = 6000 }: { interval?: number }) {
-  const [index, setIndex] = useState(0);
-  const reduce = useReducedMotion();
-
-  useEffect(() => {
-    if (reduce) return;
-    const id = setInterval(() => setIndex((i) => (i + 1) % backgrounds.length), interval);
-    return () => clearInterval(id);
-  }, [interval, reduce]);
-
+// Fondo del hero con textura de la marca (líneas topográficas del manual) sobre el degradado
+// morado: mantiene el movimiento y da mejor legibilidad que una foto (ajustes 06-oct).
+export function HeroBackground() {
   return (
-    <div className="absolute inset-0 -z-10 overflow-hidden bg-goyn-violeta" aria-hidden>
-      <AnimatePresence initial={false}>
-        <motion.div
-          key={index}
-          className="absolute inset-0"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 1.6, ease: "easeInOut" }}
-        >
-          <Image
-            src={backgrounds[index].src}
-            alt=""
-            fill
-            priority={index === 0}
-            sizes="100vw"
-            className="object-cover saturate-[0.85] motion-safe:animate-[kenburns_9s_ease-out_forwards]"
-            style={{ objectPosition: backgrounds[index].position }}
-          />
-        </motion.div>
-      </AnimatePresence>
-      {/* Foto a color con velo de marca suave; el degradado oscuro solo cubre la zona del texto (contraste AA). */}
-      <div className="absolute inset-0 bg-goyn-violeta/25 mix-blend-multiply" />
-      <div className="absolute inset-0 bg-linear-to-r from-goyn-navy/85 via-goyn-violeta/40 to-transparent" />
-      <div className="absolute inset-0 bg-goyn-navy/30 lg:hidden" />
-      <div className="absolute inset-x-0 bottom-0 h-40 bg-linear-to-t from-goyn-navy/60 to-transparent" />
-      <div className="absolute bottom-24 left-1/2 flex -translate-x-1/2 gap-2 sm:left-8 sm:translate-x-0 lg:left-[max(2rem,calc((100vw-80rem)/2+2rem))]">
-        {backgrounds.map((b, i) => (
-          <span key={b.src} className={cn("h-1.5 rounded-full bg-white transition-all duration-700", i === index ? "w-8 opacity-100" : "w-3 opacity-40")} />
-        ))}
-      </div>
+    <div className="absolute inset-0 -z-10 overflow-hidden bg-linear-to-br from-goyn-violeta via-[#7a00cc] to-[#4b0a8f]" aria-hidden>
+      <Image
+        src="/images/texturas/textura-06.webp"
+        alt=""
+        fill
+        priority
+        sizes="100vw"
+        className="object-cover opacity-25 brightness-0 invert motion-safe:animate-[kenburns_24s_ease-in-out_infinite_alternate]"
+      />
+      <div className="absolute inset-0 bg-radial-[at_15%_40%] from-[#4b0a8f]/60 via-transparent to-transparent" />
     </div>
   );
 }

@@ -120,6 +120,60 @@ export default async function PanelPage() {
         </Reveal>
       )}
 
+      {/* Resumen de programas: de dónde salen las cifras (ajustes 06-oct). */}
+      <Reveal className="rounded-3xl border bg-card p-5 sm:p-6">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+          <div className="max-w-3xl">
+            <h2 className="flex items-center gap-2 font-heading text-lg font-bold text-foreground">
+              <FolderKanbanIcon className="size-5 text-goyn-violeta" aria-hidden /> Tus programas y lo que logran
+            </h2>
+            <p className="mt-1 text-muted-foreground">
+              {programs.length > 0 ? (
+                <>
+                  <strong className="text-foreground">{org.name}</strong> tiene {programs.length} programa{programs.length > 1 ? "s" : ""} activo{programs.length > 1 ? "s" : ""} con jóvenes
+                  {org.area_codes.length > 0 && <> en {org.area_codes.slice(0, 3).map((a) => label("impactAreas", a).toLowerCase()).join(", ")}</>}. De ellos salen las cifras de tu panel:
+                </>
+              ) : (
+                "Aún no tienes programas publicados. Agrégalos para que el ecosistema sepa con qué jóvenes trabajas y de dónde salen tus cifras."
+              )}
+            </p>
+          </div>
+          <Link href="/panel/programas" className={cn(buttonVariants(), "h-10 shrink-0 rounded-full px-5 font-bold")}>
+            Ir a programas <ArrowRightIcon aria-hidden />
+          </Link>
+        </div>
+        {programs.length > 0 && (
+          <ul className="mt-5 grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+            {programs.map((p, i) => {
+              const r = byProgram[i];
+              return (
+                <li key={p.id} className="rounded-2xl border bg-muted/40 p-4">
+                  <p className="font-heading font-bold text-foreground">{p.name}</p>
+                  <p className="text-sm text-muted-foreground">
+                    {label("impactAreas", p.primary_area_code)} · {label("modalities", p.modality_code)}
+                  </p>
+                  <dl className="mt-3 grid grid-cols-3 gap-2 text-center">
+                    {[
+                      { k: "Conectados", v: r.conectados, c: "#9B00FF" },
+                      { k: "Fortalecidos", v: r.fortalecidos, c: "#00A0CC" },
+                      { k: "Transformados", v: r.transformados, c: "#DB0089" },
+                    ].map((x) => (
+                      <div key={x.k} className="flex flex-col-reverse rounded-xl bg-card p-2">
+                        <dt className="flex items-center justify-center gap-1 text-[11px] font-semibold text-muted-foreground">
+                          <span aria-hidden className="size-1.5 rounded-full" style={{ backgroundColor: x.c }} />
+                          {x.k}
+                        </dt>
+                        <dd className="font-heading text-lg font-bold text-foreground tabular-nums">{x.v.toLocaleString("es-CO")}</dd>
+                      </div>
+                    ))}
+                  </dl>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </Reveal>
+
       {/* KPIs propios en vivo */}
       <PanelKpis slug={org.slug} base={{ conectados: t.conectados, fortalecidos: t.fortalecidos, transformados: t.transformados }} />
 

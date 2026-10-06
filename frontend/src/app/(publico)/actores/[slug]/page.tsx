@@ -1,4 +1,4 @@
-import { ArrowLeftIcon, BadgeCheckIcon, CalendarIcon, GlobeIcon, MailIcon, MapPinIcon, SparklesIcon, UsersIcon } from "lucide-react";
+import { ArrowLeftIcon, BadgeCheckIcon, CalendarIcon, ChevronDownIcon, GlobeIcon, MailIcon, MapPinIcon, SparklesIcon, UsersIcon } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -104,20 +104,31 @@ export default async function ActorPage(props: PageProps<"/actores/[slug]">) {
                 ))}
               </ul>
             )}
-            <div className="grid gap-3 sm:grid-cols-2">
+            {/* Cada área es desplegable: la lectura inicial es corta y se profundiza donde interese. */}
+            <div className="grid items-start gap-3 sm:grid-cols-2">
               {problemsByArea.map(({ area, problems }) => {
                 const a = item("impactAreas", area);
                 return (
-                  <div key={area} className="rounded-2xl border bg-card p-4" style={{ borderTopColor: a?.color, borderTopWidth: 4 }}>
-                    <p className="font-heading font-bold text-foreground">{a?.label}</p>
-                    {problems.length > 0 ? (
-                      <ul className="mt-2 space-y-1.5 text-sm text-muted-foreground">
-                        {problems.map((p) => <li key={p.code} className="flex gap-2"><span aria-hidden>•</span>{p.label}</li>)}
-                      </ul>
-                    ) : (
-                      <p className="mt-2 text-sm text-muted-foreground">{a?.description}</p>
-                    )}
-                  </div>
+                  <details key={area} className="group rounded-2xl border bg-card" style={{ borderTopColor: a?.color, borderTopWidth: 4 }}>
+                    <summary className="flex cursor-pointer list-none items-center justify-between gap-3 p-4 focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none [&::-webkit-details-marker]:hidden">
+                      <span>
+                        <span className="block font-heading font-bold text-foreground">{a?.label}</span>
+                        <span className="text-xs text-muted-foreground">
+                          {problems.length > 0 ? `${problems.length} problemática${problems.length > 1 ? "s" : ""} que atiende` : "Ver descripción"}
+                        </span>
+                      </span>
+                      <ChevronDownIcon className="size-4 shrink-0 text-goyn-violeta transition-transform group-open:rotate-180" aria-hidden />
+                    </summary>
+                    <div className="px-4 pb-4">
+                      {problems.length > 0 ? (
+                        <ul className="space-y-1.5 text-sm text-muted-foreground">
+                          {problems.map((p) => <li key={p.code} className="flex gap-2"><span aria-hidden>•</span>{p.label}</li>)}
+                        </ul>
+                      ) : (
+                        <p className="text-sm text-muted-foreground">{a?.description}</p>
+                      )}
+                    </div>
+                  </details>
                 );
               })}
             </div>
@@ -133,7 +144,7 @@ export default async function ActorPage(props: PageProps<"/actores/[slug]">) {
                   <div className="flex flex-wrap items-start justify-between gap-2">
                     <div>
                       <p className="font-heading text-lg font-bold text-foreground">{p.name}</p>
-                      <p className="text-sm text-muted-foreground">{p.description}</p>
+                      <p className="mt-1 text-base font-medium text-foreground/80">{p.description}</p>
                     </div>
                     <span className="rounded-full bg-goyn-lila px-3 py-1 text-xs font-bold text-goyn-violeta">{label("modalities", p.modality_code)}</span>
                   </div>
