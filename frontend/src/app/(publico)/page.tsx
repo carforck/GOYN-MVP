@@ -113,12 +113,12 @@ export default function HomePage() {
           </Reveal>
           <div className="relative mx-auto -mt-20 h-[400px] w-full max-w-md sm:-mt-36 sm:h-[540px]">
             {/* Arco de la marca detrás de la persona, apoyado en el borde de la banda: le da profundidad. */}
-            <div aria-hidden className="absolute bottom-0 left-1/2 h-[72%] w-[84%] -translate-x-1/2 rounded-t-full bg-linear-to-b from-goyn-magenta to-[#c400b8]" />
+            <div aria-hidden className="absolute bottom-0 left-1/2 h-[72%] w-[84%] -translate-x-1/2 rounded-t-full bg-linear-to-b from-goyn-amarillo to-[#ffa41f]" />
             <FloatingShape name="aro_rayado" size={130} className="top-[22%] -right-2 z-0 opacity-80" float={10} parallax={0} />
             <FloatingShape name="asterisco" size={48} white className="top-[34%] left-0 z-20" spin={360} duration={14} parallax={0} />
             <Image
               src="/images/fotos/proposito-silueta.webp"
-              alt="Integrante del Colaborativo GOYN Barranquilla"
+              alt="Joven del Colaborativo GOYN Barranquilla con la camiseta Jóvenes inspirando jóvenes"
               fill
               sizes="(min-width: 768px) 32vw, 85vw"
               className="z-10 object-contain object-bottom drop-shadow-[0_18px_30px_rgba(6,10,40,0.35)]"
