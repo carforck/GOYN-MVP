@@ -26,7 +26,9 @@ export function Pillars() {
                 height={96}
                 className="size-20 transition-transform duration-300 group-hover:scale-110 group-hover:-rotate-6 sm:size-24"
               />
-              <span className="text-sm leading-snug font-semibold text-foreground group-hover:text-goyn-magenta-a11y">{p.title}</span>
+              <span className="text-sm leading-snug font-semibold text-foreground group-hover:text-goyn-magenta-a11y">
+                {p.title}
+              </span>
             </button>
           </li>
         ))}
@@ -37,17 +39,36 @@ export function Pillars() {
           {open && (
             <>
               <div className="flex items-center gap-4 pr-6">
-                <Image src={`/images/pilares/${open.code}.svg`} alt="" width={72} height={72} className="size-16 shrink-0" />
-                <DialogTitle className="font-heading text-2xl leading-tight font-bold text-goyn-magenta-a11y">{open.title}</DialogTitle>
+                <Image
+                  src={`/images/pilares/${open.code}.svg`}
+                  alt=""
+                  width={72}
+                  height={72}
+                  className="size-16 shrink-0"
+                />
+                <DialogTitle className="font-heading text-2xl leading-tight font-bold text-goyn-magenta-a11y">
+                  {open.title}
+                </DialogTitle>
               </div>
-              <ul className="space-y-2.5">
-                {open.points.map((t) => (
-                  <li key={t} className="flex gap-2.5 text-sm leading-relaxed text-foreground/85">
-                    <span aria-hidden className="mt-1.5 size-2 shrink-0 rounded-full bg-goyn-violeta" />
-                    {t}
-                  </li>
-                ))}
-              </ul>
+              <p className="text-base leading-relaxed text-foreground/85">
+                {open.text}
+              </p>
+              {open.points && (
+                <ul className="space-y-2.5">
+                  {open.points.map((t) => (
+                    <li
+                      key={t}
+                      className="flex gap-2.5 text-sm leading-relaxed text-foreground/85"
+                    >
+                      <span
+                        aria-hidden
+                        className="mt-1.5 size-2 shrink-0 rounded-full bg-goyn-violeta"
+                      />
+                      {t}
+                    </li>
+                  ))}
+                </ul>
+              )}
             </>
           )}
         </DialogContent>

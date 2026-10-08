@@ -9,7 +9,7 @@ import { FloatingShape } from "@/components/motion/floating-shape";
 import { Reveal } from "@/components/motion/reveal";
 import { buttonVariants } from "@/components/ui/button";
 import { catalogs } from "@/lib/catalogs";
-import { acerca, areasIntro, ctaRegistro, glosario, proposito } from "@/lib/home-content";
+import { acerca, areasIntro, ctaRegistro, glosario, pilaresIntro, proposito } from "@/lib/home-content";
 import { cn } from "@/lib/utils";
 
 export default function HomePage() {
@@ -132,7 +132,7 @@ export default function HomePage() {
         <Reveal className="mb-10 space-y-3">
           <span className="goyn-eyebrow">Nuestro enfoque</span>
           <h2 id="pilares" className="text-3xl font-bold text-foreground sm:text-4xl">Nuestros pilares</h2>
-          <p className="text-muted-foreground">Toca cada pilar para conocer su definición.</p>
+          <p className="max-w-3xl text-muted-foreground">{pilaresIntro} Toca cada pilar para conocer su definición.</p>
         </Reveal>
         <Pillars />
       </section>

@@ -19,26 +19,53 @@ export const acerca = {
 export const proposito =
   "Buscamos construir, entre todos los actores del ecosistema, una mirada compartida sobre las acciones y los resultados que se generan por la juventud en Barranquilla, para tomar mejores decisiones, fortalecer alianzas y avanzar juntos hacia más y mejores oportunidades para los jóvenes con potencial de la ciudad.";
 
-export type Pillar = { code: string; title: string; points: string[]; pendiente?: boolean };
+export type Pillar = { code: string; title: string; text: string; points?: string[] };
 
-const PENDIENTE = ["El equipo GOYN está preparando la definición de este pilar."];
+// Definiciones oficiales publicadas en goynbarranquilla.com/nosotros ("Nuestros pilares").
+// Los puntos de "Articulación basada en el territorio" vienen de la maqueta del 08-oct.
+export const pilaresIntro = "Estos pilares orientan nuestra forma de trabajar y articulan las capacidades del ecosistema para generar cambios sostenibles.";
 
 export const pilares: Pillar[] = [
   {
     code: "articulacion_territorio",
     title: "Articulación basada en el territorio",
+    text: "Construimos estrategias a partir de las realidades, retos y oportunidades del territorio, articulando a jóvenes, comunidades y actores del ecosistema alrededor de una visión compartida de cambio.",
     points: [
       "Diseñar estrategias coherentes con los retos de los jóvenes y las características de la demanda actual y futura del mercado.",
       "Construir una estructura de colaboración con jóvenes y líderes de la comunidad con una visión compartida de impacto.",
       "Coordinar el ecosistema local de oportunidades para los jóvenes para abordar las barreras estructurales que enfrentan.",
     ],
   },
-  { code: "movilizacion", title: "Movilización colectiva", points: PENDIENTE, pendiente: true },
-  { code: "red_aprendizajes", title: "Red de aprendizajes", points: PENDIENTE, pendiente: true },
-  { code: "participacion_liderazgo", title: "Participación y liderazgo juvenil", points: PENDIENTE, pendiente: true },
-  { code: "financiacion", title: "Financiación diversificada", points: PENDIENTE, pendiente: true },
-  { code: "datos_tecnologia", title: "Datos y tecnología", points: PENDIENTE, pendiente: true },
-  { code: "equidad_acceso", title: "Equidad y acceso a oportunidades", points: PENDIENTE, pendiente: true },
+  {
+    code: "movilizacion",
+    title: "Movilización colectiva",
+    text: "Sumamos nuevos aliados para fortalecer un movimiento que impulse cambios en las mentalidades, prácticas y políticas que afectan las oportunidades de los jóvenes.",
+  },
+  {
+    code: "red_aprendizajes",
+    title: "Red de aprendizajes",
+    text: "Compartimos investigación, evidencia y aprendizajes para fortalecer las capacidades del ecosistema, promover la innovación y mejorar continuamente las acciones dirigidas a los jóvenes.",
+  },
+  {
+    code: "participacion_liderazgo",
+    title: "Participación y liderazgo juvenil",
+    text: "Ponemos las voces y perspectivas de los jóvenes en el centro de las soluciones, fortaleciendo su capacidad de agencia y liderazgo para que sean protagonistas de los cambios en sus territorios.",
+  },
+  {
+    code: "financiacion",
+    title: "Financiación diversificada",
+    text: "Movilizamos fuentes de financiación diversas e innovadoras, locales y globales, para fortalecer las iniciativas que amplían las oportunidades para los jóvenes con potencial.",
+  },
+  {
+    code: "datos_tecnologia",
+    title: "Datos y tecnología",
+    text: "Fortalecemos el uso de datos, análisis y herramientas tecnológicas para tomar mejores decisiones, comprender las realidades de los jóvenes y desarrollar soluciones con potencial de impacto a escala.",
+  },
+  {
+    code: "equidad_acceso",
+    title: "Equidad y acceso a oportunidades",
+    text: "Trabajamos para reducir y eliminar las barreras que limitan el acceso de los jóvenes a oportunidades de educación, empleo formal y emprendimiento, promoviendo trayectorias más equitativas.",
+  },
 ];
 
 export const glosario: { term: string; text: string; pendiente?: boolean }[] = [
