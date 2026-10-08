@@ -4,6 +4,7 @@ import { ChevronDownIcon, GlobeIcon, LayersIcon, Share2Icon, SlidersHorizontalIc
 import { useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { METRICS, type ColorBy, type GroupBy, type Metric } from "@/components/ecosystem/ecosystem-map";
+import { relationColors } from "@/components/ecosystem/map-constants";
 import { FilterGroups, FilterHeader } from "@/components/ecosystem/filter-panel";
 import { useLive } from "@/components/live/live-provider";
 import { AnimatedNumber } from "@/components/motion/animated-number";
@@ -12,10 +13,11 @@ import { countActive, parseFilters } from "@/lib/filters";
 import type { MapStats } from "@/lib/map-stats";
 import { cn } from "@/lib/utils";
 
+// Leyenda de conexiones: mismo trazo que en el mapa (sólida / guiones / puntos).
 const relationLegend = [
-  { code: "socio", label: "Socios", color: "#FF01A2" },
-  { code: "aliado", label: "Aliados", color: "#9B00FF" },
-  { code: "colaborador", label: "Colaboradores", color: "#00A0CC" },
+  { code: "socio", label: "Socios", color: relationColors.socio, dash: undefined, width: 3 },
+  { code: "aliado", label: "Aliados", color: relationColors.aliado, dash: "6 3", width: 2.2 },
+  { code: "colaborador", label: "Colaboradores", color: relationColors.colaborador, dash: "0.1 4.5", width: 2.6 },
 ];
 
 // Panel del mapa (referencia: panel por país del cybermap): contadores en vivo por territorio,
@@ -226,7 +228,9 @@ export function MapHud({
                 <ul className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-goyn-navy/75">
                   {relationLegend.map((r) => (
                     <li key={r.code} className="flex items-center gap-1.5">
-                      <span aria-hidden className="h-0.5 w-4 rounded-full" style={{ backgroundColor: r.color }} />
+                      <svg aria-hidden width="26" height="8" viewBox="0 0 26 8">
+                        <line x1="2" y1="4" x2="24" y2="4" stroke={r.color} strokeWidth={r.width} strokeDasharray={r.dash} strokeLinecap={r.code === "colaborador" ? "round" : "butt"} />
+                      </svg>
                       {r.label}
                     </li>
                   ))}

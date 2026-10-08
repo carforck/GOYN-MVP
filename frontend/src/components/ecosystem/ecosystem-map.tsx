@@ -13,6 +13,7 @@ import { ActiveFilterChips } from "@/components/ecosystem/filter-panel";
 import { MapGuide } from "@/components/ecosystem/map-guide";
 import { MapHud } from "@/components/ecosystem/map-hud";
 import { MapNotifications } from "@/components/ecosystem/map-notifications";
+import { ARC_STYLES, relationColors } from "@/components/ecosystem/map-constants";
 import type { LiveEvent } from "@/lib/live/types";
 import { type BasemapProvider, loadBasemap } from "@/components/ecosystem/map-style";
 import { catalogs } from "@/lib/catalogs";
@@ -61,7 +62,8 @@ export const METRICS: { key: Metric; label: string; color: string }[] = [
   { key: "transformados", label: "Jóvenes transformados", color: "#DB0089" },
 ];
 export type GroupBy = "cercania" | "territorio";
-export const relationColors: Record<string, string> = { socio: "#FF01A2", aliado: "#9B00FF", colaborador: "#00A0CC" };
+export { relationColors } from "@/components/ecosystem/map-constants";
+const ARC_LAYERS = ARC_STYLES.map(([t]) => `arcs-${t}`);
 
 // Localidades del catálogo (centroides) para la capa de referencia del mapa claro.
 const LOCALITIES: GeoJSON.FeatureCollection<GeoJSON.Point> = {
@@ -89,12 +91,6 @@ function arc(from: [number, number], to: [number, number], steps = 40): [number,
     return [a * x1 + b * cx + c * x2, a * y1 + b * cy + c * y2];
   });
 }
-
-// Secuencia de guiones para simular flujo sobre los arcos (técnica de "línea animada" de MapLibre).
-const DASHES = [
-  [0, 4, 3], [0.5, 4, 2.5], [1, 4, 2], [1.5, 4, 1.5], [2, 4, 1], [2.5, 4, 0.5], [3, 4, 0],
-  [0, 0.5, 3, 3.5], [0, 1, 3, 3], [0, 1.5, 3, 2.5], [0, 2, 3, 2], [0, 2.5, 3, 1.5], [0, 3, 3, 1], [0, 3.5, 3, 0.5],
-];
 
 type Ripple = { id: string; lng: number; lat: number; color: string; start: number; big: boolean };
 
@@ -367,15 +363,18 @@ function EcosystemMapInner({ orgs, relations, stats, className }: MapProps) {
           paint: { "text-color": "#6A00C2", "text-halo-color": "#FFFFFF", "text-halo-width": 1.5 },
         });
 
-        const byType = ["match", ["get", "type"], "socio", relationColors.socio, "aliado", relationColors.aliado, relationColors.colaborador];
-        instance.addLayer({ id: "arcs-base", type: "line", source: "arcs", layout: { visibility: "none" }, paint: { "line-color": byType as never, "line-width": 0.8, "line-opacity": 0.18 } });
-        instance.addLayer({
-          id: "arcs-flow",
-          type: "line",
-          source: "arcs",
-          layout: { "line-cap": "round", visibility: "none" },
-          paint: { "line-color": byType as never, "line-width": 1.8, "line-opacity": 0.75, "line-blur": 0.5, "line-dasharray": DASHES[0] },
-        });
+        // Conexiones: el tipo se distingue por el trazo, no solo por el color (accesible para daltonismo).
+        // Socios = sólida y gruesa · Aliados = guiones largos · Colaboradores = punteada. Reunión 08-oct.
+        for (const [type, dash, width] of ARC_STYLES) {
+          instance.addLayer({
+            id: `arcs-${type}`,
+            type: "line",
+            source: "arcs",
+            filter: ["==", ["get", "type"], type],
+            layout: { "line-cap": type === "colaborador" ? "round" : "butt", visibility: "none" },
+            paint: { "line-color": relationColors[type], "line-width": width, "line-opacity": 0.85, ...(dash ? { "line-dasharray": dash } : {}) },
+          });
+        }
         instance.addLayer({
           id: "flights",
           type: "line",
@@ -521,7 +520,6 @@ function EcosystemMapInner({ orgs, relations, stats, className }: MapProps) {
         ready.current = true;
 
         // Bucle de animación: flujo de arcos, respiración de los actores, ondas y vuelos en vivo.
-        let step = -1;
         const loop = (now: number) => {
           raf = requestAnimationFrame(loop);
           if (document.hidden) return;
@@ -541,11 +539,6 @@ function EcosystemMapInner({ orgs, relations, stats, className }: MapProps) {
           }
         };
         const frame = (now: number) => {
-          const s = Math.floor(now / 70) % DASHES.length;
-          if (s !== step && instance.getLayer("arcs-flow")) {
-            step = s;
-            instance.setPaintProperty("arcs-flow", "line-dasharray", DASHES[s]);
-          }
           const breathe = 0.45 + Math.sin(now / 700) * 0.2;
           instance.setPaintProperty("points-glow", "circle-opacity", breathe);
           instance.setPaintProperty("clusters-glow", "circle-opacity", breathe + 0.1);
@@ -636,7 +629,7 @@ function EcosystemMapInner({ orgs, relations, stats, className }: MapProps) {
     set(["clusters-glow", "clusters", "cluster-count", "points-glow", "points", "points-hit"], !byTerritory);
     set(["terr-glow", "terr-bubbles", "terr-labels"], byTerritory);
     set(["loc-label"], !byTerritory);
-    set(["arcs-base", "arcs-flow"], showArcs && !byTerritory);
+    set(ARC_LAYERS, showArcs && !byTerritory);
   }, [showArcs, groupBy]);
   useEffect(() => {
     const m = map.current;
