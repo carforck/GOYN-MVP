@@ -2,11 +2,9 @@ import { ArrowRightIcon, MapIcon } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { RoleIcon } from "@/components/ecosystem/role-badge";
-import { LiveGlobe } from "@/components/globe/live-globe";
 import { HeroBackground, HeroPhotoRail } from "@/components/home/hero-slideshow";
 import { Pillars } from "@/components/home/pillars";
-import { LiveBigStats, LiveKpiStrip } from "@/components/live/live-kpis";
-import { LiveFeed } from "@/components/live/live-ticker";
+import { LiveKpiStrip } from "@/components/live/live-kpis";
 import { FloatingShape } from "@/components/motion/floating-shape";
 import { Reveal } from "@/components/motion/reveal";
 import { buttonVariants } from "@/components/ui/button";
@@ -191,30 +189,6 @@ export default function HomePage() {
               </Reveal>
             ))}
           </ul>
-        </div>
-      </section>
-
-      {/* El ecosistema en vivo: globo 3D + cifras y actividad en tiempo real */}
-      <section aria-labelledby="en-vivo" className="relative isolate overflow-hidden bg-goyn-navy text-white">
-        <div aria-hidden className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_70%_50%,rgba(155,0,255,0.35),transparent_60%)]" />
-        <div className="goyn-container grid items-center gap-10 py-16 sm:py-20 lg:grid-cols-[1fr_1.15fr]">
-          <div className="relative z-10 space-y-8">
-            <Reveal className="space-y-3">
-              <span className="goyn-eyebrow bg-goyn-magenta-a11y">
-                <span className="goyn-live-dot bg-white" aria-hidden /> En vivo
-              </span>
-              <h2 id="en-vivo" className="text-3xl font-bold uppercase sm:text-5xl">De lo global a nuestro territorio</h2>
-              <p className="max-w-lg text-white/75">
-                Somos parte de la Global Opportunity Youth Network. Aquí ves, en tiempo real, lo que el Colaborativo logra por las juventudes de Barranquilla y su área metropolitana.
-              </p>
-            </Reveal>
-            <LiveBigStats dark compact />
-            <LiveFeed limit={4} dark />
-            <Link href="/mapa" className={cn(buttonVariants(), "h-12 rounded-full bg-goyn-violeta px-6 text-base font-bold text-white hover:bg-goyn-violeta/90")}>
-              Entrar al mapa en vivo <ArrowRightIcon aria-hidden />
-            </Link>
-          </div>
-          <LiveGlobe variant="home" className="h-[420px] sm:h-[560px] lg:h-[680px] lg:-mr-24" />
         </div>
       </section>
 
