@@ -99,20 +99,30 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* Nuestro propósito: texto + foto silueteada */}
-      <section aria-labelledby="proposito" className="relative isolate mt-24 bg-goyn-violeta text-white sm:mt-32">
+      {/* Nuestro propósito: texto + foto recortada que sobresale de la banda (diseño 08-oct) */}
+      <section aria-labelledby="proposito" className="relative isolate mt-24 bg-linear-to-br from-goyn-violeta via-[#8a00e6] to-[#6a00c2] text-white sm:mt-32">
         <div aria-hidden className="absolute inset-0 -z-10 overflow-hidden">
-          <Image src="/images/texturas/textura-06.webp" alt="" fill sizes="100vw" className="object-cover opacity-15 brightness-0 invert" />
+          <Image src="/images/texturas/textura-06.webp" alt="" fill sizes="100vw" className="object-cover opacity-[0.08] brightness-0 invert" />
+          <div className="absolute -right-24 -bottom-32 size-[28rem] rounded-full bg-goyn-magenta/25 blur-3xl" />
         </div>
-        <div className="goyn-container grid items-end gap-8 md:grid-cols-[1.1fr_1fr]">
-          <Reveal className="space-y-4 py-14 sm:py-20">
-            <h2 id="proposito" className="text-3xl font-bold sm:text-4xl">Nuestro propósito</h2>
-            <p className="max-w-xl text-lg leading-relaxed text-white/90">{proposito}</p>
+        <div className="goyn-container grid items-end gap-6 md:grid-cols-[1.15fr_1fr] md:gap-10">
+          <Reveal className="space-y-5 py-14 sm:py-20">
+            <span className="goyn-eyebrow bg-white/15 backdrop-blur">Por qué lo hacemos</span>
+            <h2 id="proposito" className="text-4xl font-bold sm:text-5xl">Nuestro propósito</h2>
+            <p className="max-w-xl text-lg leading-relaxed font-medium text-white sm:text-xl">{proposito}</p>
           </Reveal>
-          <div className="relative mx-auto -mt-20 h-[380px] w-full max-w-sm sm:-mt-28 sm:h-[480px]">
-            <FloatingShape name="aro_rayado" size={120} className="top-[28%] right-0 z-10 opacity-90" float={10} parallax={0} />
-            <FloatingShape name="rayo" size={56} className="bottom-[22%] left-2 z-10" float={12} delay={0.3} parallax={0} />
-            <Image src="/images/fotos/proposito-silueta.webp" alt="Integrante del Colaborativo GOYN Barranquilla" fill sizes="(min-width: 768px) 30vw, 80vw" className="object-contain object-bottom" />
+          <div className="relative mx-auto -mt-20 h-[400px] w-full max-w-md sm:-mt-36 sm:h-[540px]">
+            {/* Arco de la marca detrás de la persona, apoyado en el borde de la banda: le da profundidad. */}
+            <div aria-hidden className="absolute bottom-0 left-1/2 h-[72%] w-[84%] -translate-x-1/2 rounded-t-full bg-linear-to-b from-goyn-magenta to-[#c400b8]" />
+            <FloatingShape name="aro_rayado" size={130} className="top-[22%] -right-2 z-0 opacity-80" float={10} parallax={0} />
+            <FloatingShape name="asterisco" size={48} white className="top-[34%] left-0 z-20" spin={360} duration={14} parallax={0} />
+            <Image
+              src="/images/fotos/proposito-silueta.webp"
+              alt="Integrante del Colaborativo GOYN Barranquilla"
+              fill
+              sizes="(min-width: 768px) 32vw, 85vw"
+              className="z-10 object-contain object-bottom drop-shadow-[0_18px_30px_rgba(6,10,40,0.35)]"
+            />
           </div>
         </div>
       </section>
