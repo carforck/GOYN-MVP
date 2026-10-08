@@ -16,6 +16,7 @@ import { MapNotifications } from "@/components/ecosystem/map-notifications";
 import type { LiveEvent } from "@/lib/live/types";
 import { type BasemapProvider, loadBasemap } from "@/components/ecosystem/map-style";
 import { catalogs } from "@/lib/catalogs";
+import type { MapStats } from "@/lib/map-stats";
 import { cn } from "@/lib/utils";
 import { webglSupported } from "@/lib/webgl";
 
@@ -97,7 +98,7 @@ const DASHES = [
 
 type Ripple = { id: string; lng: number; lat: number; color: string; start: number; big: boolean };
 
-type MapProps = { orgs: MapOrg[]; relations: MapRelation[]; className?: string };
+type MapProps = { orgs: MapOrg[]; relations: MapRelation[]; stats: MapStats; className?: string };
 
 // Envoltorio de seguridad: si algo del mapa falla, la página y la lista siguen funcionando.
 export function EcosystemMap(props: MapProps) {
@@ -114,7 +115,7 @@ export function EcosystemMap(props: MapProps) {
   );
 }
 
-function EcosystemMapInner({ orgs, relations, className }: MapProps) {
+function EcosystemMapInner({ orgs, relations, stats, className }: MapProps) {
   const container = useRef<HTMLDivElement>(null);
   const map = useRef<MapLibreMap | null>(null);
   const ready = useRef(false);
@@ -147,9 +148,8 @@ function EcosystemMapInner({ orgs, relations, className }: MapProps) {
     const rows = catalogs.territories
       .filter((t) => t.lat != null && t.lng != null && t.code !== "cobertura_general")
       .map((t) => {
-        const orgsHere = orgs.filter((o) => o.territory_code === t.code).length;
-        const tl = live.territories[t.code];
-        const value = metric === "orgs" ? orgsHere : (tl?.[metric] ?? 0);
+        const ts = stats.byTerritory[t.code];
+        const value = metric === "orgs" ? (ts?.sede ?? 0) : (ts?.[metric] ?? 0);
         return { t, value };
       })
       .filter((x) => x.value > 0);
@@ -163,7 +163,7 @@ function EcosystemMapInner({ orgs, relations, className }: MapProps) {
         properties: { label: t.label.replace(/^(BAQ|AMB) – /, ""), code: t.code, value, display: value.toLocaleString("es-CO"), size: value / max, color },
       })),
     };
-  }, [orgs, live.territories, metric]);
+  }, [stats, metric]);
 
   // Contornos de localidades (OSM): las 5 de Barranquilla siempre; los municipios vecinos solo
   // cuando tienen organizaciones con los filtros actuales.
@@ -659,7 +659,7 @@ function EcosystemMapInner({ orgs, relations, className }: MapProps) {
         onMetric={chooseMetric}
         territory={focus}
         onTerritory={setFocus}
-        shown={orgs.length}
+        stats={stats}
         onReplay={() => {
           map.current?.jumpTo({ center: CENTER, zoom: 4.2, pitch: 0, bearing: 0 });
           setIntro("globo");

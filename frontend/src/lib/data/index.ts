@@ -32,23 +32,37 @@ const loadDemo = cache(async () => {
   };
 });
 
+// Supabase (PostgREST) entrega como máximo 1.000 filas por consulta: se pagina para no perder datos
+// en silencio (hay más de 1.000 reportes de indicador). `build` arma la consulta para cada página.
+const PAGE = 1000;
+async function fetchAll<T>(build: () => { range: (from: number, to: number) => PromiseLike<{ data: unknown; error: unknown }> }): Promise<T[]> {
+  const rows: T[] = [];
+  for (let from = 0; ; from += PAGE) {
+    const { data, error } = await build().range(from, from + PAGE - 1);
+    if (error) throw error;
+    const page = (data ?? []) as T[];
+    rows.push(...page);
+    if (page.length < PAGE) return rows;
+  }
+}
+
 export const listOrganizations = cache(async (filters: EcosystemFilters = {}): Promise<PublicOrganization[]> => {
   if (!isSupabaseConfigured) {
     const { organizations } = await loadDemo();
     return organizations.filter((o) => matchesFilters(o, filters)).sort((a, b) => a.name.localeCompare(b.name, "es"));
   }
   const supabase = await createClient();
-  let query = supabase.from("v_public_organization").select("*").order("name");
-  if (filters.q) query = query.or(`name.ilike.%${filters.q.replace(/[%,()]/g, "")}%,description.ilike.%${filters.q.replace(/[%,()]/g, "")}%`);
+  return fetchAll<PublicOrganization>(() => {
+    let query = supabase.from("v_public_organization").select("*").order("name").order("id");
+    if (filters.q) query = query.or(`name.ilike.%${filters.q.replace(/[%,()]/g, "")}%,description.ilike.%${filters.q.replace(/[%,()]/g, "")}%`);
   if (filters.tipo?.length) query = query.in("org_type_code", filters.tipo);
   if (filters.rol?.length) query = query.overlaps("role_codes", filters.rol);
   if (filters.area?.length) query = query.overlaps("area_codes", filters.area);
   if (filters.poblacion?.length) query = query.overlaps("population_codes", filters.poblacion);
   if (filters.territorio?.length) query = query.overlaps("territory_codes", filters.territorio);
   if (filters.linea?.length) query = query.overlaps("work_line_codes", filters.linea);
-  const { data, error } = await query;
-  if (error) throw error;
-  return data as PublicOrganization[];
+    return query;
+  });
 });
 
 export const getOrganization = cache(async (slug: string) => {
@@ -67,11 +81,10 @@ export const listPrograms = cache(async (organizationId?: string): Promise<Publi
     return organizationId ? programs.filter((p) => p.organization_id === organizationId) : programs;
   }
   const supabase = await createClient();
-  let query = supabase.from("v_public_program").select("*").order("name");
-  if (organizationId) query = query.eq("organization_id", organizationId);
-  const { data, error } = await query;
-  if (error) throw error;
-  return data as PublicProgram[];
+  return fetchAll<PublicProgram>(() => {
+    const query = supabase.from("v_public_program").select("*").order("name").order("id");
+    return organizationId ? query.eq("organization_id", organizationId) : query;
+  });
 });
 
 export const listRelations = cache(async (organizationId?: string): Promise<PublicRelation[]> => {
@@ -82,11 +95,10 @@ export const listRelations = cache(async (organizationId?: string): Promise<Publ
       : relations;
   }
   const supabase = await createClient();
-  let query = supabase.from("v_public_relation").select("*");
-  if (organizationId) query = query.or(`source_org_id.eq.${organizationId},target_org_id.eq.${organizationId}`);
-  const { data, error } = await query;
-  if (error) throw error;
-  return data as PublicRelation[];
+  return fetchAll<PublicRelation>(() => {
+    const query = supabase.from("v_public_relation").select("*").order("id");
+    return organizationId ? query.or(`source_org_id.eq.${organizationId},target_org_id.eq.${organizationId}`) : query;
+  });
 });
 
 export const listIndicatorReports = cache(async (organizationId?: string): Promise<IndicatorReport[]> => {
@@ -95,11 +107,10 @@ export const listIndicatorReports = cache(async (organizationId?: string): Promi
     return organizationId ? reports.filter((r) => r.organization_id === organizationId) : reports;
   }
   const supabase = await createClient();
-  let query = supabase.from("v_public_indicator_report").select("*").order("period_start");
-  if (organizationId) query = query.eq("organization_id", organizationId);
-  const { data, error } = await query;
-  if (error) throw error;
-  return data as IndicatorReport[];
+  return fetchAll<IndicatorReport>(() => {
+    const query = supabase.from("v_public_indicator_report").select("*").order("period_start").order("id");
+    return organizationId ? query.eq("organization_id", organizationId) : query;
+  });
 });
 
 export const getEcosystemStats = cache(async (): Promise<EcosystemStats> => {

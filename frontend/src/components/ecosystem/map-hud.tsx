@@ -9,6 +9,7 @@ import { useLive } from "@/components/live/live-provider";
 import { AnimatedNumber } from "@/components/motion/animated-number";
 import { catalogs } from "@/lib/catalogs";
 import { countActive, parseFilters } from "@/lib/filters";
+import type { MapStats } from "@/lib/map-stats";
 import { cn } from "@/lib/utils";
 
 const relationLegend = [
@@ -73,7 +74,7 @@ export function MapHud({
   onMetric,
   territory,
   onTerritory,
-  shown,
+  stats,
 }: {
   showArcs: boolean;
   onToggleArcs: () => void;
@@ -86,7 +87,7 @@ export function MapHud({
   onMetric: (v: Metric) => void;
   territory: string;
   onTerritory: (v: string) => void;
-  shown: number;
+  stats: MapStats;
 }) {
   const live = useLive();
   const params = useSearchParams();
@@ -94,10 +95,14 @@ export function MapHud({
   // null = automático: abierto en pantallas medianas y grandes, plegado en celular.
   const [open, setOpen] = useState<boolean | null>(null);
 
-  const totals =
-    territory === "todo"
-      ? { orgs: shown, conectados: live.stats.conectados, fortalecidos: live.stats.fortalecidos, transformados: live.stats.transformados }
-      : (live.territories[territory] ?? { orgs: 0, conectados: 0, fortalecidos: 0, transformados: 0 });
+  // Mismas cifras que dibujan el mapa (calculadas con los filtros). En una localidad,
+  // "Organizaciones" = con sede ahí (los puntos visibles); aparte, las que tienen presencia.
+  const ts = territory === "todo" ? null : stats.byTerritory[territory];
+  const totals = ts
+    ? { orgs: ts.sede, conectados: ts.conectados, fortalecidos: ts.fortalecidos, transformados: ts.transformados }
+    : territory === "todo"
+      ? stats.total
+      : { orgs: 0, conectados: 0, fortalecidos: 0, transformados: 0 };
 
   const rows = METRICS.map((m) => ({ ...m, value: totals[m.key] }));
 
@@ -155,13 +160,18 @@ export function MapHud({
                     >
                       <span className="flex items-center gap-2 text-xs font-semibold text-goyn-navy/80">
                         <span aria-hidden className="size-2.5 rounded-full" style={{ backgroundColor: r.color }} />
-                        {r.label}
+                        {r.key === "orgs" && ts ? "Organizaciones con sede" : r.label}
                       </span>
                       <AnimatedNumber key={`${territory}-${r.key}`} value={r.value} duration={1.1} className="font-heading text-lg font-bold" />
                     </button>
                   );
                 })}
               </div>
+              <p className="text-[11px] leading-snug text-goyn-navy/60">
+                {ts
+                  ? `Organizaciones con sede aquí (puntos del mapa). ${ts.presencia} declaran presencia en esta localidad. Jóvenes: reportes validados de programas que se ejecutan aquí.`
+                  : "Con los filtros actuales. Jóvenes: suma de reportes validados (no personas únicas)."}
+              </p>
             </Section>
 
             <Section

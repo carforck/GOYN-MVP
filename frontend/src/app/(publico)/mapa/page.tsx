@@ -5,15 +5,16 @@ import { EcosystemMap, type MapOrg, type MapRelation } from "@/components/ecosys
 import { FilterBar } from "@/components/ecosystem/filter-panel";
 import { EcosystemInsights } from "@/components/ecosystem/ecosystem-insights";
 import { shortTerritory } from "@/lib/catalogs";
-import { listOrganizations, listRelations } from "@/lib/data";
+import { listIndicatorReports, listOrganizations, listRelations } from "@/lib/data";
 import { computeEcosystemMetrics } from "@/lib/ecosystem-metrics";
+import { computeMapStats } from "@/lib/map-stats";
 import { parseFilters } from "@/lib/filters";
 
 export const metadata: Metadata = { title: "Mapa del ecosistema en vivo" };
 
 export default async function MapaPage(props: PageProps<"/mapa">) {
   const filters = parseFilters(await props.searchParams);
-  const [all, orgs, relations] = await Promise.all([listOrganizations(), listOrganizations(filters), listRelations()]);
+  const [all, orgs, relations, reports] = await Promise.all([listOrganizations(), listOrganizations(filters), listRelations(), listIndicatorReports()]);
 
   const points: MapOrg[] = orgs
     .filter((o) => o.lat != null && o.lng != null)
@@ -38,6 +39,7 @@ export default async function MapaPage(props: PageProps<"/mapa">) {
     .map((r) => ({ type: r.relation_type_code, from: coords.get(r.source_slug)!, to: coords.get(r.target_slug)! }));
 
   const metrics = computeEcosystemMetrics(orgs, relations);
+  const stats = computeMapStats(orgs, reports);
 
   return (
     <div className="goyn-container space-y-5 py-6 sm:py-8">
@@ -56,7 +58,7 @@ export default async function MapaPage(props: PageProps<"/mapa">) {
         <FilterBar view="mapa" total={all.length} shown={orgs.length} filterButton="mobile" />
       </Suspense>
 
-      <EcosystemMap orgs={points} relations={arcs} className="h-[78vh] min-h-[520px]" />
+      <EcosystemMap orgs={points} relations={arcs} stats={stats} className="h-[78vh] min-h-[520px]" />
 
       <p className="text-xs text-muted-foreground">
         Las ubicaciones aproximadas se muestran en el centro de su zona. ¿Prefieres leer las organizaciones una por una? Usa la <Link href="/actores" className="font-semibold text-goyn-violeta underline-offset-2 hover:underline">vista lista</Link>. Mapa: © OpenStreetMap, OpenFreeMap. Globo: NASA Blue Marble.
