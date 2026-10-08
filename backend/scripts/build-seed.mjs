@@ -2,11 +2,37 @@
 //   - supabase/seed.sql                         → carga en Supabase (is_demo = true)
 //   - ../frontend/src/lib/demo/demo-data.json   → modo demo del frontend (sin Supabase)
 // Todas las organizaciones son SINTÉTICAS: nombres, cifras y relaciones inventados.
-import { writeFileSync, mkdirSync } from "node:fs";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 import { createHash } from "node:crypto";
 import * as cat from "./catalogs.mjs";
+
+// Contornos oficiales (OSM) de las localidades: cada punto de prueba debe caer DENTRO de la suya
+// (antes una organización quedaba en el mar y otras en la localidad vecina).
+const LOCALITIES = JSON.parse(
+  readFileSync(fileURLToPath(new URL("../../frontend/public/geo/localidades.geojson", import.meta.url)), "utf8"),
+);
+const inRing = (x, y, r) => {
+  let c = false;
+  for (let i = 0, j = r.length - 1; i < r.length; j = i++) {
+    const [xi, yi] = r[i], [xj, yj] = r[j];
+    if (yi > y !== yj > y && x < ((xj - xi) * (y - yi)) / (yj - yi) + xi) c = !c;
+  }
+  return c;
+};
+const inLocality = (code, lng, lat) => {
+  const f = LOCALITIES.features.find((x) => x.properties.code === code);
+  return !f || f.geometry.coordinates.some((poly) => inRing(lng, lat, poly[0]));
+};
+// Desplazamiento aleatorio alrededor del centro; si sale del contorno se acerca al centro.
+function insideLocality(home, dLat, dLng) {
+  for (let k = 1; k > 0.02; k *= 0.6) {
+    const lat = +(home.lat + dLat * k).toFixed(5), lng = +(home.lng + dLng * k).toFixed(5);
+    if (inLocality(home.code, lng, lat)) return { lat, lng };
+  }
+  return { lat: home.lat, lng: home.lng };
+}
 
 // PRNG determinista para que el seed sea reproducible.
 let seed = 20260409;
@@ -130,8 +156,7 @@ for (const [name, type, primaryRole] of orgSeeds) {
     updated_at: updated,
     location_territory_code: home.code,
     municipality: home.municipality,
-    lat: +(home.lat + (rand() - 0.5) * 0.022).toFixed(5),
-    lng: +(home.lng + (rand() - 0.5) * 0.022).toFixed(5),
+    ...insideLocality(home, (rand() - 0.5) * 0.022, (rand() - 0.5) * 0.022),
     location_precision: "aproximada",
   };
   organizations.push(org);
