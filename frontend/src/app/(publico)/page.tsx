@@ -21,7 +21,6 @@ export default function HomePage() {
         <HeroBackground />
         <HeroPhotoRail />
         <FloatingShape name="asterisco" size={96} white className="top-10 left-[46%] hidden md:block" spin={360} duration={9} />
-        <FloatingShape name="aro_rayado" size={190} className="-bottom-16 left-[38%] hidden opacity-70 md:block" parallax={120} delay={0.2} />
         <FloatingShape name="mas" size={54} white className="top-24 right-[5%] opacity-80 lg:hidden" float={10} />
         <div className="goyn-container relative py-20 sm:py-28 lg:py-36">
           <div className="max-w-2xl space-y-6 xl:max-w-3xl">
