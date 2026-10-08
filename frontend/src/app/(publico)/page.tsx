@@ -20,8 +20,6 @@ export default function HomePage() {
       <section className="relative isolate overflow-hidden text-white">
         <HeroBackground />
         <HeroPhotoRail />
-        <FloatingShape name="asterisco" size={96} white className="top-10 left-[46%] hidden md:block" spin={360} duration={9} />
-        <FloatingShape name="mas" size={54} white className="top-24 right-[5%] opacity-80 lg:hidden" float={10} />
         <div className="goyn-container relative py-20 sm:py-28 lg:py-36">
           <div className="max-w-2xl space-y-6 xl:max-w-3xl">
             <div className="goyn-enter" style={{ ["--d" as string]: "0.05s" }}>

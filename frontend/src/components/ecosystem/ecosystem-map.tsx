@@ -63,6 +63,17 @@ export const METRICS: { key: Metric; label: string; color: string }[] = [
 ];
 export type GroupBy = "cercania" | "territorio";
 export { relationColors } from "@/components/ecosystem/map-constants";
+const LOCALITY_TONES = [
+  "baq_riomar", "#B98CFF",
+  "baq_norte_centro", "#7A00CC",
+  "baq_suroccidente", "#D4B8FF",
+  "baq_suroriente", "#9B4DFF",
+  "baq_metropolitana", "#5C1AA8",
+  "amb_puerto_colombia", "#8E5CE6",
+  "amb_soledad", "#C59CFF",
+  "amb_galapa", "#6E33C9",
+  "amb_malambo", "#A877F0",
+];
 const ARC_LAYERS = ARC_STYLES.map(([t]) => `arcs-${t}`);
 
 // Localidades del catálogo (centroides) para la capa de referencia del mapa claro.
@@ -310,8 +321,9 @@ function EcosystemMapInner({ orgs, relations, stats, className }: MapProps) {
           type: "fill",
           source: "loc-areas",
           paint: {
-            "fill-color": "#9B00FF",
-            "fill-opacity": ["case", [">", ["get", "count"], 0], ["interpolate", ["linear"], ["get", "count"], 1, 0.07, 12, 0.2], 0.025],
+            // Un tono de la gama morada por localidad (vecinas con tonos contrastados). Reunión 08-oct.
+            "fill-color": ["match", ["get", "code"], ...LOCALITY_TONES, "#9B00FF"] as never,
+            "fill-opacity": ["case", [">", ["get", "count"], 0], 0.22, 0.08],
           },
         });
         instance.addLayer({
