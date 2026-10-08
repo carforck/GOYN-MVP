@@ -3,7 +3,7 @@
 import { ChevronDownIcon, ListIcon, MapIcon, SearchIcon, SlidersHorizontalIcon, XIcon } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
-import { useState, useTransition } from "react";
+import { useId, useState, useTransition } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
@@ -81,6 +81,109 @@ export function FilterGroups({ compact = false }: { compact?: boolean }) {
         );
       })}
     </div>
+  );
+}
+
+const norm = (t: string) => t.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+
+type Suggestion = { kind: "org" | FilterKey; code: string; label: string; group: string };
+
+// Buscador con autocompletar (pedido del 08-oct): sugiere, a partir de los datos registrados,
+// organizaciones (→ su micro-ecosistema) y valores de catálogo (→ filtro). Se pueden elegir
+// varios; Enter sin sugerencia busca el texto libre.
+function SearchAutocomplete({ orgOptions }: { orgOptions: { slug: string; name: string }[] }) {
+  const { filters, apply, toggle } = useFilters();
+  const [q, setQ] = useState(filters.q ?? "");
+  const [open, setOpen] = useState(false);
+  const [hi, setHi] = useState(0);
+  const listId = useId();
+
+  const all: Suggestion[] = [
+    ...orgOptions.map((o) => ({ kind: "org" as const, code: o.slug, label: o.name, group: "Organización" })),
+    ...groups.flatMap((g) => g.options.map((o) => ({ kind: g.key, code: o.code, label: o.label.replace(/^(BAQ|AMB) – /, ""), group: g.title }))),
+  ];
+  const isChosen = (sg: Suggestion) => (sg.kind === "org" ? filters.org?.includes(sg.code) : filters[sg.kind]?.includes(sg.code)) ?? false;
+  const term = norm(q.trim());
+  const suggestions = term.length < 2 ? [] : all.filter((sg) => !isChosen(sg) && norm(sg.label).includes(term)).sort((a, b) => Number(!norm(a.label).startsWith(term)) - Number(!norm(b.label).startsWith(term))).slice(0, 8);
+
+  const choose = (sg: Suggestion) => {
+    if (sg.kind === "org") apply({ ...filters, q: undefined, org: [...(filters.org ?? []), sg.code] });
+    else {
+      if (filters.q) apply({ ...filters, q: undefined, [sg.kind]: [...(filters[sg.kind] ?? []), sg.code] });
+      else toggle(sg.kind, sg.code);
+    }
+    setQ("");
+    setOpen(false);
+    setHi(0);
+  };
+
+  return (
+    <form
+      role="search"
+      className="relative min-w-0 flex-1 basis-64"
+      onSubmit={(e) => {
+        e.preventDefault();
+        if (open && suggestions[hi]) return choose(suggestions[hi]);
+        apply({ ...filters, q: q.trim() || undefined });
+        setOpen(false);
+      }}
+    >
+      <SearchIcon className="pointer-events-none absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-muted-foreground" aria-hidden />
+      <Input
+        value={q}
+        onChange={(e) => {
+          setQ(e.target.value);
+          setOpen(true);
+          setHi(0);
+        }}
+        onFocus={() => setOpen(true)}
+        onBlur={() => setTimeout(() => setOpen(false), 150)}
+        onKeyDown={(e) => {
+          if (!suggestions.length) return;
+          if (e.key === "ArrowDown") { e.preventDefault(); setOpen(true); setHi((h) => (h + 1) % suggestions.length); }
+          if (e.key === "ArrowUp") { e.preventDefault(); setHi((h) => (h - 1 + suggestions.length) % suggestions.length); }
+          if (e.key === "Escape") setOpen(false);
+        }}
+        placeholder="Busca una organización, un tema, un rol o una localidad…"
+        aria-label="Buscar organización o tema"
+        role="combobox"
+        aria-autocomplete="list"
+        aria-expanded={open && suggestions.length > 0}
+        aria-controls={listId}
+        aria-activedescendant={open && suggestions[hi] ? `${listId}-${hi}` : undefined}
+        autoComplete="off"
+        className="h-11 rounded-full bg-card pr-10 pl-10"
+      />
+      {filters.q && (
+        <button
+          type="button"
+          aria-label="Borrar búsqueda"
+          onClick={() => { setQ(""); apply({ ...filters, q: undefined }); }}
+          className="absolute top-1/2 right-2 grid size-7 -translate-y-1/2 place-items-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground"
+        >
+          <XIcon className="size-4" aria-hidden />
+        </button>
+      )}
+      {open && suggestions.length > 0 && (
+        <ul id={listId} role="listbox" className="absolute inset-x-0 top-full z-40 mt-1.5 max-h-80 overflow-y-auto rounded-2xl border bg-card p-1.5 shadow-xl">
+          {suggestions.map((sg, i) => (
+            <li
+              key={`${sg.kind}-${sg.code}`}
+              id={`${listId}-${i}`}
+              role="option"
+              aria-selected={i === hi}
+              onMouseDown={(e) => { e.preventDefault(); choose(sg); }}
+              onMouseEnter={() => setHi(i)}
+              className={cn("flex cursor-pointer items-center justify-between gap-3 rounded-xl px-3 py-2 text-sm", i === hi && "bg-goyn-lila")}
+            >
+              <span className="truncate font-semibold text-foreground">{sg.label}</span>
+              <span className="shrink-0 rounded-full bg-muted px-2 py-0.5 text-[11px] font-semibold text-muted-foreground">{sg.group}</span>
+            </li>
+          ))}
+          <li className="px-3 pt-1.5 pb-1 text-[11px] text-muted-foreground">Elige una o varias opciones · Enter busca el texto escrito</li>
+        </ul>
+      )}
+    </form>
   );
 }
 
@@ -196,41 +299,26 @@ export function FilterHeader({ compact = false }: { compact?: boolean }) {
 
 // filterButton: "auto" = solo cuando no hay panel lateral (xl); "mobile" = solo en celular (en /mapa
 // los filtros viven en el panel del mapa).
-export function FilterBar({ view, total, shown, filterButton = "auto" }: { view: "mapa" | "lista"; total: number; shown: number; filterButton?: "auto" | "mobile" }) {
+export function FilterBar({
+  view,
+  total,
+  shown,
+  orgOptions = [],
+  filterButton = "auto",
+}: {
+  view: "mapa" | "lista";
+  total: number;
+  shown: number;
+  orgOptions?: { slug: string; name: string }[];
+  filterButton?: "auto" | "mobile";
+}) {
   const { filters, apply, pending, query } = useFilters();
-  const [q, setQ] = useState(filters.q ?? "");
   const active = countActive(filters);
 
   return (
     <div className="space-y-3">
       <div data-tour="buscar" className="flex flex-wrap items-center gap-2">
-        <form
-          role="search"
-          className="relative min-w-0 flex-1 basis-64"
-          onSubmit={(e) => {
-            e.preventDefault();
-            apply({ ...filters, q: q.trim() || undefined });
-          }}
-        >
-          <SearchIcon className="pointer-events-none absolute top-1/2 left-3.5 size-4 -translate-y-1/2 text-muted-foreground" aria-hidden />
-          <Input
-            value={q}
-            onChange={(e) => setQ(e.target.value)}
-            placeholder="Buscar organización o tema…"
-            aria-label="Buscar organización"
-            className="h-11 rounded-full bg-card pr-10 pl-10"
-          />
-          {filters.q && (
-            <button
-              type="button"
-              aria-label="Borrar búsqueda"
-              onClick={() => { setQ(""); apply({ ...filters, q: undefined }); }}
-              className="absolute top-1/2 right-2 grid size-7 -translate-y-1/2 place-items-center rounded-full text-muted-foreground hover:bg-muted hover:text-foreground"
-            >
-              <XIcon className="size-4" aria-hidden />
-            </button>
-          )}
-        </form>
+        <SearchAutocomplete orgOptions={orgOptions} />
 
         <Sheet>
           <SheetTrigger render={<Button variant="outline" className={cn("h-11 rounded-full px-4 font-semibold", filterButton === "auto" ? "xl:hidden" : "md:hidden")} />}>
@@ -262,6 +350,7 @@ export function FilterBar({ view, total, shown, filterButton = "auto" }: { view:
         </div>
       </div>
 
+      <ActiveFilterChips orgOptions={orgOptions} className={view === "mapa" ? "md:hidden" : undefined} />
       <div className="flex flex-wrap items-center gap-2 text-sm" aria-live="polite">
         <span className={cn("font-semibold text-foreground", pending && "opacity-50")}>
           {shown} de {total} organizaciones

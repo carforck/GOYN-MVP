@@ -59,7 +59,7 @@ export default async function MapaPage(props: PageProps<"/mapa">) {
 
       {/* Controles del mapa justo encima de él: búsqueda, vista y resultado. */}
       <Suspense>
-        <FilterBar view="mapa" total={all.length} shown={orgs.length} filterButton="mobile" />
+        <FilterBar view="mapa" total={all.length} shown={orgs.length} orgOptions={all.map((o) => ({ slug: o.slug, name: o.name }))} filterButton="mobile" />
       </Suspense>
 
       <EcosystemMap orgs={points} relations={arcs} stats={stats} orgOptions={all.map((o) => ({ slug: o.slug, name: o.name }))} className="h-[78vh] min-h-[520px]" />
