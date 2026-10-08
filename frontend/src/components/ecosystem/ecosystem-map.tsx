@@ -135,6 +135,37 @@ function EcosystemMapInner({ orgs, relations, stats, className }: MapProps) {
   const [areas, setAreas] = useState<GeoJSON.FeatureCollection | null>(null);
   const stage = useRef<HTMLDivElement>(null);
   const setFocusRef = useRef(setFocus);
+  const setGroupByRef = useRef(setGroupBy);
+  const metricRef = useRef(metric);
+  useEffect(() => {
+    metricRef.current = metric;
+  }, [metric]);
+
+  // Ficha de una organización en el mapa (clic en el punto o "Ver en el mapa" desde la campana).
+  const openOrgPopup = (p: MapOrg, at: [number, number]) => {
+    const m = map.current;
+    if (!m) return;
+    document.querySelectorAll(".goyn-popup").forEach((el) => el.remove());
+    const popup = new maplibregl.Popup({ offset: 14, maxWidth: "280px", className: "goyn-popup" })
+      .setLngLat(at)
+      .setHTML(`
+        <div class="w-64 p-4">
+          <p class="text-[11px] font-bold uppercase tracking-wider text-[#a9a6cc]">${escapeHtml(p.org_type_label)}</p>
+          <p class="mt-1 font-heading text-base font-bold leading-snug text-white">${escapeHtml(p.name)}</p>
+          <p class="mt-2 text-sm text-white/80">${escapeHtml(p.primary_role_label)} · ${escapeHtml(p.territory)}</p>
+          ${p.precision === "aproximada" ? '<p class="mt-1 text-[11px] text-[#a9a6cc]">Ubicación aproximada (zona)</p>' : ""}
+          <a href="/actores/${encodeURIComponent(p.slug)}" class="mt-3 inline-flex h-9 w-full items-center justify-center rounded-full bg-[#9B00FF] text-sm font-bold text-white">Ver hoja de vida</a>
+        </div>`)
+      .addTo(m);
+    popup.getElement().querySelector("a")?.addEventListener("click", (ev) => {
+      ev.preventDefault();
+      router.push(`/actores/${p.slug}`);
+    });
+  };
+  const openOrgPopupRef = useRef(openOrgPopup);
+  useEffect(() => {
+    openOrgPopupRef.current = openOrgPopup;
+  });
 
   // Elegir una cifra la dibuja por localidad: las burbujas crecen según ese valor.
   const chooseMetric = (m: Metric) => {
@@ -256,6 +287,8 @@ function EcosystemMapInner({ orgs, relations, stats, className }: MapProps) {
         return;
       }
       map.current = instance;
+      // Solo en desarrollo: permite a las pruebas automáticas ubicar puntos en pantalla.
+      if (process.env.NODE_ENV !== "production") (window as unknown as { __goynMap?: MapLibreMap }).__goynMap = instance;
       instance.addControl(new maplibregl.NavigationControl({ showCompass: true, visualizePitch: true }), "top-right");
       if (stage.current) instance.addControl(new maplibregl.FullscreenControl({ container: stage.current }), "top-right");
       instance.addControl(new maplibregl.GlobeControl(), "top-right");
@@ -311,7 +344,8 @@ function EcosystemMapInner({ orgs, relations, stats, className }: MapProps) {
           });
         // Clic en una localidad (fuera de los puntos): se enfoca y las cifras se ajustan a ella.
         instance.on("click", "loc-fill", (e) => {
-          if (instance.queryRenderedFeatures(e.point, { layers: ["points", "clusters", "terr-bubbles"] }).length) return;
+          const near: [maplibregl.PointLike, maplibregl.PointLike] = [[e.point.x - 16, e.point.y - 16], [e.point.x + 16, e.point.y + 16]];
+          if (instance.queryRenderedFeatures(near, { layers: ["points-hit", "clusters", "terr-bubbles"] }).length) return;
           const code = e.features?.[0]?.properties?.code;
           if (code) setFocusRef.current(code);
         });
@@ -439,33 +473,47 @@ function EcosystemMapInner({ orgs, relations, stats, className }: MapProps) {
           filter: ["!", ["has", "point_count"]],
           paint: { "circle-color": color as never, "circle-radius": 7, "circle-stroke-width": 2, "circle-stroke-color": "#ffffff" },
         });
+        // Zona de toque ampliada (invisible): los puntos miden 7 px y un clic cercano debe abrir la ficha.
+        instance.addLayer({
+          id: "points-hit",
+          type: "circle",
+          source: "orgs",
+          filter: ["!", ["has", "point_count"]],
+          paint: { "circle-radius": 18, "circle-color": "#000000", "circle-opacity": 0.01 },
+        });
 
         instance.on("click", "clusters", async (e) => {
           const feature = instance.queryRenderedFeatures(e.point, { layers: ["clusters"] })[0];
           const zoom = await (instance.getSource("orgs") as GeoJSONSource).getClusterExpansionZoom(feature.properties.cluster_id);
           instance.easeTo({ center: (feature.geometry as GeoJSON.Point).coordinates as [number, number], zoom });
         });
-        instance.on("click", "points", (e) => {
+        instance.on("click", "points-hit", (e) => {
+          const f = e.features?.[0];
+          if (f) openOrgPopupRef.current(f.properties as MapOrg, (f.geometry as GeoJSON.Point).coordinates as [number, number]);
+        });
+        // Burbuja de localidad: ficha con la cifra y acceso a sus organizaciones.
+        instance.on("click", "terr-bubbles", (e) => {
           const f = e.features?.[0];
           if (!f) return;
-          const p = f.properties as MapOrg;
+          const { label, code, display } = f.properties as { label: string; code: string; display: string };
+          const metricLabel = METRICS.find((m) => m.key === metricRef.current)?.label ?? "Organizaciones";
           const popup = new maplibregl.Popup({ offset: 14, maxWidth: "280px", className: "goyn-popup" })
             .setLngLat((f.geometry as GeoJSON.Point).coordinates as [number, number])
             .setHTML(`
-              <div class="w-64 p-4">
-                <p class="text-[11px] font-bold uppercase tracking-wider text-[#a9a6cc]">${escapeHtml(p.org_type_label)}</p>
-                <p class="mt-1 font-heading text-base font-bold leading-snug text-white">${escapeHtml(p.name)}</p>
-                <p class="mt-2 text-sm text-white/80">${escapeHtml(p.primary_role_label)} · ${escapeHtml(p.territory)}</p>
-                ${p.precision === "aproximada" ? '<p class="mt-1 text-[11px] text-[#a9a6cc]">Ubicación aproximada (zona)</p>' : ""}
-                <a href="/actores/${encodeURIComponent(p.slug)}" class="mt-3 inline-flex h-9 w-full items-center justify-center rounded-full bg-[#9B00FF] text-sm font-bold text-white">Ver hoja de vida</a>
+              <div class="w-60 p-4">
+                <p class="text-[11px] font-bold uppercase tracking-wider text-[#a9a6cc]">Localidad</p>
+                <p class="mt-1 font-heading text-base font-bold text-white">${escapeHtml(label)}</p>
+                <p class="mt-2 text-sm text-white/85"><strong class="text-white">${escapeHtml(display)}</strong> · ${escapeHtml(metricLabel.toLowerCase())}</p>
+                <button type="button" class="mt-3 inline-flex h-9 w-full items-center justify-center rounded-full bg-[#9B00FF] text-sm font-bold text-white">Ver organizaciones</button>
               </div>`)
             .addTo(instance);
-          popup.getElement().querySelector("a")?.addEventListener("click", (ev) => {
-            ev.preventDefault();
-            router.push(`/actores/${p.slug}`);
+          popup.getElement().querySelector("button")?.addEventListener("click", () => {
+            popup.remove();
+            setGroupByRef.current("cercania");
+            setFocusRef.current(code);
           });
         });
-        for (const layer of ["clusters", "points"]) {
+        for (const layer of ["clusters", "points-hit", "terr-bubbles"]) {
           instance.on("mouseenter", layer, () => (instance.getCanvas().style.cursor = "pointer"));
           instance.on("mouseleave", layer, () => (instance.getCanvas().style.cursor = ""));
         }
@@ -550,7 +598,16 @@ function EcosystemMapInner({ orgs, relations, stats, className }: MapProps) {
       // en ciertos altos de pantalla (~15 % de los tamaños probados) y el mapa queda congelado.
       m.easeTo({ center: CENTER, zoom: 10.6, pitch: 0, bearing: 0, duration: 3200, essential: true, easing: (t) => 1 - Math.pow(1 - t, 3) });
       // La inclinación 3D se aplica al terminar el vuelo (en vista cercana), no durante la proyección de globo.
-      m.once("moveend", () => m.easeTo({ pitch: 40, bearing: -10, duration: 1600 }));
+      // Ya en la ciudad se pasa a proyección plana: con el globo, MapLibre calcula mal en qué punto
+      // se hizo clic al estar acercado (no abría la ficha y elegía otra localidad). Reunión 08-oct.
+      m.once("moveend", () => {
+        try {
+          m.setProjection({ type: "mercator" });
+        } catch {
+          /* sin soporte: se queda como está */
+        }
+        m.easeTo({ pitch: 40, bearing: -10, duration: 1600 });
+      });
     };
     if (ready.current) go();
     else {
@@ -576,7 +633,7 @@ function EcosystemMapInner({ orgs, relations, stats, className }: MapProps) {
     if (!m || !ready.current) return;
     const set = (layers: string[], visible: boolean) => layers.forEach((l) => m.getLayer(l) && m.setLayoutProperty(l, "visibility", visible ? "visible" : "none"));
     const byTerritory = groupBy === "territorio";
-    set(["clusters-glow", "clusters", "cluster-count", "points-glow", "points"], !byTerritory);
+    set(["clusters-glow", "clusters", "cluster-count", "points-glow", "points", "points-hit"], !byTerritory);
     set(["terr-glow", "terr-bubbles", "terr-labels"], byTerritory);
     set(["loc-label"], !byTerritory);
     set(["arcs-base", "arcs-flow"], showArcs && !byTerritory);
@@ -614,6 +671,8 @@ function EcosystemMapInner({ orgs, relations, stats, className }: MapProps) {
     m.easeTo({ center: [e.lng, e.lat], zoom: 13, duration: 1400 });
     const now = performance.now() + 900;
     for (let i = 0; i < 4; i++) ripples.current.push({ id: `${e.id}-ver-${i}-${now}`, lng: e.lng, lat: e.lat, color: "#DB0089", start: now + i * 450, big: true });
+    const org = orgs.find((o) => o.slug === e.orgSlug);
+    if (org) m.once("moveend", () => openOrgPopup(org, [org.lng, org.lat]));
   };
 
   // Cada evento en vivo: onda en la organización y, si es una conexión, un vuelo de luz entre ambas.
@@ -661,6 +720,11 @@ function EcosystemMapInner({ orgs, relations, stats, className }: MapProps) {
         onTerritory={setFocus}
         stats={stats}
         onReplay={() => {
+          try {
+            map.current?.setProjection({ type: "globe" });
+          } catch {
+            /* sin soporte */
+          }
           map.current?.jumpTo({ center: CENTER, zoom: 4.2, pitch: 0, bearing: 0 });
           setIntro("globo");
         }}
