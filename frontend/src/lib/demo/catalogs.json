@@ -191,44 +191,44 @@
   {
    "code": "educacion",
    "label": "Educación y formación",
-   "color": "#9B00FF",
-   "description": "Barreras que limitan el acceso y la continuidad de los jóvenes en trayectorias educativas pertinentes y de calidad."
+   "color": "#FFBD25",
+   "description": "Barreras estructurales y de contexto que limitan el acceso de los jóvenes a trayectorias educativas pertinentes, continuas y de calidad."
   },
   {
    "code": "ingresos",
-   "label": "Generación de ingresos",
-   "color": "#FF01A2",
-   "description": "Factores que limitan la inserción laboral, la empleabilidad y el emprendimiento de los jóvenes."
+   "label": "Empleo y generación de ingresos",
+   "color": "#00A0CC",
+   "description": "Factores estructurales, económicos y sociales que limitan la inserción laboral y el desarrollo productivo de los jóvenes."
   },
   {
    "code": "participacion",
    "label": "Participación e incidencia juvenil",
-   "color": "#00A0CC",
-   "description": "Desafíos para participar en la toma de decisiones, ejercer liderazgo y fortalecer la agencia juvenil."
+   "color": "#FF01A2",
+   "description": "Desafíos que enfrentan los jóvenes para participar en la toma de decisiones y fortalecer su agencia y liderazgo en la construcción de lo público."
   },
   {
    "code": "orientacion",
    "label": "Orientación socio-ocupacional",
-   "color": "#FE5200",
-   "description": "Desafíos para construir identidad, definir proyecto de vida y decidir sobre el futuro educativo y laboral."
+   "color": "#0AA066",
+   "description": "Retos que enfrentan los jóvenes para construir su identidad y proyectar un plan de vida alineado con sus intereses y su contexto."
   },
   {
    "code": "entornos",
    "label": "Entornos seguros y comunidad",
-   "color": "#0AA066",
-   "description": "Entornos familiares y comunitarios que afectan el bienestar, el desarrollo y el acceso a oportunidades."
+   "color": "#9B00FF",
+   "description": "Entornos familiares y comunitarios que afectan el bienestar, el desarrollo y el acceso a oportunidades de los jóvenes."
   },
   {
    "code": "bienestar",
    "label": "Bienestar y salud",
-   "color": "#FFBD25",
-   "description": "Barreras de acceso a servicios de salud física, socioemocional y reproductiva."
+   "color": "#FE5200",
+   "description": "Desafíos estructurales, sociales y territoriales que enfrentan los jóvenes para acceder a servicios de salud física, mental y reproductiva."
   },
   {
    "code": "inclusion_digital",
    "label": "Inclusión digital",
-   "color": "#060A28",
-   "description": "Limitaciones de acceso y uso de tecnología en educación, empleo y otros espacios sociales."
+   "color": "#1600CC",
+   "description": "Limitaciones materiales que enfrentan los jóvenes para participar en entornos educativos, laborales y sociales donde la tecnología es un habilitador."
   }
  ],
  "problems": [

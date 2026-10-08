@@ -1,38 +1,20 @@
-import { ArrowRightIcon, BarChart3Icon, CompassIcon, MapIcon, SparklesIcon, UsersIcon } from "lucide-react";
+import { ArrowRightIcon, MapIcon } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { RoleIcon } from "@/components/ecosystem/role-badge";
 import { LiveGlobe } from "@/components/globe/live-globe";
 import { HeroBackground, HeroPhotoRail } from "@/components/home/hero-slideshow";
+import { Pillars } from "@/components/home/pillars";
 import { LiveBigStats, LiveKpiStrip } from "@/components/live/live-kpis";
 import { LiveFeed } from "@/components/live/live-ticker";
-import { AnimatedNumber } from "@/components/motion/animated-number";
 import { FloatingShape } from "@/components/motion/floating-shape";
 import { Reveal } from "@/components/motion/reveal";
 import { buttonVariants } from "@/components/ui/button";
-import { catalogs, shortTerritory } from "@/lib/catalogs";
-import { listOrganizations } from "@/lib/data";
+import { catalogs } from "@/lib/catalogs";
+import { acerca, areasIntro, ctaRegistro, glosario, proposito } from "@/lib/home-content";
 import { cn } from "@/lib/utils";
 
-const intents = [
-  { href: "/mapa", eyebrow: "Quiero ver", title: "El ecosistema", text: "Mapa georreferenciado de actores por territorio, rol y área de impacto.", icon: MapIcon, color: "#9B00FF" },
-  { href: "/actores", eyebrow: "Quiero conectar", title: "Con otros actores", text: "Directorio filtrable y hojas de vida verificadas de las organizaciones.", icon: UsersIcon, color: "#00A0CC" },
-  { href: "/impacto", eyebrow: "Quiero medir", title: "El impacto colectivo", text: "Jóvenes conectados, fortalecidos y transformados por periodo y territorio.", icon: BarChart3Icon, color: "#FF01A2" },
-  { href: "/oportunidades", eyebrow: "Quiero encontrar", title: "Oportunidades", text: "Estudiar, trabajar, emprender o participar. Muy pronto para jóvenes.", icon: CompassIcon, color: "#FE5200", soon: true },
-];
-
-const phases = [
-  { year: "2026", name: "Mapear", text: "Visibilizar actores, acciones y resultados del ecosistema juvenil.", active: true },
-  { year: "2027", name: "Potenciar", text: "Promover y activar nuevas acciones conjuntas: conexiones, historias y participación juvenil." },
-  { year: "2028", name: "Medir", text: "Medir el impacto colectivo en trayectorias juveniles priorizadas." },
-];
-
-export default async function HomePage() {
-  const orgs = await listOrganizations();
-  const byTerritory = catalogs.territories
-    .filter((t) => t.lat != null)
-    .map((t) => ({ ...t, count: orgs.filter((o) => o.territory_codes.includes(t.code)).length }));
-  const byRole = catalogs.roles.map((r) => ({ ...r, count: orgs.filter((o) => o.role_codes.includes(r.code)).length }));
+export default function HomePage() {
 
   return (
     <>
@@ -51,22 +33,22 @@ export default async function HomePage() {
               </span>
             </div>
             <div className="goyn-enter" style={{ ["--d" as string]: "0.15s" }}>
-              <h1 className="text-4xl leading-[1.05] font-bold tracking-tight uppercase sm:text-6xl">
-                El espejo digital del{" "}
-                <span className="text-goyn-amarillo">ecosistema juvenil</span> <span className="whitespace-nowrap">de Barranquilla</span>
+              <h1 className="text-3xl leading-[1.1] font-bold tracking-tight sm:text-5xl">
+                Te damos la bienvenida al mapeo de acciones y resultados del{" "}
+                <span className="text-goyn-amarillo">Colaborativo GOYN Barranquilla</span>
               </h1>
             </div>
             <div className="goyn-enter" style={{ ["--d" as string]: "0.3s" }}>
               <p className="max-w-xl text-lg text-white/85 sm:text-xl">
-                Ver, conectar y medir lo que hacen las organizaciones del Colaborativo por las juventudes de Barranquilla y su área metropolitana.
+                Una herramienta para ver, en un solo lugar, todo lo que las organizaciones de nuestro ecosistema están haciendo por las oportunidades de los jóvenes en Barranquilla y su área metropolitana.
               </p>
             </div>
             <div className="goyn-enter flex flex-col gap-3 pt-2 sm:flex-row" style={{ ["--d" as string]: "0.42s" }}>
               <Link href="/mapa" className={cn(buttonVariants(), "h-12 rounded-full bg-goyn-magenta-a11y px-6 text-base font-bold text-white shadow-lg shadow-goyn-magenta/40 transition-transform hover:scale-[1.03] hover:bg-goyn-magenta-a11y/90")}>
-                <MapIcon aria-hidden /> Explorar el mapa
+                <MapIcon aria-hidden /> Ir a la herramienta
               </Link>
               <Link href="/registro" className={cn(buttonVariants({ variant: "outline" }), "h-12 rounded-full border-white/40 bg-white/5 px-6 text-base font-bold text-white backdrop-blur hover:bg-white/15 hover:text-white")}>
-                ¿Aún no te ves reflejado? Regístrate <ArrowRightIcon aria-hidden />
+                Registrar mi organización <ArrowRightIcon aria-hidden />
               </Link>
             </div>
             <div className="goyn-enter" style={{ ["--d" as string]: "0.55s" }}>
@@ -84,38 +66,131 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* Navegación por intención */}
-      <section aria-labelledby="intencion" className="goyn-container py-16 sm:py-20">
-        <Reveal className="mb-8 space-y-3">
-          <span className="goyn-eyebrow">Navegación por intención</span>
-          <h2 id="intencion" className="text-3xl font-bold text-foreground sm:text-4xl">¿Qué necesitas hoy?</h2>
+      {/* Acerca de esta herramienta */}
+      <section aria-labelledby="acerca" className="goyn-container py-16 sm:py-20">
+        <Reveal className="mb-6">
+          <span className="goyn-eyebrow">Acerca de esta herramienta</span>
+          <h2 id="acerca" className="sr-only">Acerca de esta herramienta</h2>
         </Reveal>
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          {intents.map((it, i) => (
-            <Reveal key={it.href} delay={i * 0.08}>
-              <Link
-                href={it.href}
-                className={cn(
-                  "group relative flex h-full flex-col gap-4 overflow-hidden rounded-3xl border bg-card p-6 transition-all duration-300 hover:-translate-y-1.5 hover:shadow-2xl",
-                  it.soon && "border-dashed",
-                )}
-                style={{ ["--c" as string]: it.color }}
-              >
-                <span aria-hidden className="absolute -top-20 -right-20 size-44 rounded-full opacity-0 blur-3xl transition-opacity duration-500 group-hover:opacity-40" style={{ backgroundColor: it.color }} />
-                <span className="grid size-12 place-items-center rounded-2xl text-white transition-transform duration-300 group-hover:scale-110 group-hover:-rotate-6" style={{ backgroundColor: it.color }}>
-                  <it.icon className="size-6" aria-hidden />
-                </span>
-                <div className="relative">
-                  <p className="text-xs font-bold tracking-wider text-muted-foreground uppercase">{it.eyebrow}</p>
-                  <p className="mt-1 font-heading text-xl font-bold text-foreground">{it.title}</p>
-                  <p className="mt-2 text-sm text-muted-foreground">{it.text}</p>
-                </div>
-                <span className="relative mt-auto inline-flex items-center gap-1 text-sm font-bold text-goyn-violeta">
-                  {it.soon ? (<><SparklesIcon className="size-4" aria-hidden /> Próximamente</>) : (<>Entrar <ArrowRightIcon className="size-4 transition-transform group-hover:translate-x-1" aria-hidden /></>)}
-                </span>
-              </Link>
+        <div className="grid gap-5 md:grid-cols-2">
+          <Reveal className="rounded-3xl border-2 border-goyn-magenta/40 bg-card p-6 sm:p-8">
+            <h3 className="font-heading text-2xl font-bold text-goyn-magenta-a11y">¿Por qué existe esta herramienta?</h3>
+            <p className="mt-3 text-foreground/80">{acerca.porQue}</p>
+          </Reveal>
+          <Reveal delay={0.08} className="rounded-3xl border-2 border-goyn-magenta/40 bg-card p-6 sm:p-8">
+            <h3 className="font-heading text-2xl font-bold text-goyn-magenta-a11y">¿Para quién es?</h3>
+            <ul className="mt-3 space-y-2">
+              {acerca.paraQuien.map((x) => (
+                <li key={x.title} className="flex gap-2.5 text-foreground/80">
+                  <span aria-hidden className="mt-2 size-2 shrink-0 rounded-full bg-goyn-magenta-a11y" />
+                  <span><strong className="text-foreground">{x.title}:</strong> {x.text}</span>
+                </li>
+              ))}
+            </ul>
+          </Reveal>
+          <Reveal delay={0.12} className="rounded-3xl border-2 border-goyn-magenta/40 bg-card p-6 sm:p-8 md:col-span-2">
+            <h3 className="font-heading text-2xl font-bold text-goyn-magenta-a11y">¿Para qué sirve?</h3>
+            <ul className="mt-3 grid gap-x-10 gap-y-2 md:grid-cols-2">
+              {acerca.paraQue.map((t) => (
+                <li key={t} className="flex gap-2.5 text-foreground/80">
+                  <span aria-hidden className="mt-2 size-2 shrink-0 rounded-full bg-goyn-magenta-a11y" />
+                  {t}
+                </li>
+              ))}
+            </ul>
+          </Reveal>
+        </div>
+      </section>
+
+      {/* Nuestro propósito: texto + foto silueteada */}
+      <section aria-labelledby="proposito" className="relative isolate mt-24 bg-goyn-violeta text-white sm:mt-32">
+        <div aria-hidden className="absolute inset-0 -z-10 overflow-hidden">
+          <Image src="/images/texturas/textura-06.webp" alt="" fill sizes="100vw" className="object-cover opacity-15 brightness-0 invert" />
+        </div>
+        <div className="goyn-container grid items-end gap-8 md:grid-cols-[1.1fr_1fr]">
+          <Reveal className="space-y-4 py-14 sm:py-20">
+            <h2 id="proposito" className="text-3xl font-bold sm:text-4xl">Nuestro propósito</h2>
+            <p className="max-w-xl text-lg leading-relaxed text-white/90">{proposito}</p>
+          </Reveal>
+          <div className="relative mx-auto -mt-20 h-[380px] w-full max-w-sm sm:-mt-28 sm:h-[480px]">
+            <FloatingShape name="aro_rayado" size={120} className="top-[28%] right-0 z-10 opacity-90" float={10} parallax={0} />
+            <FloatingShape name="rayo" size={56} className="bottom-[22%] left-2 z-10" float={12} delay={0.3} parallax={0} />
+            <Image src="/images/fotos/proposito-silueta.webp" alt="Integrante del Colaborativo GOYN Barranquilla" fill sizes="(min-width: 768px) 30vw, 80vw" className="object-contain object-bottom" />
+          </div>
+        </div>
+      </section>
+
+      {/* Nuestros pilares: popup con la definición */}
+      <section aria-labelledby="pilares" className="goyn-container py-16 sm:py-20">
+        <Reveal className="mb-10 space-y-3">
+          <span className="goyn-eyebrow">Nuestro enfoque</span>
+          <h2 id="pilares" className="text-3xl font-bold text-foreground sm:text-4xl">Nuestros pilares</h2>
+          <p className="text-muted-foreground">Toca cada pilar para conocer su definición.</p>
+        </Reveal>
+        <Pillars />
+      </section>
+
+      {/* Glosario */}
+      <section aria-labelledby="glosario" className="relative isolate overflow-hidden text-white">
+        <Image src="/images/fotos/sesion-colaborativo-2026.webp" alt="" fill sizes="100vw" className="-z-20 object-cover" />
+        <div aria-hidden className="absolute inset-0 -z-10 bg-linear-to-br from-goyn-violeta/95 via-[#c400b8]/90 to-goyn-violeta/95" />
+        <div className="goyn-container py-16 sm:py-20">
+          <Reveal>
+            <h2 id="glosario" className="text-3xl font-bold sm:text-4xl">Glosario</h2>
+          </Reveal>
+          <dl className="mt-8 grid gap-x-10 gap-y-8 sm:grid-cols-2 lg:grid-cols-3">
+            {glosario.map((g, i) => (
+              <Reveal key={g.term} delay={(i % 3) * 0.06}>
+                <dt className="font-heading text-xl font-bold">{g.term}</dt>
+                <dd className={cn("mt-1 font-medium leading-relaxed text-white/90", g.pendiente && "italic text-white/70")}>{g.text}</dd>
+              </Reveal>
+            ))}
+          </dl>
+        </div>
+      </section>
+
+      {/* Áreas de impacto */}
+      <section aria-labelledby="areas" className="goyn-container py-16 sm:py-20">
+        <Reveal className="mb-10 space-y-3">
+          <span className="goyn-eyebrow">Marco común</span>
+          <h2 id="areas" className="text-3xl font-bold text-foreground sm:text-4xl">Áreas de impacto del ecosistema juvenil</h2>
+          <p className="max-w-3xl text-muted-foreground">{areasIntro}</p>
+        </Reveal>
+        <ul className="grid gap-x-10 gap-y-7 md:grid-cols-2">
+          {catalogs.impactAreas.map((a, i) => (
+            <Reveal as="li" key={a.code} delay={(i % 2) * 0.06} className="flex items-start gap-4">
+              <Image src={`/images/areas/${a.code}.svg`} alt="" width={64} height={64} className="size-14 shrink-0 sm:size-16" />
+              <div>
+                <p className="font-heading font-bold text-foreground">{a.label}</p>
+                <p className="mt-0.5 text-sm leading-relaxed text-muted-foreground">{a.description}</p>
+              </div>
             </Reveal>
           ))}
+        </ul>
+      </section>
+
+      {/* Roles: sin contador, con la definición de cada uno */}
+      <section aria-labelledby="roles" className="bg-goyn-lila/40 py-16 sm:py-20">
+        <div className="goyn-container">
+          <Reveal className="mb-8 space-y-3">
+            <h2 id="roles" className="text-3xl font-bold text-foreground sm:text-4xl">Roles en el ecosistema</h2>
+            <p className="max-w-2xl text-muted-foreground">Cada organización declara un rol principal y otros roles que cumple en el territorio.</p>
+          </Reveal>
+          <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+            {catalogs.roles.map((r, i) => (
+              <Reveal as="li" key={r.code} delay={(i % 4) * 0.06}>
+                <Link href={`/actores?rol=${r.code}`} className="group flex h-full flex-col gap-3 rounded-2xl border bg-card p-5 transition-all hover:-translate-y-1 hover:shadow-lg">
+                  <span className="flex items-center gap-3">
+                    <span className="transition-transform duration-300 group-hover:scale-110 group-hover:rotate-6">
+                      <RoleIcon code={r.code} size={48} />
+                    </span>
+                    <span className="font-heading font-bold text-foreground">{r.label}</span>
+                  </span>
+                  <span className="text-sm leading-relaxed text-muted-foreground">{r.description}</span>
+                </Link>
+              </Reveal>
+            ))}
+          </ul>
         </div>
       </section>
 
@@ -143,128 +218,15 @@ export default async function HomePage() {
         </div>
       </section>
 
-      {/* Territorio */}
-      <section aria-labelledby="territorio" className="bg-goyn-lila/50 py-16 sm:py-20">
-        <div className="goyn-container grid gap-10 lg:grid-cols-[1fr_1.2fr] lg:items-center">
-          <Reveal className="space-y-4">
-            <span className="goyn-eyebrow bg-goyn-cian text-goyn-navy">El mapa es el corazón</span>
-            <h2 id="territorio" className="text-3xl font-bold text-foreground sm:text-4xl">¿Quién está dónde y qué hace?</h2>
-            <p className="text-lg text-muted-foreground">
-              Presencia de las organizaciones en las zonas de Barranquilla y su área metropolitana. Toca una zona para verla en el mapa.
-            </p>
-            <Link href="/mapa" className={cn(buttonVariants(), "h-11 rounded-full px-5 font-bold")}>
-              Abrir el mapa completo <ArrowRightIcon aria-hidden />
-            </Link>
-          </Reveal>
-          <ul className="grid grid-cols-2 gap-3 sm:grid-cols-3">
-            {byTerritory.map((t, i) => (
-              <Reveal as="li" key={t.code} delay={i * 0.05}>
-                <Link href={`/mapa?territorio=${t.code}`} className="group flex h-full flex-col justify-between rounded-2xl border bg-card p-4 transition-all hover:-translate-y-1 hover:border-goyn-violeta hover:shadow-lg">
-                  <span className="text-xs font-bold text-muted-foreground uppercase">{t.municipality}</span>
-                  <span className="mt-1 font-heading font-bold text-foreground">{shortTerritory(t.code)}</span>
-                  <AnimatedNumber value={t.count} className="mt-3 font-heading text-3xl font-bold text-goyn-violeta" />
-                  <span className="text-xs text-muted-foreground">organizaciones</span>
-                </Link>
-              </Reveal>
-            ))}
-          </ul>
-        </div>
-      </section>
-
-      {/* Roles */}
-      <section aria-labelledby="roles" className="goyn-container py-16 sm:py-20">
-        <Reveal className="mb-8 space-y-3">
-          <span className="goyn-eyebrow">Marco común</span>
-          <h2 id="roles" className="text-3xl font-bold text-foreground sm:text-4xl">Roles en el ecosistema</h2>
-          <p className="max-w-2xl text-muted-foreground">Cada organización declara un rol principal y otros roles que cumple en el territorio.</p>
-        </Reveal>
-        <ul className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          {byRole.map((r, i) => (
-            <Reveal as="li" key={r.code} delay={(i % 4) * 0.06}>
-              <Link href={`/actores?rol=${r.code}`} className="group flex h-full items-start gap-4 rounded-2xl border bg-card p-4 transition-all hover:-translate-y-1 hover:shadow-lg" style={{ borderColor: undefined }}>
-                <span className="transition-transform duration-300 group-hover:scale-110 group-hover:rotate-6">
-                  <RoleIcon code={r.code} size={52} />
-                </span>
-                <div>
-                  <p className="font-heading font-bold text-foreground">{r.label}</p>
-                  <p className="text-sm text-muted-foreground">
-                    <AnimatedNumber value={r.count} /> organizaciones
-                  </p>
-                </div>
-              </Link>
-            </Reveal>
-          ))}
-        </ul>
-      </section>
-
-      {/* Reto colectivo */}
-      <section className="relative isolate overflow-hidden bg-goyn-magenta-a11y py-20 text-white">
-        <Image src="/images/fotos/sesion-colaborativo-2026.webp" alt="" fill sizes="100vw" className="-z-10 object-cover opacity-40 mix-blend-multiply grayscale" />
-        <FloatingShape name="rayo" size={90} white className="top-8 left-[6%] hidden md:block" float={16} />
-        <FloatingShape name="asterisco" size={70} white className="right-[8%] bottom-10 hidden md:block" spin={360} duration={10} />
-        <Reveal className="goyn-container max-w-4xl text-center">
-          <p className="text-sm font-bold tracking-widest text-white/80 uppercase">Diagnóstico del Colaborativo · Sesión S1-042026</p>
-          <blockquote className="mt-4 font-heading text-3xl leading-tight font-bold sm:text-5xl">
-            “El reto no es la falta de acción, es la falta de una forma compartida de ver, conectar y medir lo que hacemos.”
-          </blockquote>
-          <p className="mt-6 text-white/85">76+ organizaciones · 10 mesas de co-creación · 9 de abril de 2026</p>
-        </Reveal>
-      </section>
-
-      {/* Fases */}
-      <section aria-labelledby="fases" className="goyn-container py-16 sm:py-20">
-        <Reveal className="mb-8 space-y-3">
-          <span className="goyn-eyebrow">Horizonte 2026 — 2028</span>
-          <h2 id="fases" className="text-3xl font-bold text-foreground sm:text-4xl">Una plataforma que evoluciona con el ecosistema</h2>
-        </Reveal>
-        <ol className="grid gap-4 md:grid-cols-3">
-          {phases.map((p, i) => (
-            <Reveal as="li" key={p.name} delay={i * 0.1} className={cn("relative overflow-hidden rounded-3xl border p-6", p.active ? "border-goyn-violeta bg-goyn-lila/60" : "bg-card")}>
-              {p.active && <span aria-hidden className="absolute inset-x-0 bottom-0 h-1 goyn-stripe" />}
-              <div className="flex items-center justify-between">
-                <span aria-hidden className="font-heading text-5xl font-bold text-goyn-violeta/75">0{i + 1}</span>
-                <span className={cn("inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-bold", p.active ? "bg-goyn-violeta text-white" : "bg-muted text-muted-foreground")}>
-                  {p.active && <span className="goyn-live-dot bg-white" aria-hidden />}
-                  {p.year} {p.active && "· en curso"}
-                </span>
-              </div>
-              <p className="mt-2 font-heading text-2xl font-bold text-foreground">{p.name}</p>
-              <p className="mt-2 text-muted-foreground">{p.text}</p>
-            </Reveal>
-          ))}
-        </ol>
-      </section>
-
-      {/* Aliados */}
-      <section aria-labelledby="aliados" className="border-y bg-muted/60 py-12">
-        <div className="goyn-container">
-          <h2 id="aliados" className="mb-6 text-center text-sm font-bold tracking-widest text-muted-foreground uppercase">
-            Algunas organizaciones que hacen parte del Colaborativo
-          </h2>
-          <div className="relative overflow-hidden [mask-image:linear-gradient(90deg,transparent,black_10%,black_90%,transparent)]">
-            <ul className="flex w-max animate-[marquee_60s_linear_infinite] gap-10 hover:[animation-play-state:paused] motion-reduce:animate-none">
-              {[...Array(2)].flatMap((_, k) =>
-                Array.from({ length: 40 }, (_, i) => (
-                  <li key={`${k}-${i}`} className="shrink-0 rounded-xl bg-white px-3 py-1" aria-hidden={k === 1}>
-                    <Image src={`/images/aliados/aliado-${String(i + 1).padStart(2, "0")}.webp`} alt="" width={150} height={75} className="h-12 w-auto object-contain" />
-                  </li>
-                )),
-              )}
-            </ul>
-          </div>
-        </div>
-      </section>
-
       {/* CTA registro */}
       <section className="goyn-container py-16 sm:py-20">
         <Reveal className="relative grid overflow-hidden rounded-3xl bg-goyn-magenta-a11y text-white lg:grid-cols-2">
           <div className="relative space-y-5 p-8 sm:p-12">
-            <FloatingShape name="mas" size={70} white className="top-6 right-6 opacity-50" float={10} />
             <h2 className="text-3xl font-bold uppercase sm:text-4xl">¿Aún no te ves reflejado?</h2>
             <p className="max-w-md text-lg text-white">
-              Registra tu organización, cuéntanos qué haces por las juventudes y aparece en el mapa y el directorio del Colaborativo una vez GOYN valide tu información.
+              {ctaRegistro}
             </p>
-            <Link href="/registro" className={cn(buttonVariants(), "h-12 rounded-full bg-goyn-navy px-6 text-base font-bold text-white hover:bg-goyn-navy/90")}>
+            <Link href="/registro" className={cn(buttonVariants(), "h-12 rounded-full bg-goyn-violeta px-6 text-base font-bold text-white hover:bg-goyn-violeta/90")}>
               Registrar mi organización <ArrowRightIcon aria-hidden />
             </Link>
           </div>
