@@ -51,7 +51,7 @@ export default async function ProgramasPage() {
               <th className="p-4">Modalidad</th>
               <th className="p-4">Vigencia</th>
               <th className="p-4 text-right">Meta 2026</th>
-              <th className="p-4 text-right"><span className="sr-only">Acciones</span></th>
+              <th className="relative p-4 text-right"><span className="sr-only">Acciones</span></th>
             </tr>
           </thead>
           <tbody className="divide-y">

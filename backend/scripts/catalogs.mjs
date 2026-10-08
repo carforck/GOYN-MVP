@@ -23,22 +23,23 @@ export const orgTypes = [
 // Se conservan los 8 porque existen 8 íconos de rol en los recursos gráficos.
 // `icon` = archivo en RECURSOS GRAFICOS/ICONOS/ROLES (mapeo inferido por iconografía, por confirmar con GOYN).
 export const roles = [
+  // Descripciones: "Narrativa home MVP Mapeo GOYN BAQ" (bloque 7, borrador del 29-sep-2026).
   { code: "articulador", label: "Articulador", icon: "rol-21", color: "#E8531D",
-    description: "Facilita la conexión, coordinación y alineación entre actores para que los esfuerzos individuales se integren en una estrategia común." },
+    description: "Facilitan la conexión, coordinación y alineación entre los distintos actores. Aseguran que los esfuerzos individuales se integren en una estrategia común y que se mantenga el rumbo colectivo." },
   { code: "implementador", label: "Implementador", icon: "rol-22", color: "#E1378B",
-    description: "Ejecuta acciones en el territorio: programas, proyectos o servicios que impactan directamente a jóvenes." },
+    description: "Ejecutan las acciones en campo. Transforman los planes en programas, proyectos o servicios concretos que impactan directamente a los jóvenes u otras poblaciones objetivo." },
   { code: "financiador", label: "Financiador", icon: "rol-23", color: "#634494",
-    description: "Aporta recursos económicos, técnicos o en especie y acompaña la definición estratégica." },
+    description: "Aportan los recursos económicos, técnicos o en especie necesarios para la operación de las iniciativas. A veces también acompañan la definición estratégica para garantizar el retorno social de la inversión." },
   { code: "tomador_decision", label: "Tomador de decisión", icon: "rol-17", color: "#E20613",
-    description: "Define políticas, lineamientos institucionales o decisiones gremiales que habilitan condiciones y escala." },
+    description: "Definen el rumbo estructural del ecosistema a través de políticas públicas, lineamientos institucionales o decisiones gremiales. Tienen la capacidad de habilitar condiciones, escalar soluciones e incidir en transformaciones de alto impacto." },
   { code: "evaluador", label: "Evaluador / Gestor de conocimiento", icon: "rol-16", color: "#70B52C",
-    description: "Mide el impacto, sistematiza aprendizajes y aporta evidencia para la mejora continua del Colaborativo." },
+    description: "Miden el impacto, sistematizan aprendizajes y aportan evidencia para la toma de decisiones y la mejora continua del Colaborativo." },
   { code: "generador_conocimiento", label: "Generador de conocimiento", icon: "rol-20", color: "#FABB2C",
     description: "Produce investigación, datos, metodologías o formación que fortalecen el ecosistema." },
   { code: "juventud", label: "Juventud", icon: "rol-18", color: "#07A067",
-    description: "Participa activamente en el diseño, validación y ejecución de soluciones desde su experiencia y voz." },
+    description: "Son el centro del Colaborativo, pero no solo como receptores, sino como actores activos que co-diseñan, validan y transforman las soluciones desde su experiencia y voz." },
   { code: "embajador", label: "Embajador", icon: "rol-19", color: "#0A9ECB",
-    description: "Moviliza voluntades, abre puertas y posiciona temas clave en la agenda pública o privada." },
+    description: "Movilizan voluntades, abren puertas y posicionan los temas clave en la agenda pública o privada. Usan su reputación o capacidad de incidencia para generar cambios sistémicos." },
 ];
 
 export const scopes = [

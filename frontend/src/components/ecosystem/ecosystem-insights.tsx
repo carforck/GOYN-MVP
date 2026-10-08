@@ -177,6 +177,7 @@ function Coverage({ data }: { data: EcosystemMetrics["coverage"] }) {
         </table>
       }
     >
+      <p className="mb-1 text-[11px] font-semibold text-goyn-violeta sm:hidden">Desliza para ver toda la gráfica →</p>
       <TipArea className="overflow-x-auto">
         {(tip) => (
           <>
@@ -559,6 +560,7 @@ function RoleQuadrant({
       }
     >
       <HeliceLegend />
+      <p className="mb-1 text-[11px] font-semibold text-goyn-violeta sm:hidden">Desliza para ver toda la gráfica →</p>
       <TipArea className="mt-3 overflow-x-auto">
         {(tip) => (
           <>

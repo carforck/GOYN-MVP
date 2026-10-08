@@ -4,7 +4,7 @@
 export const acerca = {
   porQue: "Porque en Barranquilla trabajan muchas organizaciones por la juventud, pero sin un lugar común para verlas juntas es difícil saber qué se está haciendo, en dónde, y qué necesidades del territorio quedan todavía sin cubrir.",
   paraQuien: [
-    { title: "Organizaciones", text: "todas las organizaciones públicas, privadas, sociales y comunitarias que hacen parte del ecosistema GOYN Barranquilla." },
+    { title: "Colaborativo", text: "todas las organizaciones públicas, privadas, sociales y comunitarias que hacen parte del ecosistema GOYN Barranquilla." },
     { title: "Juventud", text: "los jóvenes de Barranquilla y el Grupo Asesor Juvenil (YAG), como protagonistas de esta información." },
   ],
   paraQue: [
