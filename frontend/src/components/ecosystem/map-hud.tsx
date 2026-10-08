@@ -5,7 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { METRICS, type ColorBy, type GroupBy, type Metric } from "@/components/ecosystem/ecosystem-map";
 import { relationColors } from "@/components/ecosystem/map-constants";
-import { FilterGroups, FilterHeader } from "@/components/ecosystem/filter-panel";
+import { FilterGroups, FilterHeader, OrgPicker } from "@/components/ecosystem/filter-panel";
 import { useLive } from "@/components/live/live-provider";
 import { AnimatedNumber } from "@/components/motion/animated-number";
 import { catalogs } from "@/lib/catalogs";
@@ -77,6 +77,7 @@ export function MapHud({
   territory,
   onTerritory,
   stats,
+  orgOptions,
 }: {
   showArcs: boolean;
   onToggleArcs: () => void;
@@ -90,6 +91,7 @@ export function MapHud({
   territory: string;
   onTerritory: (v: string) => void;
   stats: MapStats;
+  orgOptions: { slug: string; name: string }[];
 }) {
   const live = useLive();
   const params = useSearchParams();
@@ -184,6 +186,7 @@ export function MapHud({
               hint="Muestra solo las organizaciones que te interesan: el mapa, las cifras y las gráficas se actualizan."
             >
               <FilterHeader compact />
+              <OrgPicker options={orgOptions} />
               <FilterGroups compact />
             </Section>
 

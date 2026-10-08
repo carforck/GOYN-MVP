@@ -49,13 +49,13 @@ export function FilterGroups({ compact = false }: { compact?: boolean }) {
       {groups.map((group) => {
         const selected = filters[group.key]?.length ?? 0;
         return (
-          <details key={group.key} open={selected > 0 || undefined} className="group py-3 first:pt-0">
+          <details key={group.key} open={selected > 0 || undefined} className="group/filtro py-3 first:pt-0">
             <summary className="flex cursor-pointer list-none items-center justify-between gap-2 rounded-lg py-1 font-heading text-sm font-bold text-goyn-violeta focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none [&::-webkit-details-marker]:hidden">
               <span>
                 {group.title}
                 {selected > 0 && <span className="ml-2 rounded-full bg-goyn-violeta px-2 py-0.5 text-[11px] text-white">{selected}</span>}
               </span>
-              <ChevronDownIcon className="size-4 shrink-0 transition-transform group-open:rotate-180" aria-hidden />
+              <ChevronDownIcon className="size-4 shrink-0 transition-transform group-open/filtro:rotate-180" aria-hidden />
             </summary>
             <div className="mt-2 flex flex-wrap gap-1.5">
               {group.options.map((option) => {
@@ -84,12 +84,73 @@ export function FilterGroups({ compact = false }: { compact?: boolean }) {
   );
 }
 
+// Micro-ecosistema (reunión 08-oct): elegir una o varias organizaciones clave y ver juntas a
+// ellas y a quienes se conectan directamente con ellas.
+export function OrgPicker({ options }: { options: { slug: string; name: string }[] }) {
+  const { filters, apply } = useFilters();
+  const [q, setQ] = useState("");
+  const chosen = filters.org ?? [];
+  const nameOf = (slug: string) => options.find((o) => o.slug === slug)?.name ?? slug;
+  const norm = (t: string) => t.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase();
+  const matches = q.trim() ? options.filter((o) => !chosen.includes(o.slug) && norm(o.name).includes(norm(q))).slice(0, 6) : [];
+  const set = (org: string[]) => apply({ ...filters, org: org.length ? org : undefined });
+  return (
+    <div className="space-y-2 border-b pb-3">
+      <p className="font-heading text-sm font-bold text-goyn-violeta">Organizaciones y su micro-ecosistema</p>
+      <p className="text-xs text-muted-foreground">Elige una o varias para ver juntas sus conexiones directas.</p>
+      <div className="relative">
+        <SearchIcon className="pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2 text-muted-foreground" aria-hidden />
+        <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Ej.: Fundación, Universidad…" aria-label="Buscar organización para el micro-ecosistema" className="h-9 rounded-lg pl-8 text-sm" />
+        {matches.length > 0 && (
+          <ul className="absolute inset-x-0 top-full z-30 mt-1 max-h-56 overflow-y-auto rounded-xl border bg-card p-1 shadow-xl" role="listbox">
+            {matches.map((o) => (
+              <li key={o.slug}>
+                <button
+                  type="button"
+                  role="option"
+                  aria-selected={false}
+                  onClick={() => {
+                    set([...chosen, o.slug]);
+                    setQ("");
+                  }}
+                  className="w-full rounded-lg px-2.5 py-1.5 text-left text-sm hover:bg-goyn-lila"
+                >
+                  {o.name}
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+      {chosen.length > 0 && (
+        <ul className="flex flex-wrap gap-1.5">
+          {chosen.map((slug) => (
+            <li key={slug}>
+              <button
+                type="button"
+                onClick={() => set(chosen.filter((c) => c !== slug))}
+                className="inline-flex items-center gap-1 rounded-full border-2 border-goyn-magenta-a11y bg-card px-2.5 py-1 text-xs font-semibold"
+                title="Quitar"
+              >
+                {nameOf(slug)} <XIcon className="size-3" aria-hidden />
+                <span className="sr-only">(quitar)</span>
+              </button>
+            </li>
+          ))}
+        </ul>
+      )}
+    </div>
+  );
+}
+
 // Filtros activos como chips sobre el mapa: se ve qué se está mostrando y se quita con un clic.
-export function ActiveFilterChips({ className }: { className?: string }) {
+export function ActiveFilterChips({ className, orgOptions = [] }: { className?: string; orgOptions?: { slug: string; name: string }[] }) {
   const { filters, toggle, apply } = useFilters();
   const chips = groups.flatMap((g) =>
     (filters[g.key] ?? []).map((code) => ({ key: g.key, code, text: g.options.find((o) => o.code === code)?.label.replace(/^(BAQ|AMB) – /, "") ?? code, group: g.title })),
   );
+  for (const slug of filters.org ?? [])
+    chips.push({ key: "org" as FilterKey, code: slug, text: orgOptions.find((o) => o.slug === slug)?.name ?? slug, group: "Micro-ecosistema" });
   if (filters.q) chips.unshift({ key: "q" as FilterKey, code: filters.q, text: `“${filters.q}”`, group: "Búsqueda" });
   if (!chips.length) return null;
   return (
@@ -100,7 +161,13 @@ export function ActiveFilterChips({ className }: { className?: string }) {
           key={`${c.key}-${c.code}`}
           type="button"
           title={`${c.group}: quitar`}
-          onClick={() => (c.key === ("q" as FilterKey) ? apply({ ...filters, q: undefined }) : toggle(c.key, c.code))}
+          onClick={() =>
+            c.key === ("q" as FilterKey)
+              ? apply({ ...filters, q: undefined })
+              : c.key === ("org" as FilterKey)
+                ? apply({ ...filters, org: (filters.org ?? []).filter((x) => x !== c.code) })
+                : toggle(c.key, c.code)
+          }
           className="inline-flex items-center gap-1 rounded-full border border-goyn-violeta/30 bg-white/95 px-2.5 py-1 text-xs font-semibold text-goyn-navy shadow-sm backdrop-blur hover:border-goyn-violeta"
         >
           {c.text} <XIcon className="size-3 text-goyn-violeta" aria-hidden />

@@ -20,7 +20,7 @@ export function parseFilters(params: RawParams): EcosystemFilters {
   };
   const q = typeof params.q === "string" && params.q.trim() ? params.q.trim() : undefined;
   const orden = SORTS.find((s) => s.value === params.orden)?.value;
-  return { q, tipo: list("tipo"), rol: list("rol"), area: list("area"), linea: list("linea"), poblacion: list("poblacion"), territorio: list("territorio"), orden };
+  return { q, tipo: list("tipo"), rol: list("rol"), area: list("area"), linea: list("linea"), poblacion: list("poblacion"), territorio: list("territorio"), org: list("org"), orden };
 }
 
 export function filtersToQuery(filters: EcosystemFilters) {
@@ -31,16 +31,29 @@ export function filtersToQuery(filters: EcosystemFilters) {
     const values = filters[key];
     if (values?.length) sp.set(key, values.join(","));
   }
+  if (filters.org?.length) sp.set("org", filters.org.join(","));
   const s = sp.toString();
   return s ? `?${s}` : "";
 }
 
 export function countActive(filters: EcosystemFilters) {
-  return FILTER_KEYS.reduce((n, k) => n + (filters[k]?.length ?? 0), filters.q ? 1 : 0);
+  return FILTER_KEYS.reduce((n, k) => n + (filters[k]?.length ?? 0), (filters.q ? 1 : 0) + (filters.org?.length ?? 0));
 }
 
 const normalize = (s: string) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
 const overlaps = (have: string[], want?: string[]) => !want?.length || want.some((w) => have.includes(w));
+
+// Micro-ecosistema (reunión 08-oct): las organizaciones elegidas y las que se conectan
+// directamente con ellas. Se aplica después de los demás filtros.
+export function microEcosystem<T extends { slug: string }>(orgs: T[], relations: { source_slug: string; target_slug: string }[], chosen?: string[]) {
+  if (!chosen?.length) return orgs;
+  const keep = new Set(chosen);
+  for (const r of relations) {
+    if (chosen.includes(r.source_slug)) keep.add(r.target_slug);
+    if (chosen.includes(r.target_slug)) keep.add(r.source_slug);
+  }
+  return orgs.filter((o) => keep.has(o.slug));
+}
 
 // Misma semántica que la consulta a Supabase: OR dentro de un filtro, AND entre filtros.
 export function matchesFilters(org: PublicOrganization, f: EcosystemFilters) {

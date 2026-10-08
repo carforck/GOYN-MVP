@@ -1,6 +1,8 @@
 "use client";
 
+import { InfoIcon } from "lucide-react";
 import { useState } from "react";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import {
   HELICES,
   type EcosystemMetrics,
@@ -31,12 +33,13 @@ function rampFor(count: number, max: number) {
   return { bg: RAMP[step], ink: step >= 3 ? "#FFFFFF" : "#060A28" };
 }
 
-type Tip = { x: number; y: number; title: string; body: string } | null;
+type Tip = { x: number; y: number; title: string; body: string; items?: string[] } | null;
 type TipApi = {
   show: (
     e: React.MouseEvent | React.FocusEvent,
     title: string,
     body: string,
+    items?: string[],
   ) => void;
   hide: () => void;
 };
@@ -51,7 +54,7 @@ function TipArea({
 }) {
   const [tip, setTip] = useState<Tip>(null);
   const api: TipApi = {
-    show: (e, title, body) => {
+    show: (e, title, body, items) => {
       const box = (e.currentTarget as Element).closest("[data-tip-area]")?.getBoundingClientRect();
       const target = (e.currentTarget as Element).getBoundingClientRect();
       if (!box) return;
@@ -60,6 +63,7 @@ function TipArea({
         y: target.top - box.top,
         title,
         body,
+        items,
       });
     },
     hide: () => setTip(null),
@@ -70,11 +74,21 @@ function TipArea({
       {tip && (
         <div
           role="tooltip"
-          className="pointer-events-none absolute z-20 max-w-60 -translate-x-1/2 -translate-y-full rounded-xl border bg-card px-3 py-2 text-xs shadow-xl"
+          className="pointer-events-none absolute z-20 w-max max-w-64 -translate-x-1/2 -translate-y-full rounded-xl border bg-card px-3 py-2 text-xs shadow-xl"
           style={{ left: tip.x, top: tip.y - 8 }}
         >
           <p className="font-bold text-foreground">{tip.title}</p>
           <p className="mt-0.5 text-muted-foreground">{tip.body}</p>
+          {tip.items && (
+            <ul className="mt-1.5 space-y-0.5 text-foreground">
+              {tip.items.map((it) => (
+                <li key={it} className="flex gap-1.5">
+                  <span aria-hidden className="mt-1.5 size-1.5 shrink-0 rounded-full bg-goyn-violeta" />
+                  <span>{it}</span>
+                </li>
+              ))}
+            </ul>
+          )}
         </div>
       )}
     </div>
@@ -84,12 +98,14 @@ function TipArea({
 function Card({
   title,
   how,
+  help,
   children,
   table,
   className,
 }: {
   title: string;
   how: string;
+  help: { lee: string; ejemplo: string; ojo: string };
   children: React.ReactNode;
   table: React.ReactNode;
   className?: string;
@@ -103,6 +119,7 @@ function Card({
           {title}
         </h3>
         <p className="mt-1 text-sm text-muted-foreground">{how}</p>
+        <ChartHelp title={title} help={help} />
       </figcaption>
       <div className="mt-5">{children}</div>
       <details className="group mt-4 text-sm">
@@ -112,6 +129,33 @@ function Card({
         <div className="mt-3 overflow-x-auto">{table}</div>
       </details>
     </figure>
+  );
+}
+
+// Ventana explicativa en lenguaje sencillo (acuerdo del 08-oct: gráficas técnicas comprensibles
+// para personas sin formación en análisis de datos).
+function ChartHelp({ title, help }: { title: string; help: { lee: string; ejemplo: string; ojo: string } }) {
+  const [open, setOpen] = useState(false);
+  return (
+    <>
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        className="mt-2 inline-flex items-center gap-1.5 rounded-full bg-goyn-lila/70 px-3 py-1 text-xs font-bold text-goyn-violeta hover:bg-goyn-lila"
+      >
+        <InfoIcon className="size-3.5" aria-hidden /> ¿Cómo leer esta gráfica?
+      </button>
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent className="max-w-lg gap-4 rounded-3xl p-6 sm:max-w-lg">
+          <DialogTitle className="pr-6 font-heading text-xl font-bold text-goyn-violeta">{title}</DialogTitle>
+          <div className="space-y-3 text-sm leading-relaxed text-foreground/85">
+            <p><strong className="text-foreground">Cómo se lee:</strong> {help.lee}</p>
+            <p><strong className="text-foreground">Ejemplo:</strong> {help.ejemplo}</p>
+            <p className="rounded-xl bg-goyn-amarillo/15 p-3"><strong className="text-foreground">Ten en cuenta:</strong> {help.ojo}</p>
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }
 
@@ -148,8 +192,13 @@ function Coverage({ data }: { data: EcosystemMetrics["coverage"] }) {
   return (
     <Card
       className="lg:col-span-2"
-      title="¿Dónde hay oferta y dónde faltan actores?"
-      how={`Organizaciones que atienden cada área en cada territorio. Con trama: brecha (nadie la atiende). Con punto: depende de una sola organización. Hoy hay ${gaps} brechas y ${fragile} zonas frágiles.`}
+      title="¿Dónde declaran trabajar las organizaciones, por área?"
+      how={`Cada celda cuenta las organizaciones que dicen trabajar en esa localidad y en esa área de impacto (no es su sede ni cuenta programas). Con trama: nadie declara trabajar ahí. Con punto: solo una organización. Hoy hay ${gaps} brechas y ${fragile} zonas que dependen de una sola.`}
+      help={{
+        lee: "Las filas son localidades y las columnas, áreas de impacto. El número dice cuántas organizaciones declaran trabajar en esa localidad atendiendo esa área. Más oscuro = más organizaciones.",
+        ejemplo: "Si la celda Galapa · Bienestar y salud muestra 3, tres organizaciones dicen trabajar en Galapa en temas de bienestar y salud. Pasa el cursor para ver cuáles.",
+        ojo: "Muestra dónde dicen trabajar las organizaciones, no dónde está su sede (eso lo muestran los puntos del mapa) ni si hay un programa activo allí. La capa de programas por territorio está por validar con GOYN.",
+      }}
       table={
         <table className="w-full text-xs">
           <thead>
@@ -213,8 +262,9 @@ function Coverage({ data }: { data: EcosystemMetrics["coverage"] }) {
                             e,
                             `${t.label} · ${a.label}`,
                             c.count
-                              ? `${c.count} organización${c.count > 1 ? "es" : ""}: ${c.orgs.slice(0, 4).join(", ")}${c.count > 4 ? "…" : ""}`
-                              : "Brecha: ninguna organización atiende esta área aquí.",
+                              ? `${c.count} organización${c.count > 1 ? "es" : ""} declara${c.count > 1 ? "n" : ""} trabajar aquí en esta área:`
+                              : "Brecha: ninguna organización declara trabajar aquí en esta área.",
+                            c.count ? [...c.orgs.slice(0, 8), ...(c.count > 8 ? [`y ${c.count - 8} más`] : [])] : undefined,
                           )
                         }
                         onFocus={(e) =>
@@ -288,6 +338,11 @@ function Matrix({ data }: { data: EcosystemMetrics["matrix"] }) {
   return (
     <Card
       title="¿Quién colabora con quién?"
+      help={{
+        lee: "Cada fila y cada columna es un sector (público, privado, academia, sociedad civil, juventudes). La celda donde se cruzan dice cuántas conexiones hay entre organizaciones de esos dos sectores.",
+        ejemplo: "Si Privado × Juventudes muestra 10, hay 10 conexiones entre empresas o fundaciones y colectivos juveniles. Una celda vacía fuera de la diagonal es una oportunidad: dos sectores que todavía no trabajan juntos.",
+        ojo: "Cuenta conexiones declaradas por las organizaciones, sin importar si son socios, aliados o colaboradores. La agrupación por sectores debe unificarse con la clasificación oficial de GOYN.",
+      }}
       how={`Conexiones entre sectores (${data.total} en total). La diagonal es colaboración dentro del mismo sector; las celdas vacías fuera de ella son brechas de articulación.`}
       table={
         <table className="w-full text-xs">
@@ -403,6 +458,11 @@ function OpennessIndex({ data }: { data: EcosystemMetrics["ei"] }) {
   return (
     <Card
       title="¿Cada sector se abre a los demás?"
+      help={{
+        lee: "La barra va de −1 a +1. Hacia la izquierda (negativo), el sector se conecta sobre todo consigo mismo; hacia la derecha (positivo), sobre todo con otros sectores.",
+        ejemplo: "Si Privado marca +0,48, las organizaciones privadas tienen más conexiones con otros sectores que entre ellas: es un sector abierto a articularse.",
+        ojo: "En sectores con pocas organizaciones el valor tiende a salir alto aunque haya pocas conexiones. Úsalo junto a la gráfica «¿Quién colabora con quién?».",
+      }}
       how="Índice E-I: de −1 (solo se conecta consigo mismo) a +1 (solo con otros sectores). En grupos pequeños el valor tiende a ser alto."
       table={
         <table className="w-full text-xs">
@@ -531,6 +591,11 @@ function RoleQuadrant({
     <Card
       className="lg:col-span-2"
       title="Cuadrante de roles en la red"
+      help={{
+        lee: "Cada punto es una organización. Más a la derecha: se conecta con más organizaciones. Más arriba: sirve de puente entre organizaciones que, sin ella, no estarían conectadas.",
+        ejemplo: "Un punto arriba a la izquierda tiene pocas conexiones, pero son clave: es un «puente oculto» que conviene invitar a los espacios de gobernanza.",
+        ojo: "Se calcula con las conexiones registradas en la plataforma: una organización que aún no ha registrado sus alianzas aparecerá abajo a la izquierda aunque en la realidad sea muy activa.",
+      }}
       how="Derecha: se conecta con muchas organizaciones. Arriba: une a quienes de otro modo no estarían conectados. Arriba a la derecha están los articuladores; arriba a la izquierda, los puentes ocultos que conviene sumar a la gobernanza."
       table={
         <table className="w-full text-xs">

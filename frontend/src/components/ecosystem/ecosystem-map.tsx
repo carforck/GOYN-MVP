@@ -33,6 +33,7 @@ export type MapOrg = {
   lat: number;
   lng: number;
   precision: string;
+  selected?: boolean;
 };
 
 export type MapRelation = { type: string; from: [number, number]; to: [number, number] };
@@ -105,7 +106,7 @@ function arc(from: [number, number], to: [number, number], steps = 40): [number,
 
 type Ripple = { id: string; lng: number; lat: number; color: string; start: number; big: boolean };
 
-type MapProps = { orgs: MapOrg[]; relations: MapRelation[]; stats: MapStats; className?: string };
+type MapProps = { orgs: MapOrg[]; relations: MapRelation[]; stats: MapStats; orgOptions: { slug: string; name: string }[]; className?: string };
 
 // Envoltorio de seguridad: si algo del mapa falla, la página y la lista siguen funcionando.
 export function EcosystemMap(props: MapProps) {
@@ -122,7 +123,7 @@ export function EcosystemMap(props: MapProps) {
   );
 }
 
-function EcosystemMapInner({ orgs, relations, stats, className }: MapProps) {
+function EcosystemMapInner({ orgs, relations, stats, orgOptions, className }: MapProps) {
   const container = useRef<HTMLDivElement>(null);
   const map = useRef<MapLibreMap | null>(null);
   const ready = useRef(false);
@@ -134,7 +135,30 @@ function EcosystemMapInner({ orgs, relations, stats, className }: MapProps) {
   const [noWebgl, setNoWebgl] = useState(false);
   const [intro, setIntro] = useState<"desconocido" | "globo" | "listo">("desconocido");
   // De menos a más: arranca solo con organizaciones y localidades; las conexiones se suman como capa.
-  const [showArcs, setShowArcs] = useState(false);
+  // Con organizaciones elegidas (micro-ecosistema) las conexiones se muestran de entrada.
+  const [showArcs, setShowArcs] = useState(() => orgs.some((o) => o.selected));
+  const hasSelected = orgs.some((o) => o.selected);
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- al elegir organizaciones se encienden sus conexiones
+    if (hasSelected) setShowArcs(true);
+  }, [hasSelected]);
+  // Micro-ecosistema: encuadrar a las organizaciones visibles y acercar lo suficiente para que
+  // los puntos no queden agrupados.
+  const microKey = hasSelected ? orgs.map((o) => o.slug).join(",") : "";
+  useEffect(() => {
+    if (!microKey) return;
+    const fit = () => {
+      const m = map.current;
+      if (!m || !ready.current) return false;
+      const lngs = orgs.map((o) => o.lng), lats = orgs.map((o) => o.lat);
+      m.fitBounds([[Math.min(...lngs), Math.min(...lats)], [Math.max(...lngs), Math.max(...lats)]], { padding: { top: 80, bottom: 80, left: 360, right: 80 }, maxZoom: 14, duration: 1200 });
+      return true;
+    };
+    if (fit()) return;
+    const id = setInterval(() => fit() && clearInterval(id), 300);
+    return () => clearInterval(id);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [microKey]);
   const [colorBy, setColorBy] = useState<ColorBy>("rol");
   const [groupBy, setGroupBy] = useState<GroupBy>("cercania");
   const [metric, setMetric] = useState<Metric>("orgs");
@@ -307,7 +331,7 @@ function EcosystemMapInner({ orgs, relations, stats, className }: MapProps) {
         } catch {
           /* navegadores sin soporte: se queda en mercator */
         }
-        instance.addSource("orgs", { type: "geojson", data: geojson, cluster: true, clusterRadius: 42, clusterMaxZoom: 13 });
+        instance.addSource("orgs", { type: "geojson", data: geojson, cluster: true, clusterRadius: 42, clusterMaxZoom: 12 });
         instance.addSource("arcs", { type: "geojson", data: arcs });
         instance.addSource("ripples", { type: "geojson", data: { type: "FeatureCollection", features: [] } });
         instance.addSource("flights", { type: "geojson", data: { type: "FeatureCollection", features: [] }, lineMetrics: true });
@@ -482,7 +506,12 @@ function EcosystemMapInner({ orgs, relations, stats, className }: MapProps) {
           type: "circle",
           source: "orgs",
           filter: ["!", ["has", "point_count"]],
-          paint: { "circle-color": color as never, "circle-radius": 7, "circle-stroke-width": 2, "circle-stroke-color": "#ffffff" },
+          paint: {
+            "circle-color": color as never,
+            "circle-radius": ["case", ["boolean", ["get", "selected"], false], 10, 7],
+            "circle-stroke-width": ["case", ["boolean", ["get", "selected"], false], 4, 2],
+            "circle-stroke-color": ["case", ["boolean", ["get", "selected"], false], "#DB0089", "#ffffff"],
+          },
         });
         // Zona de toque ampliada (invisible): los puntos miden 7 px y un clic cercano debe abrir la ficha.
         instance.addLayer({
@@ -699,7 +728,7 @@ function EcosystemMapInner({ orgs, relations, stats, className }: MapProps) {
     <div ref={stage} className={cn("relative isolate overflow-hidden rounded-3xl border border-goyn-navy/10 bg-[#F6F3FD] text-goyn-navy shadow-xl shadow-goyn-violeta/10", className)}>
       <div ref={container} data-tour="mapa" className="h-full w-full" role="region" aria-label="Mapa de organizaciones del ecosistema" />
 
-      <ActiveFilterChips className="absolute top-3 right-[16rem] left-[22rem] z-10 hidden md:flex" />
+      <ActiveFilterChips orgOptions={orgOptions} className="absolute top-3 right-[16rem] left-[22rem] z-10 hidden md:flex" />
 
       {orgs.length === 0 && (
         <div className="pointer-events-none absolute inset-0 z-10 grid place-items-center p-6">
@@ -724,6 +753,7 @@ function EcosystemMapInner({ orgs, relations, stats, className }: MapProps) {
         territory={focus}
         onTerritory={setFocus}
         stats={stats}
+        orgOptions={orgOptions}
         onReplay={() => {
           try {
             map.current?.setProjection({ type: "globe" });
