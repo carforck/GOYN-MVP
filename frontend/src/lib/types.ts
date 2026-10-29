@@ -165,6 +165,22 @@ export type EcosystemFilters = {
   // Micro-ecosistema: organizaciones elegidas (slugs) + sus conexiones directas. Solo en /mapa.
   org?: string[];
   orden?: "nombre" | "reciente" | "programas" | "conexiones";
+  // Filtro de proyectos (ajuste 14): deja solo organizaciones con algún programa publicado que cumpla.
+  parea?: string[]; // área principal del programa
+  ppoblacion?: string[]; // población objetivo del programa
+  proyecto?: string; // texto en el nombre del programa
 };
 
 export type AppRole = "visitante" | "organizacion" | "admin_goyn" | "superadmin";
+
+// Resumen ligero de un programa publicado para el mapa (ajuste 13/14). Los resultados (sumas de
+// reportes validados) solo se envían a quien tiene sesión; para visitantes van en null.
+export type MapProgram = {
+  id: string;
+  org_slug: string;
+  name: string;
+  primary_area_code: string;
+  population_codes: string[];
+  territory_codes: string[];
+  results: { conectados: number; fortalecidos: number; transformados: number } | null;
+};

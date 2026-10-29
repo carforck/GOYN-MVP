@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronDownIcon, ListIcon, MapIcon, SearchIcon, SlidersHorizontalIcon, XIcon } from "lucide-react";
+import { ChevronDownIcon, FolderKanbanIcon, ListIcon, MapIcon, SearchIcon, SlidersHorizontalIcon, XIcon } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useId, useState, useTransition } from "react";
@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { catalogs } from "@/lib/catalogs";
-import { SORTS, countActive, filtersToQuery, parseFilters, type FilterKey } from "@/lib/filters";
+import { SORTS, countActive, countProgramFilters, filtersToQuery, parseFilters, type FilterKey, type ProgramFilterKey } from "@/lib/filters";
 import type { CatalogItem } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -36,7 +36,103 @@ function useFilters() {
     apply({ ...filters, [key]: values.length ? values : undefined });
   };
 
-  return { filters, apply, toggle, pending, query: filtersToQuery(filters) };
+  const toggleProgram = (key: ProgramFilterKey, code: string) => {
+    const current = filters[key] ?? [];
+    const values = current.includes(code) ? current.filter((c) => c !== code) : [...current, code];
+    apply({ ...filters, [key]: values.length ? values : undefined });
+  };
+
+  return { filters, apply, toggle, toggleProgram, pending, query: filtersToQuery(filters) };
+}
+
+const programGroups: { key: ProgramFilterKey; title: string; options: CatalogItem[] }[] = [
+  { key: "parea", title: "Área principal del proyecto", options: catalogs.impactAreas },
+  { key: "ppoblacion", title: "Población objetivo del proyecto", options: catalogs.populations },
+];
+
+// Filtro de proyectos (ajuste 14): por área principal, población objetivo y nombre del programa.
+// Deja solo las organizaciones con algún programa publicado que cumpla (se combina con los demás filtros).
+export function ProgramFilters({ compact = false }: { compact?: boolean }) {
+  const { filters, apply, toggleProgram } = useFilters();
+  const [name, setName] = useState(filters.proyecto ?? "");
+  // Si la URL cambia desde fuera (chip quitado, "Limpiar"), el campo se sincroniza.
+  const [seen, setSeen] = useState(filters.proyecto);
+  if (seen !== filters.proyecto) {
+    setSeen(filters.proyecto);
+    setName(filters.proyecto ?? "");
+  }
+  const active = countProgramFilters(filters);
+  const submit = () => apply({ ...filters, proyecto: name.trim() || undefined });
+  return (
+    <details open={active > 0 || undefined} className="group/proy border-t py-3">
+      <summary className="flex cursor-pointer list-none items-center justify-between gap-2 rounded-lg py-1 font-heading text-sm font-bold text-goyn-violeta focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none [&::-webkit-details-marker]:hidden">
+        <span className="flex items-center gap-1.5">
+          <FolderKanbanIcon className="size-4" aria-hidden /> Proyectos
+          {active > 0 && <span className="ml-1 rounded-full bg-goyn-violeta px-2 py-0.5 text-[11px] text-white">{active}</span>}
+        </span>
+        <ChevronDownIcon className="size-4 shrink-0 transition-transform group-open/proy:rotate-180" aria-hidden />
+      </summary>
+      <div className="mt-2 space-y-3">
+        <p className="text-xs text-muted-foreground">Muestra solo las organizaciones con algún proyecto o programa publicado que cumpla.</p>
+        <form
+          role="search"
+          className="relative"
+          onSubmit={(e) => {
+            e.preventDefault();
+            submit();
+          }}
+        >
+          <SearchIcon className="pointer-events-none absolute top-1/2 left-2.5 size-3.5 -translate-y-1/2 text-muted-foreground" aria-hidden />
+          <Input
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            onBlur={() => (name.trim() || undefined) !== filters.proyecto && submit()}
+            placeholder="Nombre del proyecto…"
+            aria-label="Buscar por nombre del proyecto"
+            className="h-9 rounded-lg pr-8 pl-8 text-sm"
+          />
+          {filters.proyecto && (
+            <button
+              type="button"
+              aria-label="Borrar nombre del proyecto"
+              onClick={() => {
+                setName("");
+                apply({ ...filters, proyecto: undefined });
+              }}
+              className="absolute top-1/2 right-1.5 grid size-6 -translate-y-1/2 place-items-center rounded-full text-muted-foreground hover:bg-muted"
+            >
+              <XIcon className="size-3.5" aria-hidden />
+            </button>
+          )}
+        </form>
+        {programGroups.map((group) => (
+          <div key={group.key}>
+            <p className="mb-1.5 text-xs font-semibold text-foreground/80">{group.title}</p>
+            <div className="flex flex-wrap gap-1.5" role="group" aria-label={group.title}>
+              {group.options.map((option) => {
+                const on = filters[group.key]?.includes(option.code) ?? false;
+                return (
+                  <button
+                    key={option.code}
+                    type="button"
+                    aria-pressed={on}
+                    onClick={() => toggleProgram(group.key, option.code)}
+                    className={cn(
+                      "rounded-full border px-3 py-1.5 text-left text-xs font-semibold transition-colors focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none",
+                      on ? "border-goyn-violeta bg-goyn-violeta text-white" : "bg-card text-foreground hover:border-goyn-violeta/50",
+                      compact && "py-1",
+                    )}
+                  >
+                    {option.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        ))}
+      </div>
+    </details>
+  );
 }
 
 // Cada categoría es desplegable (<details>): se ve de un vistazo todo lo que se puede filtrar.
@@ -247,12 +343,16 @@ export function OrgPicker({ options }: { options: { slug: string; name: string }
 
 // Filtros activos como chips sobre el mapa: se ve qué se está mostrando y se quita con un clic.
 export function ActiveFilterChips({ className, orgOptions = [] }: { className?: string; orgOptions?: { slug: string; name: string }[] }) {
-  const { filters, toggle, apply } = useFilters();
+  const { filters, toggle, toggleProgram, apply } = useFilters();
   const chips = groups.flatMap((g) =>
     (filters[g.key] ?? []).map((code) => ({ key: g.key, code, text: g.options.find((o) => o.code === code)?.label.replace(/^(BAQ|AMB) – /, "") ?? code, group: g.title })),
   );
   for (const slug of filters.org ?? [])
     chips.push({ key: "org" as FilterKey, code: slug, text: orgOptions.find((o) => o.slug === slug)?.name ?? slug, group: "Micro-ecosistema" });
+  for (const g of programGroups)
+    for (const code of filters[g.key] ?? [])
+      chips.push({ key: g.key as unknown as FilterKey, code, text: `Proyecto: ${g.options.find((o) => o.code === code)?.label ?? code}`, group: g.title });
+  if (filters.proyecto) chips.push({ key: "proyecto" as FilterKey, code: filters.proyecto, text: `Proyecto: “${filters.proyecto}”`, group: "Nombre del proyecto" });
   if (filters.q) chips.unshift({ key: "q" as FilterKey, code: filters.q, text: `“${filters.q}”`, group: "Búsqueda" });
   if (!chips.length) return null;
   return (
@@ -263,13 +363,14 @@ export function ActiveFilterChips({ className, orgOptions = [] }: { className?: 
           key={`${c.key}-${c.code}`}
           type="button"
           title={`${c.group}: quitar`}
-          onClick={() =>
-            c.key === ("q" as FilterKey)
-              ? apply({ ...filters, q: undefined })
-              : c.key === ("org" as FilterKey)
-                ? apply({ ...filters, org: (filters.org ?? []).filter((x) => x !== c.code) })
-                : toggle(c.key, c.code)
-          }
+          onClick={() => {
+            const k = c.key as string;
+            if (k === "q") apply({ ...filters, q: undefined });
+            else if (k === "proyecto") apply({ ...filters, proyecto: undefined });
+            else if (k === "org") apply({ ...filters, org: (filters.org ?? []).filter((x) => x !== c.code) });
+            else if (k === "parea" || k === "ppoblacion") toggleProgram(k, c.code);
+            else toggle(c.key, c.code);
+          }}
           className="inline-flex items-center gap-1 rounded-full border border-goyn-violeta/30 bg-white/95 px-2.5 py-1 text-xs font-semibold text-goyn-navy shadow-sm backdrop-blur hover:border-goyn-violeta"
         >
           {c.text} <XIcon className="size-3 text-goyn-violeta" aria-hidden />
@@ -328,6 +429,7 @@ export function FilterBar({
             <SheetTitle className="sr-only">Filtrar el ecosistema</SheetTitle>
             <FilterHeader />
             <FilterGroups compact />
+            <ProgramFilters compact />
           </SheetContent>
         </Sheet>
 
@@ -380,6 +482,7 @@ export function FilterSidebar() {
       <div className="sticky top-24 max-h-[calc(100vh-7rem)] overflow-y-auto rounded-2xl border bg-card p-5">
         <FilterHeader />
         <FilterGroups />
+        <ProgramFilters />
       </div>
     </aside>
   );

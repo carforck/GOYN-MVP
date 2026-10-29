@@ -84,6 +84,14 @@ export function ChallengesTree({ orgs, selName, children }: { orgs: ChartOrg[]; 
       <p className="text-[11px] font-semibold text-goyn-violeta sm:hidden">Desliza para ver todo el árbol →</p>
       <div className="overflow-x-auto pb-2">
         <div className="w-max min-w-full py-1">
+          {/* Títulos de columna: mismos anchos y sangrías que los niveles del árbol (ml-6 + pl-4 + borde de 2 px = 42 px). */}
+          <div className="mb-2 flex text-[11px] font-bold tracking-wide text-muted-foreground uppercase" aria-hidden>
+            {TREE_COLUMNS.map((c, i) => (
+              <span key={c.label} className={cn("shrink-0 px-1", c.width, i > 0 && "ml-[42px]")}>
+                {c.label}
+              </span>
+            ))}
+          </div>
           <TreeNode node={tree} depth={0} open={open} toggle={toggle} />
         </div>
       </div>
@@ -91,12 +99,19 @@ export function ChallengesTree({ orgs, selName, children }: { orgs: ChartOrg[]; 
   );
 }
 
+const TREE_COLUMNS = [
+  { label: "Áreas de impacto", width: "w-56" },
+  { label: "Área de impacto", width: "w-60" },
+  { label: "Barreras que atienden", width: "w-72" },
+  { label: "Organizaciones", width: "w-60" },
+];
+
 function TreeNode({ node, depth, open, toggle }: { node: Node; depth: number; open: Set<string>; toggle: (id: string) => void }) {
   const hasChildren = !!node.children?.length;
   const isOpen = hasChildren && open.has(node.id);
   const box = cn(
     "flex items-center gap-2 rounded-xl border bg-card px-3 py-2 text-left text-xs shadow-sm",
-    depth === 0 && "bg-goyn-navy text-sm font-bold text-white",
+    depth === 0 && "w-56 bg-goyn-navy text-sm font-bold text-white",
     depth === 1 && "w-60 font-bold text-foreground",
     depth === 2 && "w-72 text-foreground",
     depth === 3 && "w-60 py-1.5 text-foreground",

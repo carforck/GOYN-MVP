@@ -4,6 +4,7 @@ import Link from "next/link";
 import { VisibilityButton } from "@/app/panel/programas/visibility-button";
 import { PageHeader } from "@/components/ecosystem/page-header";
 import { buttonVariants } from "@/components/ui/button";
+import { Pagination, paginate } from "@/components/ui/pagination";
 import { label, shortTerritory } from "@/lib/catalogs";
 import { getViewer } from "@/lib/auth";
 import { getOwnOrganization, listOwnPrograms, listPendingNewPrograms } from "@/lib/data";
@@ -13,11 +14,15 @@ import { cn } from "@/lib/utils";
 export const metadata: Metadata = { title: "Programas" };
 
 // Cada programa se edita u oculta por separado; agregar uno no exige volver al formulario completo.
-export default async function ProgramasPage() {
+const PAGE_SIZE = 15;
+
+export default async function ProgramasPage(props: PageProps<"/panel/programas">) {
+  const sp = await props.searchParams;
   const viewer = await getViewer();
   const org = await getOwnOrganization(viewer.organizationIds);
   const [programs, pendingNew] = org ? await Promise.all([listOwnPrograms(org.id), listPendingNewPrograms(org.id)]) : [[], []];
   const visibles = programs.filter((p) => p.is_visible).length;
+  const page = paginate(programs, sp, PAGE_SIZE);
 
   return (
     <div className="space-y-6">
@@ -55,7 +60,7 @@ export default async function ProgramasPage() {
             </tr>
           </thead>
           <tbody className="divide-y">
-            {programs.map((p) => (
+            {page.items.map((p) => (
               <tr key={p.id} className={cn(!p.is_visible && "bg-muted/40")}>
                 <td className="p-4">
                   <p className={cn("font-semibold text-foreground", !p.is_visible && "text-muted-foreground")}>{p.name}</p>
@@ -101,6 +106,7 @@ export default async function ProgramasPage() {
           </tbody>
         </table>
       </div>
+      <Pagination pathname="/panel/programas" searchParams={sp} page={page.page} pageSize={PAGE_SIZE} total={page.total} itemLabel="programas" />
     </div>
   );
 }

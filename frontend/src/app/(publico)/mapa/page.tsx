@@ -6,17 +6,21 @@ import { FilterBar } from "@/components/ecosystem/filter-panel";
 import { ActoresCharts } from "@/components/ecosystem/actores-charts";
 import { shortTerritory } from "@/lib/catalogs";
 import { getViewer } from "@/lib/auth";
-import { getSocialInvestment, listIndicatorReports, listOrganizations, listRelations } from "@/lib/data";
+import { getSocialInvestment, listIndicatorReports, listMapPrograms, listOrganizations, listRelations } from "@/lib/data";
 import { computeMapStats } from "@/lib/map-stats";
-import { microEcosystem, parseFilters } from "@/lib/filters";
+import { filterByPrograms, microEcosystem, parseFilters } from "@/lib/filters";
 
 export const metadata: Metadata = { title: "Mapa del ecosistema en vivo" };
 
 export default async function MapaPage(props: PageProps<"/mapa">) {
   const filters = parseFilters(await props.searchParams);
   const [all, filtered, relations, reports, viewer] = await Promise.all([listOrganizations(), listOrganizations(filters), listRelations(), listIndicatorReports(), getViewer()]);
+  const isAuthenticated = viewer.role !== "visitante";
+  // Programas publicados (resumen ligero): filtro de proyectos (ajuste 14) y ficha del actor (ajuste 13).
+  // Los resultados solo viajan al navegador con sesión.
+  const programs = await listMapPrograms(isAuthenticated);
   // Micro-ecosistema: organizaciones elegidas + sus conexiones directas (reunión 08-oct).
-  const orgs = microEcosystem(filtered, relations, filters.org);
+  const orgs = microEcosystem(filterByPrograms(filtered, programs, filters), relations, filters.org);
   const chosen = new Set(filters.org ?? []);
 
   const points: MapOrg[] = orgs
@@ -62,7 +66,7 @@ export default async function MapaPage(props: PageProps<"/mapa">) {
         <FilterBar view="mapa" total={all.length} shown={orgs.length} orgOptions={all.map((o) => ({ slug: o.slug, name: o.name }))} filterButton="mobile" />
       </Suspense>
 
-      <EcosystemMap orgs={points} relations={arcs} stats={stats} orgOptions={all.map((o) => ({ slug: o.slug, name: o.name }))} isAuthenticated={viewer.role !== "visitante"} className="h-[78vh] min-h-[520px]" />
+      <EcosystemMap orgs={points} relations={arcs} stats={stats} programs={programs} orgOptions={all.map((o) => ({ slug: o.slug, name: o.name }))} isAuthenticated={isAuthenticated} className="h-[78vh] min-h-[520px]" />
 
       <p className="text-xs text-muted-foreground">
         Las ubicaciones aproximadas se muestran en el centro de su zona. ¿Prefieres leer las organizaciones una por una? Usa la <Link href="/actores" className="font-semibold text-goyn-violeta underline-offset-2 hover:underline">vista lista</Link>. Mapa: © OpenStreetMap, OpenFreeMap. Globo: NASA Blue Marble.

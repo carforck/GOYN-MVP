@@ -78,10 +78,12 @@ export function MobileAppNav({ items, areaLabel, userName, userEmail }: { items:
       <SheetTrigger render={<Button variant="ghost" size="icon-lg" className="size-11" aria-label="Abrir menú del área" />}>
         <MenuIcon className="size-6" />
       </SheetTrigger>
-      <SheetContent side="left" className="flex w-[80vw] max-w-xs flex-col bg-sidebar p-0 text-sidebar-foreground">
+      <SheetContent side="left" className="flex h-dvh w-[80vw] max-w-xs flex-col bg-sidebar p-0 text-sidebar-foreground">
         <SheetTitle className="p-5 pb-0 text-xs font-bold tracking-widest text-goyn-magenta uppercase">{areaLabel}</SheetTitle>
-        <AppNav items={items} onNavigate={() => setOpen(false)} />
-        <div className="mt-auto border-t border-sidebar-border p-4 text-sm">
+        <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
+          <AppNav items={items} onNavigate={() => setOpen(false)} />
+        </div>
+        <div className="shrink-0 border-t border-sidebar-border p-4 text-sm">
           {userName && <p className="truncate font-semibold">{userName}</p>}
           {userEmail && <p className="truncate text-xs text-sidebar-foreground/60">{userEmail}</p>}
           <form action={signOut} className="mt-3">

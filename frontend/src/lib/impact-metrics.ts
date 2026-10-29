@@ -151,6 +151,41 @@ export function niceAxis(max: number, ticks = 5) {
   return { max: top, ticks: out };
 }
 
+// Desglose de transformados en empleo / emprendimiento. El reporte actual no lo trae: se lee de
+// campos opcionales `value_empleo` / `value_emprendimiento` del reporte de transformados cuando la
+// capa de datos los entregue. Cada parte es null mientras ningún reporte de los proyectos traiga el
+// dato; la vista oculta tarjetas y división de la barra mientras sea null y las muestra solas
+// cuando exista.
+type TransformedSplitReport = IndicatorReport & {
+  value_empleo?: number | null;
+  value_emprendimiento?: number | null;
+};
+export type TransformedSplit = {
+  empleo: number | null;
+  emprendimiento: number | null;
+};
+
+export function transformedSplit(
+  reports: IndicatorReport[],
+  projectIds: Set<string>,
+  periodo?: string,
+): TransformedSplit {
+  const out: TransformedSplit = { empleo: null, emprendimiento: null };
+  for (const r of reports as TransformedSplitReport[]) {
+    if (
+      r.indicator_code !== "transformados" ||
+      !r.program_id ||
+      !projectIds.has(r.program_id) ||
+      (periodo && r.year !== periodo)
+    )
+      continue;
+    if (r.value_empleo != null) out.empleo = (out.empleo ?? 0) + r.value_empleo;
+    if (r.value_emprendimiento != null)
+      out.emprendimiento = (out.emprendimiento ?? 0) + r.value_emprendimiento;
+  }
+  return out;
+}
+
 export function periodsOf(reports: IndicatorReport[]) {
   return [...new Set(reports.map((r) => r.year))].sort();
 }

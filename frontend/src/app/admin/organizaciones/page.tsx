@@ -4,6 +4,7 @@ import Link from "next/link";
 import { PageHeader } from "@/components/ecosystem/page-header";
 import { buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Pagination, paginate } from "@/components/ui/pagination";
 import { shortTerritory } from "@/lib/catalogs";
 import { listOrganizations } from "@/lib/data";
 import { formatDate } from "@/lib/format";
@@ -11,10 +12,13 @@ import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = { title: "Organizaciones" };
 
+const PAGE_SIZE = 25;
+
 export default async function OrganizacionesAdminPage(props: PageProps<"/admin/organizaciones">) {
   const sp = await props.searchParams;
   const q = typeof sp.q === "string" ? sp.q : "";
   const orgs = await listOrganizations(q ? { q } : {});
+  const page = paginate(orgs, sp, PAGE_SIZE);
 
   return (
     <div className="space-y-6">
@@ -40,7 +44,7 @@ export default async function OrganizacionesAdminPage(props: PageProps<"/admin/o
             </tr>
           </thead>
           <tbody className="divide-y">
-            {orgs.map((o) => (
+            {page.items.map((o) => (
               <tr key={o.id} className="hover:bg-muted/50">
                 <td className="p-4">
                   <Link href={`/actores/${o.slug}`} className="font-semibold text-foreground hover:underline">{o.name}</Link>
@@ -58,9 +62,11 @@ export default async function OrganizacionesAdminPage(props: PageProps<"/admin/o
                 </td>
               </tr>
             ))}
+            {orgs.length === 0 && <tr><td colSpan={7} className="p-8 text-center text-muted-foreground">Ninguna organización coincide con la búsqueda.</td></tr>}
           </tbody>
         </table>
       </div>
+      <Pagination pathname="/admin/organizaciones" searchParams={sp} page={page.page} pageSize={PAGE_SIZE} total={page.total} itemLabel="organizaciones" />
     </div>
   );
 }

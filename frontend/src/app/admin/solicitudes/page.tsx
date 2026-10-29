@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { PageHeader } from "@/components/ecosystem/page-header";
+import { Pagination, paginate } from "@/components/ui/pagination";
 import { label, shortTerritory } from "@/lib/catalogs";
 import { listChangeRequests } from "@/lib/data";
 import { formatDateTime } from "@/lib/format";
@@ -17,10 +18,13 @@ const kindLabel: Record<ChangeRequestSummary["kind"], string> = {
   programa: "Programa",
 };
 
+const PAGE_SIZE = 25;
+
 export default async function SolicitudesPage(props: PageProps<"/admin/solicitudes">) {
   const sp = await props.searchParams;
   const tipo = typeof sp.tipo === "string" ? sp.tipo : "";
   const requests = (await listChangeRequests()).filter((r) => !tipo || r.kind === tipo);
+  const page = paginate(requests, sp, PAGE_SIZE);
 
   return (
     <div className="space-y-6">
@@ -46,7 +50,7 @@ export default async function SolicitudesPage(props: PageProps<"/admin/solicitud
             </tr>
           </thead>
           <tbody className="divide-y">
-            {requests.map((r) => (
+            {page.items.map((r) => (
               <tr key={r.id} className="hover:bg-muted/50">
                 <td className="p-4">
                   <p className="font-semibold text-foreground">{r.organization_name}</p>
@@ -67,6 +71,7 @@ export default async function SolicitudesPage(props: PageProps<"/admin/solicitud
           </tbody>
         </table>
       </div>
+      <Pagination pathname="/admin/solicitudes" searchParams={sp} page={page.page} pageSize={PAGE_SIZE} total={page.total} itemLabel="solicitudes" />
     </div>
   );
 }

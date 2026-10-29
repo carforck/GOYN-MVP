@@ -7,8 +7,6 @@ import {
   ChartCard,
   ImpactFilters,
   IncomeRoute,
-  NewImpactData,
-  PendingTag,
   RESULT_COLORS,
   StatCard,
   WhereExplorer,
@@ -30,6 +28,7 @@ import {
   INCOME_AREA,
   periodsOf,
   sumMeasure,
+  transformedSplit,
   womenShare,
   type ImpactDashboardFilters,
   type Measure,
@@ -71,6 +70,15 @@ export default async function ImpactoPage(props: PageProps<"/impacto">) {
   const gCon = sumMeasure(G, "conectados");
   const gFort = sumMeasure(G, "fortalecidos");
   const gTrans = sumMeasure(G, "transformados");
+  // Pines 6 y 7: empleo / emprendimiento solo se muestran cuando el reporte traiga el dato.
+  const split = transformedSplit(
+    reports,
+    new Set(G.map((p) => p.id)),
+    filters.periodo,
+  );
+  const splitCards = [split.empleo, split.emprendimiento].filter(
+    (v) => v != null,
+  ).length;
 
   // Catálogos para filtros y mapa de calor: áreas en el orden de la propuesta; "Cobertura general" al final.
   const areas = [...catalogs.impactAreas].sort(byAreaOrder);
@@ -258,7 +266,13 @@ export default async function ImpactoPage(props: PageProps<"/impacto">) {
           </BlockHead>
           {showIncome ? (
             <>
-              <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+              <div
+                className={cn(
+                  "grid gap-4 sm:grid-cols-2",
+                  splitCards === 1 && "xl:grid-cols-3",
+                  splitCards === 2 && "xl:grid-cols-4",
+                )}
+              >
                 <StatCard
                   label={`Proyectos de ${incomeLabel}`}
                   value={formatNumber(G.length)}
@@ -272,20 +286,22 @@ export default async function ImpactoPage(props: PageProps<"/impacto">) {
                   women={womenText(gTrans)}
                   color={RESULT_COLORS.transformados.base}
                 />
-                <StatCard
-                  label="Accedieron a un empleo"
-                  value={<PendingTag />}
-                  description="Según el seguimiento del proyecto. El reporte actual no separa empleo de emprendimiento."
-                  women={null}
-                  color={RESULT_COLORS.transformados.solid}
-                />
-                <StatCard
-                  label="Iniciaron o mejoraron un emprendimiento"
-                  value={<PendingTag />}
-                  description="Según el seguimiento del proyecto. El reporte actual no separa empleo de emprendimiento."
-                  women={null}
-                  color="#FFBD25"
-                />
+                {split.empleo != null && (
+                  <StatCard
+                    label="Accedieron a un empleo"
+                    value={formatNumber(split.empleo)}
+                    description="Según el seguimiento del proyecto."
+                    color={RESULT_COLORS.transformados.solid}
+                  />
+                )}
+                {split.emprendimiento != null && (
+                  <StatCard
+                    label="Iniciaron o mejoraron un emprendimiento"
+                    value={formatNumber(split.emprendimiento)}
+                    description="Según el seguimiento del proyecto."
+                    color="#FFBD25"
+                  />
+                )}
               </div>
               <ChartCard
                 id="ruta"
@@ -310,6 +326,7 @@ export default async function ImpactoPage(props: PageProps<"/impacto">) {
                       value: gTrans.total,
                     },
                   ]}
+                  split={split}
                 />
               </ChartCard>
             </>
@@ -359,9 +376,6 @@ export default async function ImpactoPage(props: PageProps<"/impacto">) {
             mujeres se calcula sobre los reportes que traen ese dato.
           </span>
         </p>
-
-        {/* Pin 8 */}
-        <NewImpactData />
 
         <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-dashed p-5">
           <p className="text-sm text-muted-foreground">

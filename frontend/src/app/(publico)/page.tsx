@@ -36,9 +36,12 @@ export default async function HomePage(props: PageProps<"/">) {
         <HeroBackground />
         <HeroPhotoRail />
         <div className="goyn-container relative py-20 sm:py-28 lg:py-36">
-          <div className="max-w-2xl space-y-6 xl:max-w-3xl">
+          {/* Desde lg el collage ocupa la derecha: la columna de texto se limita al espacio libre
+              (ancho del contenedor menos collage + margen por su giro) y el título escala con clamp,
+              para que ningún texto se monte sobre las fotos en 1024–1920 px. */}
+          <div className="max-w-2xl space-y-6 lg:max-w-[calc(100%-31rem)] xl:max-w-[calc(100%-35rem)]">
             <div className="goyn-enter" style={{ ["--d" as string]: "0.15s" }}>
-              <h1 className="text-3xl leading-[1.1] font-bold tracking-tight sm:text-5xl">
+              <h1 className="text-3xl leading-[1.1] font-bold tracking-tight sm:text-5xl lg:text-[clamp(2rem,3.1vw,3rem)]">
                 {hero.titulo}{" "}
                 <span className="text-goyn-amarillo">{hero.tituloResaltado}</span>
               </h1>
@@ -48,7 +51,7 @@ export default async function HomePage(props: PageProps<"/">) {
                 {hero.subtitulo}
               </p>
             </div>
-            <div className="goyn-enter flex flex-col gap-3 pt-2 sm:flex-row" style={{ ["--d" as string]: "0.42s" }}>
+            <div className="goyn-enter flex flex-col gap-3 pt-2 sm:flex-row sm:flex-wrap" style={{ ["--d" as string]: "0.42s" }}>
               <Link href="/mapa" className={cn(buttonVariants(), "h-12 rounded-full bg-goyn-magenta-a11y px-6 text-base font-bold text-white shadow-lg shadow-goyn-magenta/40 transition-transform hover:scale-[1.03] hover:bg-goyn-magenta-a11y/90")}>
                 <MapIcon aria-hidden /> Ir a la herramienta
               </Link>
@@ -155,9 +158,11 @@ export default async function HomePage(props: PageProps<"/">) {
           <Reveal>
             <h2 id="glosario" className="text-3xl font-bold sm:text-4xl">Glosario</h2>
           </Reveal>
-          <dl className="mt-8 grid gap-x-10 gap-y-8 sm:grid-cols-2 lg:grid-cols-3">
+          {/* Columnas CSS (no grilla): cada término sigue al anterior en su columna, sin el hueco
+              que dejaba la fila alineada al término más largo. */}
+          <dl className="mt-8 gap-x-10 sm:columns-2 lg:columns-3">
             {glosario.map((g, i) => (
-              <Reveal key={g.term} delay={(i % 3) * 0.06}>
+              <Reveal key={g.term} delay={(i % 3) * 0.06} className="mb-8 break-inside-avoid">
                 <dt className="font-heading text-xl font-bold">{g.term}</dt>
                 <dd className="mt-1 font-medium leading-relaxed text-white/90">
                   {g.text}

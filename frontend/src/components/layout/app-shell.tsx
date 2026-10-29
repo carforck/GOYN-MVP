@@ -30,16 +30,20 @@ export async function AppShell({
   return (
     <AccountThemeProvider>
     <LiveProvider snapshot={snapshot} focusSlug={focusSlug}>
-    <div className="flex min-h-screen flex-col">
-      <DemoBanner session={viewer.demo && viewer.role !== "visitante"} />
+    <div className="flex min-h-dvh flex-col">
       <div className="flex flex-1 bg-sidebar">
-        <aside className="sticky top-0 hidden h-screen w-64 shrink-0 flex-col bg-sidebar text-sidebar-foreground lg:flex">
-          <div className="border-b border-sidebar-border p-5">
+        {/* La barra mide exactamente la altura visible (h-dvh, sticky): la navegación tiene scroll
+            propio y el bloque de usuario + Cerrar sesión queda siempre visible abajo. El aviso de
+            demostración va en la columna de contenido para no empujar la barra fuera de la pantalla. */}
+        <aside className="sticky top-0 hidden h-dvh w-64 shrink-0 flex-col overflow-hidden bg-sidebar text-sidebar-foreground lg:flex">
+          <div className="shrink-0 border-b border-sidebar-border p-5">
             <ProductLogo inverted />
             <p className="mt-3 text-xs font-bold tracking-widest text-goyn-magenta uppercase">{areaLabel}</p>
           </div>
-          <AppNav items={nav} />
-          <div className="mt-auto border-t border-sidebar-border p-4 text-sm">
+          <div className="min-h-0 flex-1 overflow-y-auto overscroll-contain">
+            <AppNav items={nav} />
+          </div>
+          <div className="shrink-0 border-t border-sidebar-border p-4 text-sm">
             <p className="truncate font-semibold">{viewer.name ?? viewer.email}</p>
             <p className="truncate text-xs text-sidebar-foreground/60">{viewer.email}</p>
             <form action={signOut} className="mt-3">
@@ -52,6 +56,7 @@ export async function AppShell({
         </aside>
 
         <div className="flex min-w-0 flex-1 flex-col bg-muted">
+          <DemoBanner session={viewer.demo && viewer.role !== "visitante"} />
           <header className="sticky top-0 z-30 flex h-14 items-center justify-between gap-3 border-b bg-card px-4 lg:hidden">
             <ProductLogo />
             <div className="flex items-center gap-1">

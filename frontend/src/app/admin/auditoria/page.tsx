@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { PageHeader } from "@/components/ecosystem/page-header";
+import { Pagination, pageBounds, readPage } from "@/components/ui/pagination";
 import { isDemoSession } from "@/lib/auth";
 import { formatDateTime } from "@/lib/format";
 import { createClient } from "@/lib/supabase/server";
@@ -26,18 +27,34 @@ const demoEntries: Entry[] = [
   { id: 5, created_at: "2026-09-15T09:30:00Z", actor: "Equipo GOYN", action: "solicitud.aprobar", entity: "Fundación Mar Abierto", reason: "Datos verificados" },
 ];
 
-async function loadEntries(): Promise<Entry[]> {
-  if (await isDemoSession()) return demoEntries;
+const PAGE_SIZE = 30;
+
+// Paginado en la consulta: range() + count exacto, para no traer todo el registro.
+async function loadEntries(requested: number): Promise<{ entries: Entry[]; total: number; page: number }> {
+  if (await isDemoSession()) {
+    const { page, from, to } = pageBounds(requested, PAGE_SIZE, demoEntries.length);
+    return { entries: demoEntries.slice(from, to), total: demoEntries.length, page };
+  }
   const supabase = await createClient();
-  const { data } = await supabase.from("audit_log").select("id, created_at, action, entity_type, reason, actor:profile(full_name, email)").order("created_at", { ascending: false }).limit(200);
-  return (data ?? []).map((d) => {
+  const { count } = await supabase.from("audit_log").select("id", { count: "exact", head: true });
+  const total = count ?? 0;
+  const { page, from } = pageBounds(requested, PAGE_SIZE, total);
+  const { data } = await supabase
+    .from("audit_log")
+    .select("id, created_at, action, entity_type, reason, actor:profile(full_name, email)")
+    .order("created_at", { ascending: false })
+    .order("id", { ascending: false })
+    .range(from, from + PAGE_SIZE - 1);
+  const entries = (data ?? []).map((d) => {
     const actor = d.actor as unknown as { full_name: string | null; email: string } | null;
     return { id: d.id, created_at: d.created_at, action: d.action, entity: d.entity_type, reason: d.reason, actor: actor?.full_name ?? actor?.email ?? "Sistema" };
   });
+  return { entries, total: Math.max(total, entries.length), page };
 }
 
-export default async function AuditoriaPage() {
-  const entries = await loadEntries();
+export default async function AuditoriaPage(props: PageProps<"/admin/auditoria">) {
+  const sp = await props.searchParams;
+  const { entries, total, page } = await loadEntries(readPage(sp));
   return (
     <div className="space-y-6">
       <PageHeader title="Registro de auditoría" description="Quién hizo qué y cuándo: envíos, decisiones, publicaciones y exportaciones. El registro es inmutable." />
@@ -53,6 +70,8 @@ export default async function AuditoriaPage() {
           </li>
         ))}
       </ol>
+      {entries.length === 0 && <p className="rounded-2xl border border-dashed bg-card p-8 text-center text-muted-foreground">Aún no hay eventos registrados.</p>}
+      <Pagination pathname="/admin/auditoria" searchParams={sp} page={page} pageSize={PAGE_SIZE} total={total} itemLabel="eventos" />
     </div>
   );
 }

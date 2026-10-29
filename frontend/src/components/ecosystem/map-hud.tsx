@@ -5,7 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { METRICS, type ColorBy, type GroupBy, type Metric } from "@/components/ecosystem/ecosystem-map";
 import { relationColors } from "@/components/ecosystem/map-constants";
-import { FilterGroups, FilterHeader, OrgPicker } from "@/components/ecosystem/filter-panel";
+import { FilterGroups, FilterHeader, OrgPicker, ProgramFilters } from "@/components/ecosystem/filter-panel";
 import { useLive } from "@/components/live/live-provider";
 import { AnimatedNumber } from "@/components/motion/animated-number";
 import { catalogs } from "@/lib/catalogs";
@@ -67,6 +67,8 @@ function Section({ title, icon, badge, hint, tour, defaultOpen = false, children
 export function MapHud({
   showArcs,
   onToggleArcs,
+  arcTypes,
+  onToggleArcType,
   onReplay,
   colorBy,
   onColorBy,
@@ -81,6 +83,9 @@ export function MapHud({
 }: {
   showArcs: boolean;
   onToggleArcs: () => void;
+  /** Tipos de conexión visibles (ajuste 3): socio, aliado, colaborador. */
+  arcTypes: string[];
+  onToggleArcType: (type: string) => void;
   onReplay: () => void;
   colorBy: ColorBy;
   onColorBy: (v: ColorBy) => void;
@@ -188,6 +193,7 @@ export function MapHud({
               <FilterHeader compact />
               <OrgPicker options={orgOptions} />
               <FilterGroups compact />
+              <ProgramFilters compact />
             </Section>
 
             <Section
@@ -228,16 +234,33 @@ export function MapHud({
                     <span className="sr-only">Mostrar conexiones</span>
                   </button>
                 </div>
-                <ul className="flex flex-wrap gap-x-3 gap-y-1 text-xs text-goyn-navy/75">
-                  {relationLegend.map((r) => (
-                    <li key={r.code} className="flex items-center gap-1.5">
-                      <svg aria-hidden width="26" height="8" viewBox="0 0 26 8">
-                        <line x1="2" y1="4" x2="24" y2="4" stroke={r.color} strokeWidth={r.width} strokeDasharray={r.dash} strokeLinecap={r.code === "colaborador" ? "round" : "butt"} />
-                      </svg>
-                      {r.label}
-                    </li>
-                  ))}
+                {/* Cada tipo se muestra u oculta por separado (ajuste 3); el interruptor enciende la capa. */}
+                <ul className="flex flex-wrap gap-1.5" role="group" aria-label="Tipos de conexión visibles">
+                  {relationLegend.map((r) => {
+                    const on = arcTypes.includes(r.code);
+                    return (
+                      <li key={r.code}>
+                        <button
+                          type="button"
+                          aria-pressed={on}
+                          onClick={() => onToggleArcType(r.code)}
+                          title={on ? `Ocultar ${r.label.toLowerCase()}` : `Mostrar ${r.label.toLowerCase()}`}
+                          className={cn(
+                            "flex items-center gap-1.5 rounded-full border px-2 py-1 text-xs font-semibold transition-colors focus-visible:ring-2 focus-visible:ring-goyn-violeta focus-visible:outline-none",
+                            on ? "border-goyn-violeta/60 bg-goyn-lila text-goyn-navy" : "border-goyn-navy/15 bg-white text-goyn-navy/50 line-through decoration-goyn-navy/40",
+                            !showArcs && "opacity-60",
+                          )}
+                        >
+                          <svg aria-hidden width="22" height="8" viewBox="0 0 22 8" className={cn(!on && "opacity-40")}>
+                            <line x1="2" y1="4" x2="20" y2="4" stroke={r.color} strokeWidth={r.width} strokeDasharray={r.dash} strokeLinecap={r.code === "colaborador" ? "round" : "butt"} />
+                          </svg>
+                          {r.label}
+                        </button>
+                      </li>
+                    );
+                  })}
                 </ul>
+                {!showArcs && <p className="mt-1.5 text-[11px] text-goyn-navy/55">Enciende el interruptor (o elige un tipo) para verlas en el mapa.</p>}
               </div>
 
               <button

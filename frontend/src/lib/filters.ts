@@ -1,5 +1,9 @@
 import type { EcosystemFilters, PublicOrganization } from "@/lib/types";
 
+// Filtro de proyectos (ajuste 14): /mapa?parea=educacion&ppoblacion=jovenes&proyecto=empleo
+export const PROGRAM_FILTER_KEYS = ["parea", "ppoblacion"] as const;
+export type ProgramFilterKey = (typeof PROGRAM_FILTER_KEYS)[number];
+
 // Claves de URL (en español, compartibles): /mapa?tipo=colectivo_juvenil&territorio=amb_soledad
 export const FILTER_KEYS = ["tipo", "rol", "area", "poblacion", "territorio"] as const;
 export const SORTS = [
@@ -20,7 +24,8 @@ export function parseFilters(params: RawParams): EcosystemFilters {
   };
   const q = typeof params.q === "string" && params.q.trim() ? params.q.trim() : undefined;
   const orden = SORTS.find((s) => s.value === params.orden)?.value;
-  return { q, tipo: list("tipo"), rol: list("rol"), area: list("area"), poblacion: list("poblacion"), territorio: list("territorio"), org: list("org"), orden };
+  const proyecto = typeof params.proyecto === "string" && params.proyecto.trim() ? params.proyecto.trim() : undefined;
+  return { q, tipo: list("tipo"), rol: list("rol"), area: list("area"), poblacion: list("poblacion"), territorio: list("territorio"), org: list("org"), orden, parea: list("parea"), ppoblacion: list("ppoblacion"), proyecto };
 }
 
 export function filtersToQuery(filters: EcosystemFilters) {
@@ -32,12 +37,37 @@ export function filtersToQuery(filters: EcosystemFilters) {
     if (values?.length) sp.set(key, values.join(","));
   }
   if (filters.org?.length) sp.set("org", filters.org.join(","));
+  for (const key of PROGRAM_FILTER_KEYS) {
+    const values = filters[key];
+    if (values?.length) sp.set(key, values.join(","));
+  }
+  if (filters.proyecto) sp.set("proyecto", filters.proyecto);
   const s = sp.toString();
   return s ? `?${s}` : "";
 }
 
 export function countActive(filters: EcosystemFilters) {
-  return FILTER_KEYS.reduce((n, k) => n + (filters[k]?.length ?? 0), (filters.q ? 1 : 0) + (filters.org?.length ?? 0));
+  return FILTER_KEYS.reduce((n, k) => n + (filters[k]?.length ?? 0), (filters.q ? 1 : 0) + (filters.org?.length ?? 0) + countProgramFilters(filters));
+}
+
+export function countProgramFilters(f: EcosystemFilters) {
+  return (f.parea?.length ?? 0) + (f.ppoblacion?.length ?? 0) + (f.proyecto ? 1 : 0);
+}
+
+type ProgramLike = { org_slug: string; name: string; primary_area_code: string; population_codes: string[] };
+
+// ¿El programa cumple el filtro de proyectos? OR dentro de cada filtro, AND entre filtros.
+export function matchesProgram(p: ProgramLike, f: EcosystemFilters) {
+  if (f.proyecto && !normalize(p.name).includes(normalize(f.proyecto))) return false;
+  return overlaps([p.primary_area_code], f.parea) && overlaps(p.population_codes, f.ppoblacion);
+}
+
+// Deja solo las organizaciones con algún programa publicado que cumpla el filtro de proyectos.
+// Sin filtro de proyectos devuelve la lista tal cual.
+export function filterByPrograms<T extends { slug: string }>(orgs: T[], programs: ProgramLike[], f: EcosystemFilters) {
+  if (!countProgramFilters(f)) return orgs;
+  const keep = new Set(programs.filter((p) => matchesProgram(p, f)).map((p) => p.org_slug));
+  return orgs.filter((o) => keep.has(o.slug));
 }
 
 const normalize = (s: string) => s.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();

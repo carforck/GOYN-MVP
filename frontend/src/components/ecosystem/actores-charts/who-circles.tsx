@@ -1,25 +1,37 @@
 "use client";
 
 import {
+  ArrowLeftIcon,
   BriefcaseIcon,
+  ChartColumnIcon,
   FactoryIcon,
   FlagIcon,
   GraduationCapIcon,
+  HandCoinsIcon,
   HeartHandshakeIcon,
   HouseIcon,
   LandmarkIcon,
+  LightbulbIcon,
+  MegaphoneIcon,
+  NetworkIcon,
+  ScaleIcon,
   UserSearchIcon,
   UsersIcon,
+  UsersRoundIcon,
+  WrenchIcon,
   type LucideIcon,
 } from "lucide-react";
+import Link from "next/link";
 import { useMemo, useState } from "react";
 import { RoleIcon } from "@/components/ecosystem/role-badge";
 import { catalogs } from "@/lib/catalogs";
 import { cn } from "@/lib/utils";
-import { type ChartOrg, ORG_TYPE_COLORS, nf, packCircles, pct } from "./shared";
+import { type ChartOrg, ORG_TYPE_COLORS, nf, packCircles, pct, solidSwatch } from "./shared";
 
 // B) "¿Quiénes son las organizaciones que promueven el bienestar juvenil?"
-// Círculos empaquetados: un círculo por categoría, área ∝ número de organizaciones.
+// Círculos empaquetados: un círculo por categoría, área ∝ número de organizaciones. Relleno sólido con
+// el color del rol/tipo (oscurecido o con contenido navy cuando hace falta para contraste AA). Al
+// seleccionar un círculo o un ítem de la leyenda, el panel derecho muestra el detalle del grupo.
 
 const TYPE_ICONS: Record<string, LucideIcon> = {
   privado_fundacion: HeartHandshakeIcon,
@@ -33,35 +45,70 @@ const TYPE_ICONS: Record<string, LucideIcon> = {
   comunitaria: HouseIcon,
 };
 
+// Íconos de línea para los roles dentro de los círculos sólidos (los íconos de marca, que traen su
+// propio disco de color, se usan en el panel de detalle).
+const ROLE_ICONS: Record<string, LucideIcon> = {
+  articulador: NetworkIcon,
+  implementador: WrenchIcon,
+  financiador: HandCoinsIcon,
+  tomador_decision: ScaleIcon,
+  evaluador: ChartColumnIcon,
+  generador_conocimiento: LightbulbIcon,
+  juventud: UsersRoundIcon,
+  embajador: MegaphoneIcon,
+};
+
+// Definiciones de los tipos de organización (el catálogo solo trae la de "comunitaria").
+const TYPE_DESCRIPTIONS: Record<string, string> = {
+  privado_empresa: "Empresas del sector privado que aportan empleo, formación, recursos o alianzas para que los jóvenes accedan a oportunidades.",
+  privado_gremio: "Gremios y asociaciones empresariales que representan a un sector productivo e inciden en sus agendas de empleo y formación.",
+  privado_fundacion: "Fundaciones de origen privado (empresariales o familiares) que financian u operan programas de inversión social para jóvenes.",
+  publico_local: "Entidades de la Alcaldía, la Gobernación u otros organismos territoriales que definen e implementan políticas y programas para la juventud.",
+  publico_nacional: "Entidades del Gobierno nacional con presencia o programas en el territorio que inciden en la educación, el empleo y el bienestar juvenil.",
+  educativa: "Colegios, instituciones de educación superior, técnica y tecnológica y centros de formación para el trabajo.",
+  bolsa_empleo: "Servicios de empleo y entidades que conectan a los jóvenes con vacantes, orientación ocupacional y procesos de selección.",
+  colectivo_juvenil: "Grupos y organizaciones conformados y liderados por jóvenes que trabajan por sus comunidades y sus pares.",
+};
+
 type View = "rol" | "tipo";
-type Group = { code: string; label: string; color: string; orgs: ChartOrg[] };
+type Group = { code: string; label: string; color: string; fill: string; ink: string; description: string; orgs: ChartOrg[] };
 
 const W = 400; // ancho virtual del lienzo
 const SMALL = 0.075; // radio relativo bajo el cual solo se muestra el ícono
 
 function CategoryIcon({ view, code, color, className }: { view: View; code: string; color: string; className?: string }) {
-  if (view === "rol") {
-    return (
-      <span className={cn("block", className)}>
-        <RoleIcon code={code} size={64} className="h-full w-full" />
-      </span>
-    );
-  }
-  const Icon = TYPE_ICONS[code] ?? UsersIcon;
+  const Icon = (view === "rol" ? ROLE_ICONS[code] : TYPE_ICONS[code]) ?? UsersIcon;
   return <Icon className={className} style={{ color }} aria-hidden />;
 }
 
 export function WhoCircles({ orgs }: { orgs: ChartOrg[] }) {
   const [view, setView] = useState<View>("rol");
-  const [active, setActive] = useState<string | null>(null);
+  // `selected`: grupo fijado con clic/teclado (muestra el detalle). `hover`: solo resalta.
+  const [selected, setSelected] = useState<string | null>(null);
+  const [hover, setHover] = useState<string | null>(null);
   const total = orgs.length;
 
   const groups: Group[] = useMemo(() => {
     const list =
       view === "rol"
-        ? catalogs.roles.map((r) => ({ code: r.code, label: r.label, color: r.color ?? "#9B00FF", orgs: orgs.filter((o) => o.primary_role_code === r.code) }))
-        : catalogs.orgTypes.map((t) => ({ code: t.code, label: t.label, color: ORG_TYPE_COLORS[t.code] ?? "#9B00FF", orgs: orgs.filter((o) => o.org_type_code === t.code) }));
-    return list.filter((g) => g.orgs.length > 0).sort((a, b) => b.orgs.length - a.orgs.length);
+        ? catalogs.roles.map((r) => ({
+            code: r.code,
+            label: r.label,
+            color: r.color ?? "#9B00FF",
+            description: r.description ?? "",
+            orgs: orgs.filter((o) => o.primary_role_code === r.code),
+          }))
+        : catalogs.orgTypes.map((t) => ({
+            code: t.code,
+            label: t.label,
+            color: ORG_TYPE_COLORS[t.code] ?? "#9B00FF",
+            description: TYPE_DESCRIPTIONS[t.code] ?? t.description ?? "",
+            orgs: orgs.filter((o) => o.org_type_code === t.code),
+          }));
+    return list
+      .filter((g) => g.orgs.length > 0)
+      .sort((a, b) => b.orgs.length - a.orgs.length)
+      .map((g) => ({ ...g, ...solidSwatch(g.color) }));
   }, [orgs, view]);
 
   const layout = useMemo(() => {
@@ -72,7 +119,7 @@ export function WhoCircles({ orgs }: { orgs: ChartOrg[] }) {
     const maxX = Math.max(...raw.map((c) => c.x + c.r));
     const minY = Math.min(...raw.map((c) => c.y - c.r));
     const maxY = Math.max(...raw.map((c) => c.y + c.r));
-    const pad = 4;
+    const pad = 6;
     const k = (W - pad * 2) / (maxX - minX);
     const h = (maxY - minY) * k + pad * 2;
     return {
@@ -81,10 +128,10 @@ export function WhoCircles({ orgs }: { orgs: ChartOrg[] }) {
     };
   }, [groups]);
 
-  const activeIdx = groups.findIndex((g) => g.code === active);
-  const tipGroup = activeIdx >= 0 ? groups[activeIdx] : null;
-  const tipCircle = activeIdx >= 0 ? layout.circles[activeIdx] : null;
-  const tipBelow = !!tipCircle && tipCircle.y < layout.h / 2;
+  const sel = groups.find((g) => g.code === selected) ?? null;
+  const lit = hover ?? selected; // grupo resaltado (los demás se atenúan)
+  const toggle = (code: string) => setSelected((cur) => (cur === code ? null : code));
+  const sortedSel = useMemo(() => (sel ? [...sel.orgs].sort((a, b) => a.name.localeCompare(b.name, "es")) : []), [sel]);
 
   return (
     <section aria-labelledby="actores-quienes" className="space-y-4">
@@ -107,7 +154,8 @@ export function WhoCircles({ orgs }: { orgs: ChartOrg[] }) {
                 aria-pressed={view === v}
                 onClick={() => {
                   setView(v);
-                  setActive(null);
+                  setSelected(null);
+                  setHover(null);
                 }}
                 className={cn(
                   "rounded-full border px-3 py-1 font-semibold transition-colors",
@@ -125,118 +173,145 @@ export function WhoCircles({ orgs }: { orgs: ChartOrg[] }) {
             <div
               className="relative mx-auto w-full max-w-[520px]"
               style={{ aspectRatio: `${W} / ${layout.h}`, containerType: "inline-size" }}
-              onMouseLeave={() => setActive(null)}
+              onMouseLeave={() => setHover(null)}
             >
               {groups.map((g, i) => {
                 const c = layout.circles[i];
                 const small = c.r / W < SMALL;
+                const on = lit === g.code;
                 return (
                   <button
                     key={g.code}
                     type="button"
-                    onMouseEnter={() => setActive(g.code)}
-                    onFocus={() => setActive(g.code)}
-                    onClick={() => setActive((a) => (a === g.code ? null : g.code))}
+                    aria-pressed={selected === g.code}
+                    aria-controls="actores-quienes-panel"
+                    onMouseEnter={() => setHover(g.code)}
+                    onClick={() => toggle(g.code)}
                     aria-label={`${g.label}: ${g.orgs.length} organizaciones`}
+                    title={g.label}
                     className={cn(
-                      "absolute flex flex-col items-center justify-center rounded-full border-2 transition-[transform,opacity] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-goyn-violeta",
-                      active === g.code && "z-10 scale-[1.04]",
-                      active && active !== g.code && "opacity-45",
+                      "absolute flex cursor-pointer flex-col items-center justify-center rounded-full transition-[transform,opacity,box-shadow] duration-200 focus-visible:outline-3 focus-visible:outline-offset-2 focus-visible:outline-goyn-violeta",
+                      on && "z-10 scale-[1.05] shadow-lg",
+                      selected === g.code && "ring-4 ring-foreground/70 ring-offset-2 ring-offset-card",
+                      lit && !on && "opacity-35",
                     )}
                     style={{
                       left: `${((c.x - c.r) / W) * 100}%`,
                       top: `${((c.y - c.r) / layout.h) * 100}%`,
                       width: `${((2 * c.r) / W) * 100}%`,
                       height: `${((2 * c.r) / layout.h) * 100}%`,
-                      borderColor: g.color,
-                      backgroundColor: `${g.color}1F`,
+                      backgroundColor: g.fill,
+                      color: g.ink,
                     }}
                   >
-                    <CategoryIcon view={view} code={g.code} color={g.color} className={small ? "size-[55%]" : "size-[34%]"} />
+                    <CategoryIcon view={view} code={g.code} color={g.ink} className={small ? "size-[50%]" : "size-[32%]"} />
                     {!small && (
-                      <span className="font-heading leading-none font-bold text-foreground" style={{ fontSize: `${Math.max(2.6, (c.r / W) * 38)}cqw` }}>
+                      <span className="font-heading leading-none font-bold" style={{ fontSize: `${Math.max(2.6, (c.r / W) * 38)}cqw` }}>
                         {g.orgs.length}
                       </span>
                     )}
                   </button>
                 );
               })}
-
-              {tipGroup && tipCircle && (
-                <div
-                  role="tooltip"
-                  className={cn(
-                    "pointer-events-none absolute z-20 max-w-full -translate-x-1/2 rounded-xl border bg-card px-3 py-2 text-xs shadow-xl",
-                    tipGroup.orgs.length > 10 ? "w-[30rem]" : "w-64",
-                    // Círculos de la mitad superior: el listado va debajo para no quedar bajo el encabezado fijo.
-                    !tipBelow && "-translate-y-full",
-                  )}
-                  style={{
-                    // Centrado en el lienzo para que el listado nunca se salga de la pantalla en móvil.
-                    left: "50%",
-                    top: tipBelow
-                      ? `calc(${((tipCircle.y + tipCircle.r) / layout.h) * 100}% + 6px)`
-                      : `calc(${((tipCircle.y - tipCircle.r) / layout.h) * 100}% - 6px)`,
-                  }}
-                >
-                  <p className="font-bold text-foreground">{tipGroup.label}</p>
-                  <p className="text-muted-foreground">
-                    {tipGroup.orgs.length} de {total} organizaciones · {pct(tipGroup.orgs.length, total)}%
-                  </p>
-                  <ul className={cn("mt-1 list-disc gap-x-5 pl-4 leading-snug text-foreground", tipGroup.orgs.length > 10 && "columns-2")}>
-                    {[...tipGroup.orgs]
-                      .sort((a, b) => a.name.localeCompare(b.name, "es"))
-                      .map((o) => (
-                        <li key={o.slug} className="mb-0.5 break-inside-avoid">
-                          {o.name}
-                        </li>
-                      ))}
-                  </ul>
-                </div>
-              )}
             </div>
           )}
 
-          <ul className="grid gap-x-4 gap-y-2 text-sm sm:grid-cols-2">
-            {groups.map((g) => (
-              <li
-                key={g.code}
-                className="flex items-center gap-2"
-                onMouseEnter={() => setActive(g.code)}
-                onMouseLeave={() => setActive(null)}
-              >
-                <span className="flex size-7 shrink-0 items-center justify-center rounded-full border-2" style={{ borderColor: g.color, backgroundColor: `${g.color}1F` }}>
-                  <CategoryIcon view={view} code={g.code} color={g.color} className="size-4" />
-                </span>
-                <span className="min-w-0 flex-1 text-foreground">{g.label}</span>
-                <span className="font-bold text-foreground">{g.orgs.length}</span>
-              </li>
-            ))}
+          <ul className="grid gap-x-4 gap-y-1 text-sm sm:grid-cols-2" aria-label="Leyenda">
+            {groups.map((g) => {
+              const on = lit === g.code;
+              return (
+                <li key={g.code}>
+                  <button
+                    type="button"
+                    aria-pressed={selected === g.code}
+                    aria-controls="actores-quienes-panel"
+                    onClick={() => toggle(g.code)}
+                    onMouseEnter={() => setHover(g.code)}
+                    onMouseLeave={() => setHover(null)}
+                    className={cn(
+                      "flex w-full items-center gap-2 rounded-lg px-1.5 py-1 text-left transition-[opacity,background-color] hover:bg-muted focus-visible:outline-2 focus-visible:outline-goyn-violeta",
+                      selected === g.code && "bg-muted",
+                      lit && !on && "opacity-50",
+                    )}
+                  >
+                    <span className="flex size-7 shrink-0 items-center justify-center rounded-full" style={{ backgroundColor: g.fill }}>
+                      <CategoryIcon view={view} code={g.code} color={g.ink} className="size-4" />
+                    </span>
+                    <span className={cn("min-w-0 flex-1 text-foreground", selected === g.code && "font-bold")}>{g.label}</span>
+                    <span className="font-bold text-foreground">{g.orgs.length}</span>
+                  </button>
+                </li>
+              );
+            })}
           </ul>
         </div>
 
-        <aside className="space-y-3 text-sm leading-relaxed text-muted-foreground lg:border-l lg:pl-6" aria-live="polite">
+        <aside id="actores-quienes-panel" className="min-w-0 space-y-3 text-sm leading-relaxed text-muted-foreground lg:border-l lg:pl-6">
           <h3 className="text-lg font-bold text-foreground">Un ecosistema que se reconoce</h3>
           <p>
             Esta visualización reúne en una sola imagen a las <strong className="text-foreground">{nf.format(total)} organizaciones</strong> que hacen parte del
             ecosistema. Verlas juntas nos permite reconocer que el trabajo por los jóvenes de Barranquilla A.M. es el resultado de una red con capacidades distintas que
             se complementan.
           </p>
-          {view === "rol" ? (
-            <p>
-              Vista por rol, cada organización se ubica según lo que aporta a la red: quienes implementan acciones en el territorio, quienes articulan, financian,
-              generan conocimiento o toman decisiones. Reconocer estos roles facilita saber a quién acudir según la necesidad y dónde hacen falta más capacidades.
-            </p>
-          ) : (
-            <p>
-              Vista por tipo de organización, se hace visible la diversidad de sectores que participan: fundaciones, organizaciones comunitarias, empresas,
-              entidades públicas y colectivos juveniles. Esa mezcla de naturalezas y miradas es la base de la acción colectiva por los jóvenes.
-            </p>
-          )}
-          <p>
-            Cada círculo reúne a las organizaciones que comparten un mismo rol o tipo, y su tamaño muestra cuántas son. Adentro van el ícono del grupo y su número de
-            organizaciones; la leyenda dice su nombre. Al pasar el cursor por un círculo (o al tocarlo) aparece el listado de las organizaciones que lo componen.
-          </p>
+
+          <div aria-live="polite" className="space-y-3">
+            {sel ? (
+              <div className="space-y-3 rounded-xl border bg-muted/30 p-4">
+                <div className="flex items-center gap-3">
+                  {view === "rol" ? (
+                    <RoleIcon code={sel.code} size={44} className="size-11" />
+                  ) : (
+                    <span className="flex size-11 shrink-0 items-center justify-center rounded-full" style={{ backgroundColor: sel.fill }}>
+                      <CategoryIcon view={view} code={sel.code} color={sel.ink} className="size-6" />
+                    </span>
+                  )}
+                  <div className="min-w-0">
+                    <p className="text-xs font-bold tracking-wider uppercase">{view === "rol" ? "Rol en el ecosistema" : "Tipo de organización"}</p>
+                    <h4 className="text-base leading-snug font-bold text-foreground">{sel.label}</h4>
+                  </div>
+                </div>
+                {sel.description && <p>{sel.description}</p>}
+                <p className="text-foreground">
+                  <strong className="font-heading text-2xl">{nf.format(sel.orgs.length)}</strong>{" "}
+                  {sel.orgs.length === 1 ? "organización" : "organizaciones"} · {pct(sel.orgs.length, total)}% del ecosistema
+                </p>
+                <ul className={cn("max-h-72 overflow-y-auto pr-1 leading-snug", sortedSel.length > 8 && "sm:columns-2 sm:gap-x-5")}>
+                  {sortedSel.map((o) => (
+                    <li key={o.slug} className="mb-1 break-inside-avoid">
+                      <Link href={`/actores/${o.slug}`} className="text-foreground underline decoration-goyn-violeta/40 underline-offset-2 hover:decoration-goyn-violeta">
+                        {o.name}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+                <button
+                  type="button"
+                  onClick={() => setSelected(null)}
+                  className="inline-flex items-center gap-1.5 rounded-full border bg-card px-3 py-1.5 text-xs font-semibold text-foreground transition-colors hover:bg-muted focus-visible:outline-2 focus-visible:outline-goyn-violeta"
+                >
+                  <ArrowLeftIcon className="size-3.5" aria-hidden /> Ver todo el ecosistema
+                </button>
+              </div>
+            ) : (
+              <>
+                {view === "rol" ? (
+                  <p>
+                    Vista por rol, cada organización se ubica según lo que aporta a la red: quienes implementan acciones en el territorio, quienes articulan, financian,
+                    generan conocimiento o toman decisiones. Reconocer estos roles facilita saber a quién acudir según la necesidad y dónde hacen falta más capacidades.
+                  </p>
+                ) : (
+                  <p>
+                    Vista por tipo de organización, se hace visible la diversidad de sectores que participan: fundaciones, organizaciones comunitarias, empresas,
+                    entidades públicas y colectivos juveniles. Esa mezcla de naturalezas y miradas es la base de la acción colectiva por los jóvenes.
+                  </p>
+                )}
+                <p>
+                  Cada círculo reúne a las organizaciones que comparten un mismo rol o tipo, y su tamaño muestra cuántas son. Adentro van el ícono del grupo y su número
+                  de organizaciones; la leyenda dice su nombre. Haz clic en un círculo (o en la leyenda) para ver aquí su definición y el listado de sus organizaciones.
+                </p>
+              </>
+            )}
+          </div>
         </aside>
       </div>
     </section>

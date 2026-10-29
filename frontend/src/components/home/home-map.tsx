@@ -6,8 +6,8 @@ import { FilterBar } from "@/components/ecosystem/filter-panel";
 import { buttonVariants } from "@/components/ui/button";
 import { shortTerritory } from "@/lib/catalogs";
 import { getViewer } from "@/lib/auth";
-import { listIndicatorReports, listOrganizations, listRelations } from "@/lib/data";
-import { filtersToQuery, microEcosystem } from "@/lib/filters";
+import { listIndicatorReports, listMapPrograms, listOrganizations, listRelations } from "@/lib/data";
+import { filterByPrograms, filtersToQuery, microEcosystem } from "@/lib/filters";
 import { computeMapStats } from "@/lib/map-stats";
 import type { EcosystemFilters } from "@/lib/types";
 import { cn } from "@/lib/utils";
@@ -15,8 +15,15 @@ import { cn } from "@/lib/utils";
 // Mapa del ecosistema embebido en el inicio (ajuste 03). Reutiliza el mismo componente y los
 // mismos datos que /mapa; los filtros viajan en la URL del inicio y se conservan al abrir el mapa completo.
 export async function HomeMap({ filters }: { filters: EcosystemFilters }) {
-  const [all, filtered, relations, reports, viewer] = await Promise.all([listOrganizations(), listOrganizations(filters), listRelations(), listIndicatorReports(), getViewer()]);
-  const orgs = microEcosystem(filtered, relations, filters.org);
+  const viewer = await getViewer();
+  const [all, filtered, relations, reports, programs] = await Promise.all([
+    listOrganizations(),
+    listOrganizations(filters),
+    listRelations(),
+    listIndicatorReports(),
+    listMapPrograms(viewer.role !== "visitante"),
+  ]);
+  const orgs = microEcosystem(filterByPrograms(filtered, programs, filters), relations, filters.org);
   const chosen = new Set(filters.org ?? []);
 
   const points: MapOrg[] = orgs
@@ -50,7 +57,7 @@ export async function HomeMap({ filters }: { filters: EcosystemFilters }) {
         <FilterBar view="mapa" total={all.length} shown={orgs.length} orgOptions={orgOptions} filterButton="mobile" />
       </Suspense>
       <Suspense fallback={<HomeMapSkeleton />}>
-        <EcosystemMap orgs={points} relations={arcs} stats={stats} orgOptions={orgOptions} isAuthenticated={viewer.role !== "visitante"} guideAutoStart={false} className="h-[420px] md:h-[560px]" />
+        <EcosystemMap orgs={points} relations={arcs} stats={stats} programs={programs} orgOptions={orgOptions} isAuthenticated={viewer.role !== "visitante"} guideAutoStart={false} className="h-[420px] md:h-[560px]" />
       </Suspense>
       <div className="flex flex-col items-start justify-between gap-3 sm:flex-row sm:items-center">
         <p className="text-xs text-muted-foreground">Las ubicaciones aproximadas se muestran en el centro de su zona. Mapa: © OpenStreetMap, OpenFreeMap.</p>

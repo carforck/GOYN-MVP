@@ -5,7 +5,6 @@ import { ChallengesTree } from "./challenges-tree";
 import { FiguresCards } from "./figures-cards";
 import { FocusLead, FocusRadar, ZoneChips, zonesName } from "./focus-radar";
 import { NetworkGraph, type ChartRelation } from "./network-graph";
-import { NewDataCards } from "./new-data-cards";
 import type { ChartOrg } from "./shared";
 import { WhoCircles } from "./who-circles";
 
@@ -13,7 +12,7 @@ export type { ChartOrg } from "./shared";
 
 // Gráficos del ecosistema bajo el mapa (ajuste 15, propuesta de gráficos de la sección Mapa):
 // A) cifras (pines 1-2), B) quiénes son (circle packing, pines 3-4), C) foco por áreas (radar, pines 5-7),
-// D) retos por área (árbol, pin 8) y E) nuevos datos del instrumento (pin 11). C y D comparten la selección
+// D) retos por área (árbol, pin 8) y E) red de relaciones. C y D comparten la selección
 // de "Zona de incidencia".
 export function ActoresCharts({
   orgs,
@@ -59,8 +58,6 @@ export function ActoresCharts({
 
       {/* Red de relaciones (pines 9-10) */}
       <NetworkGraph orgs={orgs} relations={relations} />
-
-      <NewDataCards />
     </div>
   );
 }

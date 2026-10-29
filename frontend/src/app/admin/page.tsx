@@ -53,7 +53,7 @@ export default async function AdminHome() {
             <Link href="/admin/solicitudes" className="inline-flex items-center gap-1 text-sm font-bold text-goyn-violeta hover:underline">Ir a la bandeja <ArrowRightIcon className="size-4" aria-hidden /></Link>
           </div>
           <ul className="divide-y">
-            {pending.map((r) => (
+            {pending.slice(0, 6).map((r) => (
               <li key={r.id}>
                 <Link href={`/admin/solicitudes/${r.id}`} className="flex items-center justify-between gap-3 py-3 hover:text-goyn-violeta">
                   <span>

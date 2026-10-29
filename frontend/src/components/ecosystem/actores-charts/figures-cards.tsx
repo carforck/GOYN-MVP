@@ -1,7 +1,7 @@
 import { Building2Icon, HandCoinsIcon } from "lucide-react";
 import { nf } from "./shared";
 
-// A) "Los actores en cifras": número de organizaciones y recursos movilizados (P38).
+// A) "Los actores en cifras": número de organizaciones y, solo si hay dato (P38), recursos movilizados.
 export function FiguresCards({ organizations, investment }: { organizations: number; investment: { totalCop: number | null; reported: number } }) {
   const millions = investment.totalCop != null ? Math.round(investment.totalCop / 1_000_000) : null;
   return (
@@ -12,7 +12,7 @@ export function FiguresCards({ organizations, investment }: { organizations: num
         </h2>
         <span className="text-sm text-muted-foreground">Caracterización de actores</span>
       </div>
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className={millions != null ? "grid gap-4 sm:grid-cols-2" : "grid gap-4"}>
         <article className="rounded-2xl border bg-card p-5 shadow-sm">
           <div className="flex items-center gap-2 text-xs font-bold tracking-wider text-goyn-violeta uppercase">
             <Building2Icon className="size-4" aria-hidden /> Número de organizaciones
@@ -20,32 +20,20 @@ export function FiguresCards({ organizations, investment }: { organizations: num
           <p className="mt-2 font-heading text-5xl font-bold text-foreground">{nf.format(organizations)}</p>
           <p className="mt-2 text-sm text-muted-foreground">Organizaciones que hacen parte del ecosistema y diligenciaron la caracterización.</p>
         </article>
-        <article className={millions == null ? "rounded-2xl border border-dashed bg-card p-5" : "rounded-2xl border bg-card p-5 shadow-sm"}>
-          <div className="flex flex-wrap items-center gap-2 text-xs font-bold tracking-wider text-goyn-violeta uppercase">
-            <HandCoinsIcon className="size-4" aria-hidden /> Recursos movilizados
-          </div>
-          {millions != null ? (
-            <>
-              <p className="mt-2 font-heading text-5xl font-bold text-foreground">
-                $&nbsp;{nf.format(millions)} <span className="text-xl font-semibold text-muted-foreground">millones</span>
-              </p>
-              <p className="mt-2 text-sm text-muted-foreground">
-                Inversión social estimada que las organizaciones destinan este año a iniciativas para jóvenes, en millones de pesos. Reportada por{" "}
-                {nf.format(investment.reported)} {investment.reported === 1 ? "organización" : "organizaciones"}.
-              </p>
-            </>
-          ) : (
-            <>
-              <p className="mt-2 font-heading text-5xl font-bold text-muted-foreground">—</p>
-              <span className="mt-2 inline-block rounded-full border border-goyn-amarillo bg-goyn-amarillo/20 px-2.5 py-0.5 text-xs font-bold text-foreground">
-                Por recolectar · P38
-              </span>
-              <p className="mt-2 text-sm text-muted-foreground">
-                Inversión social estimada que las organizaciones destinan este año a iniciativas para jóvenes, en millones de pesos.
-              </p>
-            </>
-          )}
-        </article>
+        {millions != null && (
+          <article className="rounded-2xl border bg-card p-5 shadow-sm">
+            <div className="flex flex-wrap items-center gap-2 text-xs font-bold tracking-wider text-goyn-violeta uppercase">
+              <HandCoinsIcon className="size-4" aria-hidden /> Recursos movilizados
+            </div>
+            <p className="mt-2 font-heading text-5xl font-bold text-foreground">
+              $&nbsp;{nf.format(millions)} <span className="text-xl font-semibold text-muted-foreground">millones</span>
+            </p>
+            <p className="mt-2 text-sm text-muted-foreground">
+              Inversión social estimada que las organizaciones destinan este año a iniciativas para jóvenes, en millones de pesos. Reportada por{" "}
+              {nf.format(investment.reported)} {investment.reported === 1 ? "organización" : "organizaciones"}.
+            </p>
+          </article>
+        )}
       </div>
     </section>
   );

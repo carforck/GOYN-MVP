@@ -12,6 +12,7 @@ import type {
   EcosystemFilters,
   EcosystemStats,
   IndicatorReport,
+  MapProgram,
   OwnIndicatorReport,
   OwnProgram,
   PublicOrganization,
@@ -470,4 +471,26 @@ export const getSocialInvestment = cache(async (): Promise<SocialInvestment> => 
   } catch {
     return { totalCop: null, reported: 0 };
   }
+});
+
+// Resumen ligero de programas publicados para el mapa (ajustes 13 y 14): nombre, área principal,
+// población, zonas y, solo con sesión, la suma de resultados reportados (por program_id).
+export const listMapPrograms = cache(async (withResults: boolean): Promise<MapProgram[]> => {
+  const [programs, reports] = await Promise.all([listPrograms(), withResults ? listIndicatorReports() : Promise.resolve([] as IndicatorReport[])]);
+  const totals = new Map<string, { conectados: number; fortalecidos: number; transformados: number }>();
+  for (const r of reports) {
+    if (!r.program_id) continue;
+    const t = totals.get(r.program_id) ?? { conectados: 0, fortalecidos: 0, transformados: 0 };
+    t[r.indicator_code] += r.value ?? 0;
+    totals.set(r.program_id, t);
+  }
+  return programs.map((p) => ({
+    id: p.id,
+    org_slug: p.organization_slug,
+    name: p.name,
+    primary_area_code: p.primary_area_code,
+    population_codes: p.population_codes ?? [],
+    territory_codes: p.territory_codes ?? [],
+    results: withResults ? (totals.get(p.id) ?? { conectados: 0, fortalecidos: 0, transformados: 0 }) : null,
+  }));
 });

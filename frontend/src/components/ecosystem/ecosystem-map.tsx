@@ -4,7 +4,7 @@ import { Loader2Icon, MapIcon, SkipForwardIcon, TriangleAlertIcon } from "lucide
 import * as maplibregl from "maplibre-gl";
 import type { GeoJSONSource, Map as MapLibreMap } from "maplibre-gl";
 import { AnimatePresence, motion } from "motion/react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { ErrorBoundary } from "@/components/common/error-boundary";
 import { LiveGlobe } from "@/components/globe/live-globe";
@@ -16,7 +16,9 @@ import { MapNotifications } from "@/components/ecosystem/map-notifications";
 import { ARC_STYLES, relationColors } from "@/components/ecosystem/map-constants";
 import type { LiveEvent } from "@/lib/live/types";
 import { type BasemapProvider, loadBasemap } from "@/components/ecosystem/map-style";
-import { catalogs } from "@/lib/catalogs";
+import { catalogs, label as catalogLabel, shortTerritory } from "@/lib/catalogs";
+import { countProgramFilters, filterByPrograms, matchesProgram, parseFilters } from "@/lib/filters";
+import type { MapProgram } from "@/lib/types";
 import type { MapStats } from "@/lib/map-stats";
 import { cn } from "@/lib/utils";
 import { webglSupported } from "@/lib/webgl";
@@ -75,7 +77,6 @@ const LOCALITY_TONES = [
   "amb_galapa", "#6E33C9",
   "amb_malambo", "#A877F0",
 ];
-const ARC_LAYERS = ARC_STYLES.map(([t]) => `arcs-${t}`);
 
 // Localidades del catálogo (centroides) para la capa de referencia del mapa claro.
 const LOCALITIES: GeoJSON.FeatureCollection<GeoJSON.Point> = {
@@ -111,6 +112,8 @@ type MapProps = {
   relations: MapRelation[];
   stats: MapStats;
   orgOptions: { slug: string; name: string }[];
+  /** Resumen ligero de programas publicados (ajustes 13 y 14): ficha del actor y filtro de proyectos. */
+  programs?: MapProgram[];
   className?: string;
   // Sesión del visitante. Si se pasa `false`, la ficha invita a iniciar sesión en vez de enlazar la hoja de vida.
   // Si no se pasa, el enlace va a /actores/<slug>, que ya muestra el aviso a quien no tiene sesión.
@@ -134,7 +137,23 @@ export function EcosystemMap(props: MapProps) {
   );
 }
 
-function EcosystemMapInner({ orgs, relations, stats, orgOptions, className, isAuthenticated, guideAutoStart = true }: MapProps) {
+function EcosystemMapInner({ orgs: allOrgs, relations: allRelations, stats, orgOptions, programs = [], className, isAuthenticated, guideAutoStart = true }: MapProps) {
+  // Filtro de proyectos (ajuste 14). /mapa ya llega filtrado desde el servidor; aquí se aplica también
+  // para el mapa del inicio, que reutiliza el componente. Las conexiones se recortan a los puntos visibles.
+  const params = useSearchParams();
+  const urlFilters = useMemo(() => parseFilters(Object.fromEntries(params.entries())), [params]);
+  const programKey = countProgramFilters(urlFilters) ? `${urlFilters.parea}|${urlFilters.ppoblacion}|${urlFilters.proyecto}` : "";
+  const orgs = useMemo(() => (programKey ? filterByPrograms(allOrgs, programs, urlFilters) : allOrgs), [allOrgs, programs, programKey]); // eslint-disable-line react-hooks/exhaustive-deps
+  const relations = useMemo(() => {
+    if (orgs.length === allOrgs.length) return allRelations;
+    const at = new Set(orgs.map((o) => `${o.lng},${o.lat}`));
+    return allRelations.filter((r) => at.has(`${r.from[0]},${r.from[1]}`) && at.has(`${r.to[0]},${r.to[1]}`));
+  }, [orgs, allOrgs, allRelations]);
+  const programsByOrg = useMemo(() => {
+    const by = new Map<string, MapProgram[]>();
+    for (const p of programs) by.set(p.org_slug, [...(by.get(p.org_slug) ?? []), p]);
+    return by;
+  }, [programs]);
   const container = useRef<HTMLDivElement>(null);
   const map = useRef<MapLibreMap | null>(null);
   // Vista previa ligera al pasar el cursor sobre un punto (sin registro se ve la información básica).
@@ -152,12 +171,23 @@ function EcosystemMapInner({ orgs, relations, stats, orgOptions, className, isAu
   // Con organizaciones elegidas (micro-ecosistema) las conexiones se muestran de entrada.
   const [showArcs, setShowArcs] = useState(() => orgs.some((o) => o.selected));
   const hasSelected = orgs.some((o) => o.selected);
+  // Tipos de conexión visibles (ajuste 3): cada uno se enciende o apaga por separado.
+  const [arcTypes, setArcTypes] = useState<string[]>(() => ARC_STYLES.map(([t]) => t));
+  const toggleArcType = (type: string) => {
+    if (!showArcs) {
+      setShowArcs(true);
+      setArcTypes((ts) => (ts.includes(type) ? ts : [...ts, type]));
+      return;
+    }
+    setArcTypes((ts) => (ts.includes(type) ? ts.filter((t) => t !== type) : [...ts, type]));
+  };
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect -- al elegir organizaciones se encienden sus conexiones
     if (hasSelected) setShowArcs(true);
   }, [hasSelected]);
   // Micro-ecosistema: encuadrar a las organizaciones visibles y acercar lo suficiente para que
   // los puntos no queden agrupados.
+  const [autoOpen, setAutoOpen] = useState("");
   const microKey = hasSelected ? orgs.map((o) => o.slug).join(",") : "";
   useEffect(() => {
     if (!microKey) return;
@@ -166,6 +196,9 @@ function EcosystemMapInner({ orgs, relations, stats, orgOptions, className, isAu
       if (!m || !ready.current) return false;
       const lngs = orgs.map((o) => o.lng), lats = orgs.map((o) => o.lat);
       m.fitBounds([[Math.min(...lngs), Math.min(...lats)], [Math.max(...lngs), Math.max(...lats)]], { padding: { top: 80, bottom: 80, left: 360, right: 80 }, maxZoom: 14, duration: 1200 });
+      // Una sola organización elegida desde el buscador: se abre su ficha con sus proyectos (ajuste 13).
+      const chosen = orgs.filter((o) => o.selected);
+      if (chosen.length === 1) m.once("moveend", () => setAutoOpen(`${chosen[0].slug}@${Date.now()}`));
       return true;
     };
     if (fit()) return;
@@ -195,14 +228,16 @@ function EcosystemMapInner({ orgs, relations, stats, orgOptions, className, isAu
     const profile = `/actores/${p.slug}`;
     const target = isAuthenticated === false ? `/ingresar?siguiente=${encodeURIComponent(profile)}` : profile;
     const cta = isAuthenticated === false ? "Inicia sesión para ver la hoja de vida" : "Ver hoja de vida";
-    const popup = new maplibregl.Popup({ offset: 14, maxWidth: "280px", className: "goyn-popup" })
+    const own = programsByOrg.get(p.slug) ?? [];
+    const popup = new maplibregl.Popup({ offset: 14, maxWidth: own.length && isAuthenticated !== false ? "320px" : "280px", className: "goyn-popup" })
       .setLngLat(at)
       .setHTML(`
-        <div class="w-64 p-4">
+        <div class="${own.length && isAuthenticated !== false ? "w-72" : "w-64"} p-4">
           <p class="text-[11px] font-bold uppercase tracking-wider text-[#a9a6cc]">${escapeHtml(p.org_type_label)}</p>
           <p class="mt-1 font-heading text-base font-bold leading-snug text-white">${escapeHtml(p.name)}</p>
           <p class="mt-2 text-sm text-white/80">${escapeHtml(p.primary_role_label)} · ${escapeHtml(p.territory)}</p>
           ${p.precision === "aproximada" ? '<p class="mt-1 text-[11px] text-[#a9a6cc]">Ubicación aproximada (zona)</p>' : ""}
+          ${programsHtml(own, p.slug, isAuthenticated !== false, programKey ? (x) => matchesProgram(x, urlFilters) : null)}
           <a href="${escapeHtml(target)}" class="mt-3 inline-flex min-h-9 w-full items-center justify-center rounded-full bg-[#9B00FF] px-3 py-1.5 text-center text-sm font-bold text-white">${cta}</a>
         </div>`)
       .addTo(m);
@@ -210,15 +245,22 @@ function EcosystemMapInner({ orgs, relations, stats, orgOptions, className, isAu
     popup.on("close", () => {
       if (clickedSlug.current === p.slug) clickedSlug.current = "";
     });
-    popup.getElement().querySelector("a")?.addEventListener("click", (ev) => {
-      ev.preventDefault();
-      router.push(target);
-    });
+    popup.getElement().querySelectorAll("a").forEach((a) =>
+      a.addEventListener("click", (ev) => {
+        ev.preventDefault();
+        router.push(a.getAttribute("href") ?? target);
+      }),
+    );
   };
   const openOrgPopupRef = useRef(openOrgPopup);
   useEffect(() => {
     openOrgPopupRef.current = openOrgPopup;
   });
+  useEffect(() => {
+    const org = autoOpen && orgs.find((o) => o.slug === autoOpen.split("@")[0]);
+    if (org) openOrgPopupRef.current(org, [org.lng, org.lat]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- solo al terminar el encuadre del micro-ecosistema
+  }, [autoOpen]);
 
   // Elegir una cifra la dibuja por localidad: las burbujas crecen según ese valor.
   const chooseMetric = (m: Metric) => {
@@ -726,8 +768,8 @@ function EcosystemMapInner({ orgs, relations, stats, orgOptions, className, isAu
     set(["clusters-glow", "clusters", "cluster-count", "points-glow", "points", "points-hit"], !byTerritory);
     set(["terr-glow", "terr-bubbles", "terr-labels"], byTerritory);
     set(["loc-label"], !byTerritory);
-    set(ARC_LAYERS, showArcs && !byTerritory);
-  }, [showArcs, groupBy]);
+    for (const [type] of ARC_STYLES) set([`arcs-${type}`], showArcs && !byTerritory && arcTypes.includes(type));
+  }, [showArcs, groupBy, arcTypes]);
   useEffect(() => {
     const m = map.current;
     if (!m || !ready.current) return;
@@ -800,6 +842,8 @@ function EcosystemMapInner({ orgs, relations, stats, orgOptions, className, isAu
       <MapHud
         showArcs={showArcs}
         onToggleArcs={() => setShowArcs((v) => !v)}
+        arcTypes={arcTypes}
+        onToggleArcType={toggleArcType}
         colorBy={colorBy}
         onColorBy={setColorBy}
         groupBy={groupBy}
@@ -873,6 +917,37 @@ function EcosystemMapInner({ orgs, relations, stats, orgOptions, className, isAu
       )}
     </div>
   );
+}
+
+// Proyectos del actor en su ficha (ajuste 13). Con sesión: nombre, área principal, población, zonas
+// y resultados reportados; sin sesión, solo cuántos tiene (el detalle es para cuentas registradas).
+const nf = (n: number) => n.toLocaleString("es-CO");
+function programsHtml(list: MapProgram[], slug: string, full: boolean, matches: ((p: MapProgram) => boolean) | null) {
+  const head = '<p class="mt-3 border-t border-white/15 pt-2.5 text-[11px] font-bold uppercase tracking-wider text-[#a9a6cc]">Proyectos y programas</p>';
+  if (!list.length) return `${head}<p class="mt-1 text-xs text-white/75">Aún no tiene proyectos publicados.</p>`;
+  const count = `${list.length} ${list.length === 1 ? "proyecto publicado" : "proyectos publicados"}`;
+  if (!full) return `${head}<p class="mt-1 text-xs text-white/80">${count}. Inicia sesión para ver sus proyectos y resultados.</p>`;
+  const sorted = matches ? [...list].sort((a, b) => Number(matches(b)) - Number(matches(a))) : list;
+  const href = escapeHtml(`/actores/${slug}#programas`);
+  const items = sorted
+    .map((x) => {
+      const pops = x.population_codes.map((c) => catalogLabel("populations", c));
+      const zones = x.territory_codes.filter((c) => c !== "cobertura_general").map(shortTerritory);
+      const r = x.results;
+      const res = r && r.conectados + r.fortalecidos + r.transformados > 0
+        ? `<span class="text-[#d9b3ff]">${nf(r.conectados)}</span> conectados · <span class="text-[#7fd6ee]">${nf(r.fortalecidos)}</span> fortalecidos · <span class="text-[#ff8fcf]">${nf(r.transformados)}</span> transformados`
+        : "Sin resultados reportados aún";
+      const hit = matches?.(x) ? '<span class="ml-1 rounded-full bg-[#DB0089] px-1.5 py-px text-[10px] font-bold text-white">Cumple el filtro</span>' : "";
+      return `<li class="rounded-lg bg-white/5 px-2.5 py-2">
+        <a href="${href}" class="font-heading text-sm font-bold leading-snug text-white underline-offset-2 hover:underline">${escapeHtml(x.name)}</a>${hit}
+        <p class="mt-0.5 text-[11px] text-white/75">${escapeHtml(catalogLabel("impactAreas", x.primary_area_code) || "Sin área")}</p>
+        ${pops.length ? `<p class="text-[11px] text-white/65">Población: ${escapeHtml(pops.slice(0, 3).join(", "))}${pops.length > 3 ? ` +${pops.length - 3}` : ""}</p>` : ""}
+        ${zones.length ? `<p class="text-[11px] text-white/65">Zonas: ${escapeHtml(zones.slice(0, 3).join(", "))}${zones.length > 3 ? ` +${zones.length - 3}` : ""}</p>` : ""}
+        <p class="mt-1 text-[11px] text-white/85">${res}</p>
+      </li>`;
+    })
+    .join("");
+  return `${head}<p class="mt-0.5 text-[11px] text-white/60">${count}</p><ul class="mt-1.5 max-h-52 space-y-1.5 overflow-y-auto pr-1">${items}</ul>`;
 }
 
 function escapeHtml(value: string) {

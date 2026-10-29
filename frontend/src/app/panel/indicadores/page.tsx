@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { PageHeader } from "@/components/ecosystem/page-header";
+import { Pagination, paginate } from "@/components/ui/pagination";
 import { IndicatorReportForm } from "@/app/panel/indicadores/report-form";
 import { label } from "@/lib/catalogs";
 import { getViewer } from "@/lib/auth";
@@ -19,7 +20,10 @@ const STATUS: Record<Group, { text: string; className: string }> = {
 };
 const groupOf = (s: OwnIndicatorReport["status"]): Group => (s === "aprobado" ? "aprobado" : s === "rechazado" ? "rechazado" : "revision");
 
-export default async function IndicadoresPage() {
+const PAGE_SIZE = 20;
+
+export default async function IndicadoresPage(props: PageProps<"/panel/indicadores">) {
+  const sp = await props.searchParams;
   const viewer = await getViewer();
   const org = await getOwnOrganization(viewer.organizationIds);
   const [programs, reports] = org ? await Promise.all([listPrograms(org.id), listOwnIndicatorReports(org.id)]) : [[], []];
@@ -49,6 +53,8 @@ export default async function IndicadoresPage() {
     })
     .sort((a, b) => b.year.localeCompare(a.year) || a.program.localeCompare(b.program, "es") || a.group.localeCompare(b.group));
 
+  const page = paginate(rows, sp, PAGE_SIZE);
+
   return (
     <div className="space-y-6">
       <PageHeader
@@ -75,7 +81,7 @@ export default async function IndicadoresPage() {
                 <td colSpan={6} className="p-6 text-center text-muted-foreground">Aún no hay resultados reportados.</td>
               </tr>
             )}
-            {rows.map((r) => (
+            {page.items.map((r) => (
               <tr key={r.key}>
                 <td className="p-4 font-semibold text-foreground">{r.program}</td>
                 <td className="p-4 tabular-nums">{r.year}</td>
@@ -97,6 +103,7 @@ export default async function IndicadoresPage() {
           </tbody>
         </table>
       </div>
+      <Pagination pathname="/panel/indicadores" searchParams={sp} page={page.page} pageSize={PAGE_SIZE} total={page.total} itemLabel="filas del historial" label="Paginación del historial" />
     </div>
   );
 }
