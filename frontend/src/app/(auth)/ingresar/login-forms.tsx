@@ -41,8 +41,19 @@ export function LoginForms({ siguiente }: { siguiente: string }) {
           </div>
         )}
         <div className="space-y-1.5">
-          <Label htmlFor="email">Correo electrónico</Label>
-          <Input id="email" name="email" type="email" required autoComplete="email" className="h-11" />
+          <Label htmlFor="email">{mode === "ingresar" ? "Correo o usuario" : "Correo electrónico"}</Label>
+          {/* En "Ingresar" se acepta también el usuario corto de las cuentas de prueba (sin "@"). */}
+          <Input
+            key={mode === "ingresar" ? "usuario" : "correo"}
+            id="email"
+            name="email"
+            type={mode === "ingresar" ? "text" : "email"}
+            required
+            autoComplete={mode === "ingresar" ? "username" : "email"}
+            autoCapitalize="none"
+            spellCheck={false}
+            className="h-11"
+          />
         </div>
         {mode !== "enlace" && (
           <div className="space-y-1.5">

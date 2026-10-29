@@ -300,7 +300,7 @@ function YouthPopulation({ territory }: { territory: string }) {
       <p className="text-[11px] font-bold tracking-wide text-goyn-navy/60 uppercase">Jóvenes de 14 a 28 años · DANE {YOUTH_YEAR}</p>
       {territory === "todo" ? (
         <p className="mt-0.5 text-xs text-goyn-navy/80">
-          <span className="font-heading text-lg font-bold text-goyn-navy">{fmt.format(YOUTH_TOTAL)}</span> en Barranquilla A.M. (5 municipios)
+          <span className="font-heading text-lg font-bold text-goyn-navy">{fmt.format(YOUTH_TOTAL)}</span> en Barranquilla y su área metropolitana (5 municipios)
         </p>
       ) : z?.kind === "municipio" ? (
         <p className="mt-0.5 text-xs text-goyn-navy/80">

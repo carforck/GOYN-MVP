@@ -2,7 +2,9 @@ import { Building2Icon, ShieldCheckIcon, SparklesIcon } from "lucide-react";
 import type { Metadata } from "next";
 import Image from "next/image";
 import { enterDemo } from "@/app/(auth)/actions";
+import { getCuentasPrueba } from "@/app/(auth)/cuentas-prueba";
 import { LoginForms } from "@/app/(auth)/ingresar/login-forms";
+import { TestAccounts } from "@/components/auth/test-accounts";
 import { ProductLogo } from "@/components/brand/logo";
 import { Shape } from "@/components/brand/shape";
 import { allowsDemoRoles, isDemoMode, isSupabaseConfigured } from "@/lib/config";
@@ -18,6 +20,7 @@ const demoRoles = [
 export default async function IngresarPage(props: PageProps<"/ingresar">) {
   const sp = await props.searchParams;
   const siguiente = typeof sp.siguiente === "string" ? sp.siguiente : "";
+  const cuentas = getCuentasPrueba();
 
   return (
     <div className="grid min-h-screen lg:grid-cols-2">
@@ -37,36 +40,41 @@ export default async function IngresarPage(props: PageProps<"/ingresar">) {
           <h1 className="text-3xl font-extrabold text-foreground">Ingresa a Mapa de Actores y Resultados</h1>
           <p className="mt-2 text-muted-foreground">Accede al panel de tu organización o a la consola del equipo GOYN.</p>
 
-          {allowsDemoRoles && (
-            <div className="mt-8 space-y-3">
-              <p className="rounded-xl bg-goyn-naranja/15 p-3 text-sm text-goyn-navy">
-                <strong>Recorrido de demostración.</strong>{" "}
-                {isDemoMode
-                  ? "Aún no hay base de datos conectada: elige un rol para recorrer las pantallas."
-                  : "Elige un rol para ver la plataforma con datos de ejemplo, sin crear cuenta. Lo que hagas en el recorrido no se guarda."}
-              </p>
-              {demoRoles.map((r) => (
-                <form key={r.role} action={enterDemo}>
-                  <input type="hidden" name="role" value={r.role} />
-                  <input type="hidden" name="siguiente" value={siguiente} />
-                  <button className="flex w-full items-start gap-4 rounded-2xl border bg-card p-4 text-left transition-colors hover:border-goyn-violeta hover:bg-goyn-lila/40">
-                    <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-goyn-lila text-goyn-violeta">
-                      <r.icon className="size-5" aria-hidden />
-                    </span>
-                    <span>
-                      <span className="block font-heading font-bold text-foreground">Entrar como {r.title}</span>
-                      <span className="block text-sm text-muted-foreground">{r.text}</span>
-                    </span>
-                  </button>
-                </form>
-              ))}
-            </div>
-          )}
+          {isSupabaseConfigured && <TestAccounts cuentas={cuentas} siguiente={siguiente} />}
+
           {isSupabaseConfigured && (
-            <div className={allowsDemoRoles ? "mt-10 border-t pt-8" : undefined}>
-              {allowsDemoRoles && <p className="mb-4 text-sm font-semibold text-foreground">¿Ya tienes cuenta? Ingresa con tu correo</p>}
+            <div className={cuentas.length > 0 ? "mt-8 border-t pt-6" : undefined}>
+              {cuentas.length > 0 && <p className="text-sm font-semibold text-foreground">O ingresa con tu correo o usuario</p>}
               <LoginForms siguiente={siguiente} />
             </div>
+          )}
+
+          {allowsDemoRoles && (
+            <section aria-labelledby="recorrido-titulo" className={isSupabaseConfigured ? "mt-10 border-t pt-6" : "mt-8"}>
+              <h2 id="recorrido-titulo" className="text-sm font-semibold text-foreground">
+                Recorrido sin cuenta (solo lectura)
+              </h2>
+              <p className="mt-1 text-xs text-muted-foreground">
+                {isDemoMode
+                  ? "Aún no hay base de datos conectada: elige un rol para recorrer las pantallas."
+                  : "Mira las pantallas por rol con datos de ejemplo, sin iniciar sesión. Nada de lo que hagas en el recorrido se guarda."}
+              </p>
+              <div className="mt-3 space-y-2">
+                {demoRoles.map((r) => (
+                  <form key={r.role} action={enterDemo}>
+                    <input type="hidden" name="role" value={r.role} />
+                    <input type="hidden" name="siguiente" value={siguiente} />
+                    <button className="flex w-full items-center gap-3 rounded-xl border border-dashed px-3 py-2 text-left text-sm transition-colors hover:border-goyn-violeta hover:bg-goyn-lila/30">
+                      <r.icon className="size-4 shrink-0 text-muted-foreground" aria-hidden />
+                      <span>
+                        <span className="font-semibold text-foreground">Recorrido sin cuenta: {r.title}</span>
+                        <span className="block text-xs text-muted-foreground">{r.text}</span>
+                      </span>
+                    </button>
+                  </form>
+                ))}
+              </div>
+            </section>
           )}
         </div>
       </div>

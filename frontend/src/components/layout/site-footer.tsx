@@ -37,7 +37,7 @@ export function SiteFooter() {
       <div className="border-t border-white/10">
         <div className="goyn-container flex flex-col items-start justify-between gap-4 py-6 sm:flex-row sm:items-center">
           <GoynLogo variant="blanco" className="w-48" />
-          <p className="text-xs text-white/60">© 2026 Mapa de Actores y Resultados (MAR) · Ecosistema de Oportunidades para Jóvenes en Barranquilla A.M.</p>
+          <p className="text-xs text-white/60">© 2026 Mapa de Actores y Resultados (MAR) · Ecosistema de Oportunidades para Jóvenes en Barranquilla y su área metropolitana</p>
         </div>
       </div>
     </footer>

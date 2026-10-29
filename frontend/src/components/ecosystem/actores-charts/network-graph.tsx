@@ -522,7 +522,7 @@ export function NetworkGraph({ orgs, relations }: { orgs: ChartOrg[]; relations:
 
   const chip = (on: boolean) =>
     cn(
-      "inline-flex items-center gap-2 rounded-full border px-3 py-1 text-xs font-semibold transition-colors",
+      "inline-flex min-h-10 items-center gap-2 rounded-full border px-3 py-1 text-xs sm:min-h-0 font-semibold transition-colors",
       on ? "border-transparent bg-goyn-violeta text-white" : "bg-card text-foreground hover:bg-muted",
     );
 

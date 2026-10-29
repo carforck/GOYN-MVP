@@ -166,7 +166,7 @@ export function WhoCircles({ orgs }: { orgs: ChartOrg[] }) {
                   setHover(null);
                 }}
                 className={cn(
-                  "rounded-full border px-3 py-1 font-semibold transition-colors",
+                  "min-h-10 rounded-full border px-3 py-1 font-semibold sm:min-h-0 transition-colors",
                   view === v ? "border-transparent bg-goyn-violeta text-white" : "bg-card text-foreground hover:bg-muted",
                 )}
               >
@@ -237,7 +237,7 @@ export function WhoCircles({ orgs }: { orgs: ChartOrg[] }) {
                     onMouseEnter={() => setHover(g.code)}
                     onMouseLeave={() => setHover(null)}
                     className={cn(
-                      "flex w-full items-center gap-2 rounded-lg px-1.5 py-1 text-left transition-[opacity,background-color] hover:bg-muted focus-visible:outline-2 focus-visible:outline-goyn-violeta",
+                      "flex min-h-10 w-full items-center gap-2 rounded-lg px-1.5 py-1 text-left sm:min-h-0 transition-[opacity,background-color] hover:bg-muted focus-visible:outline-2 focus-visible:outline-goyn-violeta",
                       selected === g.code && "bg-muted",
                       lit && !on && "opacity-50",
                     )}
@@ -258,7 +258,7 @@ export function WhoCircles({ orgs }: { orgs: ChartOrg[] }) {
           <h3 className="text-lg font-bold text-foreground">Un ecosistema que se reconoce</h3>
           <p>
             Esta visualización reúne en una sola imagen a las <strong className="text-foreground">{nf.format(total)} organizaciones</strong> que hacen parte del
-            ecosistema. Verlas juntas nos permite reconocer que el trabajo por los jóvenes de Barranquilla A.M. es el resultado de una red con capacidades distintas que
+            ecosistema. Verlas juntas nos permite reconocer que el trabajo por los jóvenes de Barranquilla y su área metropolitana es el resultado de una red con capacidades distintas que
             se complementan.
           </p>
 

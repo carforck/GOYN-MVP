@@ -184,3 +184,13 @@ export type MapProgram = {
   territory_codes: string[];
   results: { conectados: number; fortalecidos: number; transformados: number } | null;
 };
+
+// ─── Programas destacados (decisión GOYN 21-oct: tres programas visibles en el perfil) ──────
+// Solo decide qué se MUESTRA en el perfil; las cifras del ecosistema siguen sumando todos.
+export const MAX_FEATURED_PROGRAMS = 3;
+
+// Selección de destacados de una organización.
+// · `ids`: los programas a mostrar (máx. 3), elegidos o por defecto.
+// · `chosen`: la organización marcó al menos uno (si no, `ids` son los 3 por defecto).
+// · `supported`: la base ya tiene la columna program.featured (migración 018).
+export type FeaturedSelection = { ids: string[]; chosen: boolean; supported: boolean };

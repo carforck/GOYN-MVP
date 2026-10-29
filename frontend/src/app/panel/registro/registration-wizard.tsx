@@ -14,7 +14,9 @@ import { catalogs, label } from "@/lib/catalogs";
 import {
   emptyPayload,
   emptyProgram,
+  normalizePayload,
   registrationSteps,
+  validateAll,
   validateStep,
   type ProgramDraft,
   type RegistrationPayload,
@@ -42,6 +44,10 @@ export function RegistrationWizard({
   const [pending, startTransition] = useTransition();
   const timer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const hydrated = useRef(false);
+  // id del borrador y cola de guardados: evita crear dos borradores si un guardado sigue en curso
+  // cuando dispara el siguiente (o cuando se envía).
+  const idRef = useRef<string | null>(initial?.id ?? null);
+  const saving = useRef<Promise<unknown>>(Promise.resolve());
 
   const p = draft.payload;
   const step = registrationSteps[draft.step];
@@ -74,11 +80,23 @@ export function RegistrationWizard({
         setSaveState("saved");
         return;
       }
-      const res = await saveDraft(next.id, next.payload, next.step + 1);
-      if (res.ok) {
-        setSaveState("saved");
-        if (res.id && res.id !== next.id) setDraft((d) => ({ ...d, id: res.id }));
-      } else setSaveState("error");
+      saving.current = saving.current.then(async () => {
+        try {
+          const res = await saveDraft(idRef.current, next.payload, next.step + 1);
+          if (res.ok) {
+            setSaveState("saved");
+            if (res.id && res.id !== idRef.current) {
+              idRef.current = res.id;
+              setDraft((d) => ({ ...d, id: res.id }));
+            }
+          } else {
+            setSaveState("error");
+            toast.error(res.error, { id: "registro-guardado" });
+          }
+        } catch {
+          setSaveState("error");
+        }
+      });
     }, 1200);
   };
 
@@ -112,19 +130,27 @@ export function RegistrationWizard({
     goTo(Math.min(draft.step + 1, registrationSteps.length - 1));
   };
 
+  const showErrorsAt = (stepIndex: number, e: Record<string, string>) => {
+    if (stepIndex !== draft.step) goTo(stepIndex);
+    // goTo limpia los errores; se marcan después para que se vean junto al campo.
+    setTimeout(() => setErrors(e), 0);
+  };
+
   const submit = () => {
-    const all = registrationSteps.reduce<Record<string, string>>((acc, s) => ({ ...acc, ...validateStep(s.id, p) }), {});
-    if (Object.keys(all).length) {
-      setErrors(all);
-      const firstBad = registrationSteps.findIndex((s) => Object.keys(validateStep(s.id, p)).length > 0);
-      toast.error(`Falta completar: ${registrationSteps[firstBad].title}.`);
-      if (firstBad !== draft.step) goTo(firstBad);
+    const { errors: all, firstStep } = validateAll(normalizePayload(p));
+    if (firstStep >= 0) {
+      toast.error(`Falta completar o corregir: ${registrationSteps[firstStep].title}.`);
+      showErrorsAt(firstStep, all);
       return;
     }
     startTransition(async () => {
-      const res = await submitRegistration(draft.id, p);
+      // Espera el autoguardado pendiente para enviar sobre el mismo borrador.
+      if (timer.current) clearTimeout(timer.current);
+      await saving.current;
+      const res = await submitRegistration(idRef.current, p);
       if (!res.ok) {
         toast.error(res.error);
+        if (res.fieldErrors) showErrorsAt(res.step ?? draft.step, res.fieldErrors);
         return;
       }
       if (demo) localStorage.removeItem(STORAGE_KEY);
@@ -135,6 +161,7 @@ export function RegistrationWizard({
 
   const comments = draft.comments ?? {};
   const progress = ((draft.step + 1) / registrationSteps.length) * 100;
+  const stepErrors = Object.entries(errors);
 
   if (submitted) {
     return (
@@ -200,6 +227,15 @@ export function RegistrationWizard({
           </div>
         )}
 
+        {stepErrors.length > 0 && (
+          <div role="alert" className="mt-5 rounded-2xl border border-destructive/40 bg-destructive/5 p-4 text-sm text-foreground">
+            <p className="font-bold">Corrige {stepErrors.length === 1 ? "este dato" : `estos ${stepErrors.length} datos`} para continuar:</p>
+            <ul className="mt-1 list-disc pl-4">
+              {[...new Set(stepErrors.map(([, v]) => v))].map((v) => <li key={v}>{v}</li>)}
+            </ul>
+          </div>
+        )}
+
         <div className="mt-8 space-y-10">
           {step.id === "identificacion" && (
             <>
@@ -238,8 +274,12 @@ export function RegistrationWizard({
                 <Field label="Celular del contacto" required error={errors.contact_phone} htmlFor="cphone" hint="No será visible para otras organizaciones: solo para GOYN.">
                   <Input id="cphone" type="tel" inputMode="numeric" value={p.contacto.phone} onChange={(e) => update((x) => void (x.contacto.phone = e.target.value.replace(/[^0-9+ ]/g, "")))} className="h-11" />
                 </Field>
-                <Field label="Correo de contacto público" required error={errors.contact_email_public} htmlFor="cemail" hint="Donde los demás actores pueden escribirte. Se muestra en tu perfil.">
+                <Field label="Correo de contacto público" required error={errors.contact_email_public} htmlFor="cemail" hint="Donde los demás actores pueden escribirte. Se muestra en tu perfil a usuarios registrados.">
                   <Input id="cemail" type="email" value={p.identificacion.contact_email_public} onChange={(e) => update((x) => void (x.identificacion.contact_email_public = e.target.value))} className="h-11" />
+                </Field>
+                <Field label="Correo de contacto (privado, no se publica)" error={errors.contact_email} htmlFor="cemail-priv"
+                  hint="Correo directo del contacto estratégico. Solo lo ve el equipo GOYN. Si lo dejas vacío usaremos el correo público.">
+                  <Input id="cemail-priv" type="email" value={p.contacto.email ?? ""} onChange={(e) => update((x) => void (x.contacto.email = e.target.value))} className="h-11" />
                 </Field>
               </div>
               <div className="grid gap-5 sm:grid-cols-2">
@@ -278,7 +318,7 @@ export function RegistrationWizard({
 
           {step.id === "territorio" && (
             <>
-              <ChoiceGroup label="¿En qué zonas de Barranquilla A.M. tiene impacto o incidencia tu organización?" required columns
+              <ChoiceGroup label="¿En qué zonas de Barranquilla y su área metropolitana tiene impacto o incidencia tu organización?" required columns
                 error={errors.territory_codes} options={catalogs.territories} value={p.territorio.territory_codes}
                 onChange={(v) => update((x) => void (x.territorio.territory_codes = v))} />
               <ChoiceGroup label="¿En qué zona está tu sede principal?" hint="Ubicaremos tu organización en el mapa en el centro de esa zona (ubicación aproximada)." required multiple={false} columns
@@ -356,7 +396,10 @@ export function RegistrationWizard({
                 ["youth_involvement", "¿En qué medida involucras a jóvenes activamente en diagnóstico, diseño, implementación, evaluación y decisiones?"],
                 ["shared_vision", "¿En qué medida tu organización incorpora la VISIÓN COMPARTIDA del Colaborativo en su estrategia?"],
               ] as const).map(([key, text]) => (
-                <Scale key={key} label={text} value={p.fortalecimiento[key]} onChange={(n) => update((x) => void (x.fortalecimiento[key] = n))} />
+                <div key={key}>
+                  <Scale label={text} value={p.fortalecimiento[key]} onChange={(n) => update((x) => void (x.fortalecimiento[key] = n))} />
+                  {errors[key] && <p role="alert" className="mt-1 text-xs font-semibold text-destructive">{errors[key]}</p>}
+                </div>
               ))}
               <p className="rounded-xl border border-dashed p-3 text-xs text-muted-foreground">
                 Módulo 7 · Cambio de narrativas: las tres preguntas están por definir por parte de GOYN Barranquilla.
@@ -366,8 +409,8 @@ export function RegistrationWizard({
 
           {step.id === "acciones" && (
             <>
-              <Field label="Monto estimado de inversión social en iniciativas para la juventud este año (COP)" htmlFor="inv" hint="Solo números. Este dato no es público.">
-                <Input id="inv" inputMode="numeric" value={p.acciones.social_investment_cop} onChange={(e) => update((x) => void (x.acciones.social_investment_cop = e.target.value.replace(/\D/g, "")))} className="h-11 max-w-xs" />
+              <Field label="Monto estimado de inversión social en iniciativas para la juventud este año (COP)" htmlFor="inv" hint="Solo números. Este dato no es público." error={errors.social_investment_cop}>
+                <Input id="inv" inputMode="numeric" maxLength={16} value={p.acciones.social_investment_cop} onChange={(e) => update((x) => void (x.acciones.social_investment_cop = e.target.value.replace(/\D/g, "")))} className="h-11 max-w-xs" />
               </Field>
               <ChoiceGroup label="¿Tu organización ha impulsado recientemente alguna propuesta o ajuste de política para la población joven?" multiple={false}
                 options={[{ code: "si", label: "Sí" }, { code: "no", label: "No" }, { code: "no_sabe", label: "No sabe" }]}
@@ -520,7 +563,12 @@ function ProgramCard({
         value={program.modality_code ? [program.modality_code] : []} onChange={([v]) => onChange((p) => void (p.modality_code = v))} />
       <ChoiceGroup label="¿A qué área de impacto pertenece principalmente?" required multiple={false} columns error={errors[`${k}.primary_area_code`]}
         options={catalogs.impactAreas} value={program.primary_area_code ? [program.primary_area_code] : []}
-        onChange={([v]) => onChange((p) => { p.primary_area_code = v; p.area_codes = [...new Set([v, ...p.area_codes])]; })} />
+        onChange={([v]) => onChange((p) => {
+          p.primary_area_code = v;
+          p.area_codes = [...new Set([v, ...p.area_codes])];
+          // Las preguntas de empleo/emprendimiento solo existen para "ingresos": no dejar valores ocultos.
+          if (v !== "ingresos") Object.assign(p.resultados, { empleo: "", empleo_mujeres: "", emprendimiento: "", emprendimiento_mujeres: "" });
+        })} />
       <ChoiceGroup label="¿A qué otras dimensiones apunta?" columns options={catalogs.impactAreas.filter((a) => a.code !== program.primary_area_code)}
         value={program.area_codes.filter((a) => a !== program.primary_area_code)}
         onChange={(v) => onChange((p) => void (p.area_codes = [p.primary_area_code, ...v].filter(Boolean)))} />
@@ -531,8 +579,8 @@ function ProgramCard({
         <Field label="Fecha de finalización" hint="Déjala vacía si no tiene." error={errors[`${k}.end_date`]} htmlFor={`${k}-end`}>
           <Input id={`${k}-end`} type="date" value={program.end_date} onChange={(e) => onChange((p) => void (p.end_date = e.target.value))} className="h-11 bg-card" />
         </Field>
-        <Field label="Meta de atención 2026" hint="Si no sabes, pon 0." htmlFor={`${k}-goal`}>
-          <Input id={`${k}-goal`} inputMode="numeric" value={program.annual_goal} onChange={(e) => onChange((p) => void (p.annual_goal = numeric(e.target.value)))} className="h-11 bg-card" />
+        <Field label="Meta de atención 2026" hint="Si no sabes, pon 0." error={errors[`${k}.annual_goal`]} htmlFor={`${k}-goal`}>
+          <Input id={`${k}-goal`} inputMode="numeric" maxLength={9} value={program.annual_goal} onChange={(e) => onChange((p) => void (p.annual_goal = numeric(e.target.value)))} className="h-11 bg-card" />
         </Field>
       </div>
 
@@ -554,7 +602,7 @@ function ProgramCard({
               : []),
           ] as const).map(([key, text, tag]) => (
             <Field key={key} label={text} hint={tag || undefined} error={errors[`${k}.${key}`]} htmlFor={`${k}-${key}`}>
-              <Input id={`${k}-${key}`} inputMode="numeric" value={program.resultados[key]} onChange={(e) => onChange((p) => void (p.resultados[key] = numeric(e.target.value)))} className="h-10" />
+              <Input id={`${k}-${key}`} inputMode="numeric" maxLength={12} aria-invalid={!!errors[`${k}.${key}`] || undefined} value={program.resultados[key] ?? ""} onChange={(e) => onChange((p) => void (p.resultados[key] = numeric(e.target.value)))} className="h-10" />
             </Field>
           ))}
         </div>
@@ -579,7 +627,7 @@ function ReviewStep({
     () => [
       { step: 0, label: "Organización", value: p.identificacion.name || "—" },
       { step: 0, label: "NIT", value: p.identificacion.has_nit ? p.identificacion.nit : "Sin NIT (código interno GOYN)" },
-      { step: 0, label: "Contacto", value: `${p.contacto.name} · ${p.contacto.position} · ${p.identificacion.contact_email_public}` },
+      { step: 0, label: "Contacto", value: `${p.contacto.name} · ${p.contacto.position} · ${p.identificacion.contact_email_public}${p.contacto.email ? ` · privado: ${p.contacto.email}` : ""}` },
       { step: 1, label: "Tipo y rol", value: `${label("orgTypes", p.caracterizacion.org_type_code)} · ${label("roles", p.caracterizacion.primary_role_code)}` },
       { step: 2, label: "Territorios", value: p.territorio.territory_codes.map((c) => label("territories", c)).join(", ") || "—" },
       { step: 3, label: "Áreas de impacto", value: p.enfoque.area_codes.map((c) => label("impactAreas", c)).join(", ") || "—" },
@@ -609,8 +657,16 @@ function ReviewStep({
             Puedo ejercer mis derechos escribiendo a tratamientodatospersonales@fcorona.org.
           </span>
         </label>
+        <details className="mt-3 rounded-xl bg-muted/60 p-3 text-sm">
+          <summary className="cursor-pointer font-semibold text-goyn-violeta">Leer la autorización completa</summary>
+          <p className="mt-2 text-xs leading-relaxed whitespace-pre-line text-foreground/85">{CONSENT_FULL_TEXT}</p>
+        </details>
         {errors.accepted && <p role="alert" className="mt-2 text-xs font-semibold text-destructive">{errors.accepted}</p>}
       </div>
     </div>
   );
 }
+
+// Texto oficial de autorización entregado por GOYN (2026-10-29). Versión: CONSENT_VERSION en lib/registration.
+const CONSENT_FULL_TEXT =
+  "Autorización de uso de datos: con mi registro en este formulario autorizo expresamente a FUNDACIÓN CORONA sociedad identificada con NIT 860.008.052-1, operador del programa GOYN BARRANQUILLA y terceros que la fundación contrate para fines operativos de GOYN BARRANQUILLA, como responsable del tratamiento de mi información, para que recolecte, registre, haga uso, actualice, y almacene mis datos personales, tales como mi nombre, datos de contacto y demás, incluyendo imágenes fotográficas y de video, testimonios, entrevistas, etc., que sean recopilados en este formato y/o durante el presente evento/actividad/ejercicio, ya sea por su personal o por terceros contratados para el efecto, para: a) Identificar a los asistentes al evento/actividad/ejercicio y mantener contacto con ellos enviando información considerada de su interés a través de diversos medios; b) Enviar invitaciones e información de nuevas actividades, ejercicios locales, y/o eventos a través de diversos medios, como correo electrónico, mensajes de texto, vía telefónica o través de aplicaciones de mensajería instantánea; c) Utilizarla en publicaciones físicas o electrónicas que se elaboren por Fundación Corona, sin ninguna finalidad comercial; d) Publicarlas en páginas web y/o redes sociales de Fundación Corona; e) realizar estadísticas; f) realizar encuestas de opinión y/o satisfacción; g) realizar actualización de datos; y h) compartirla con terceros colaboradores y/o empresas aliadas para el desarrollo de las mismas finalidades acá descritas. Es de carácter facultativo responder las preguntas que versen sobre datos sensibles o sobre datos de las niñas, niños y adolescentes. Conozco que mis datos serán conservados en las bases de datos de FUNDACIÓN CORONA y el programa GOYN BARRANQUILLA y serán compartidos únicamente con las empresas aliadas, terceras personas conforme sean necesario para el cumplimiento de las finalidades, y/o por orden de autoridad competente. Igualmente declaro conocer que la presente autorización se presenta en cumplimiento de las leyes de protección de datos personales vigentes en Colombia, que, para acceder, actualizar, rectificar o solicitar la supresión de los datos personales recopilados, solicitar prueba de la autorización, ser informado sobre el uso que se ha dado a los mismos, presentar quejas ante la SIC por infracción a la ley, revocar la autorización en los casos en que sea procedente y acceder en forma gratuita a los mismos, podré comunicarme a través de comunicación escrita al correo electrónico tratamientodatospersonales@fcorona.org, y que para mayor información acerca del tratamiento de información personal, podré acceder a la política de privacidad en http://fundacioncorona.org/#/fundacion/tratamiento_datos.";

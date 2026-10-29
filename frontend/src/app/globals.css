@@ -285,3 +285,11 @@
 .goyn-popup .maplibregl-popup-close-button {
   color: rgb(255 255 255 / 0.7);
 }
+
+/* Controles del mapa (zoom, brújula, pantalla completa) con área táctil ≥ 40 px en celular. */
+@media (max-width: 639px) {
+  .maplibregl-ctrl-group button {
+    width: 40px;
+    height: 40px;
+  }
+}

@@ -13,11 +13,11 @@ const marker = Permanent_Marker({ variable: "--font-permanent-marker", subsets: 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),
   title: {
-    default: "Mapa de Actores y Resultados (MAR) · Ecosistema de oportunidades para los jóvenes en Barranquilla A.M.",
+    default: "Mapa de Actores y Resultados (MAR) · Ecosistema de oportunidades para los jóvenes en Barranquilla y su área metropolitana",
     template: "%s · MAR",
   },
   description:
-    "Mapa de Actores y Resultados (MAR): ver, conectar y medir lo que hacen las organizaciones del ecosistema de oportunidades para los jóvenes en Barranquilla A.M.",
+    "Mapa de Actores y Resultados (MAR): ver, conectar y medir lo que hacen las organizaciones del ecosistema de oportunidades para los jóvenes en Barranquilla y su área metropolitana",
   icons: { icon: "/icon.webp" },
 };
 

@@ -4,7 +4,7 @@ import { buttonVariants } from "@/components/ui/button";
 import { porQueReunidos, quienesSomos } from "@/lib/home-content";
 import { cn } from "@/lib/utils";
 
-// Ajuste 05: contexto de la juventud en Barranquilla A.M. con las cifras destacadas.
+// Ajuste 05: contexto de la juventud en Barranquilla y su área metropolitana con las cifras destacadas.
 export function WhyTogether() {
   const [unoDeCuatro, desconectados] = porQueReunidos.cifras;
   return (
@@ -13,7 +13,7 @@ export function WhyTogether() {
         <Reveal className="space-y-5">
           <h2 id="por-que-reunidos" className="text-3xl font-bold text-foreground sm:text-4xl">{porQueReunidos.titulo}</h2>
           <p className="max-w-2xl text-lg leading-relaxed text-foreground/80">
-            Aunque Barranquilla A.M. es un territorio joven (<strong className="text-goyn-magenta-a11y">1 de cada 4</strong> habitantes son jóvenes), esta población aún presenta grandes desafíos en el acceso a oportunidades.{" "}
+            Aunque Barranquilla y su área metropolitana es un territorio joven (<strong className="text-goyn-magenta-a11y">1 de cada 4</strong> habitantes son jóvenes), esta población aún presenta grandes desafíos en el acceso a oportunidades.{" "}
             <strong className="text-goyn-magenta-a11y">36%</strong> de los jóvenes permanecen desconectados de oportunidades de educación o empleo formal, afectando gravemente sus trayectorias de vida.
           </p>
           <a

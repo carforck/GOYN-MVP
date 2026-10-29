@@ -21,9 +21,17 @@ const STEPS = [
 const KEY = "goyn-guia-mapa-v1";
 type Rect = { top: number; left: number; width: number; height: number };
 
+// En pantalla completa solo se pinta el elemento en fullscreen: la guía se monta dentro de él
+// (no en document.body) y salta los pasos cuyo objetivo queda fuera (buscador, gráficas…).
+function fullscreenRoot() {
+  return typeof document === "undefined" ? null : ((document.fullscreenElement as HTMLElement | null) ?? null);
+}
+
 function findTarget(name: string) {
   const el = document.querySelector<HTMLElement>(`[data-tour="${name}"]`);
   if (!el) return null;
+  const fs = fullscreenRoot();
+  if (fs && !fs.contains(el)) return null;
   if (el instanceof HTMLDetailsElement) el.open = true;
   const r = el.getBoundingClientRect();
   return r.width > 0 && r.height > 0 ? el : null;
@@ -33,6 +41,15 @@ export function MapGuide({ autoStart }: { autoStart: boolean }) {
   const [step, setStep] = useState<number | null>(null);
   const [rect, setRect] = useState<Rect | null>(null);
   const card = useRef<HTMLDivElement>(null);
+  const [fsRoot, setFsRoot] = useState<HTMLElement | null>(null);
+
+  // Seguir la entrada/salida de pantalla completa para montar la guía en el contenedor visible.
+  useEffect(() => {
+    const sync = () => setFsRoot(fullscreenRoot());
+    sync();
+    document.addEventListener("fullscreenchange", sync);
+    return () => document.removeEventListener("fullscreenchange", sync);
+  }, []);
 
   const close = useCallback(() => {
     setStep(null);
@@ -69,8 +86,12 @@ export function MapGuide({ autoStart }: { autoStart: boolean }) {
   useEffect(() => {
     if (step === null) return;
     const el = findTarget(STEPS[step].target);
-    if (!el) return;
-    el.scrollIntoView({ block: "center", behavior: "smooth" });
+    if (!el) {
+      // Al entrar/salir de pantalla completa el objetivo puede quedar fuera: buscar el siguiente visible.
+      go(step, 1);
+      return;
+    }
+    if (!fsRoot) el.scrollIntoView({ block: "center", behavior: "smooth" });
     const measure = () => {
       const r = el.getBoundingClientRect();
       setRect({ top: r.top, left: r.left, width: r.width, height: r.height });
@@ -85,7 +106,7 @@ export function MapGuide({ autoStart }: { autoStart: boolean }) {
       window.removeEventListener("resize", measure);
       window.removeEventListener("scroll", measure, true);
     };
-  }, [step]);
+  }, [step, fsRoot, go]);
 
   useEffect(() => {
     if (step === null) return;
@@ -103,7 +124,7 @@ export function MapGuide({ autoStart }: { autoStart: boolean }) {
       type="button"
       onClick={() => go(0, 1)}
       aria-label="¿Cómo usar el mapa?"
-      className="absolute top-[11.5rem] right-3 z-10 inline-flex size-10 items-center justify-center gap-1.5 rounded-full border border-goyn-navy/10 bg-white/95 text-sm font-bold text-goyn-violeta shadow-lg shadow-goyn-violeta/15 backdrop-blur transition-colors hover:bg-goyn-lila md:top-3 md:right-14 md:size-auto md:px-3.5 md:py-2"
+      className="absolute top-[15rem] right-3 z-10 sm:top-[11.5rem] inline-flex size-10 items-center justify-center gap-1.5 rounded-full border border-goyn-navy/10 bg-white/95 text-sm font-bold text-goyn-violeta shadow-lg shadow-goyn-violeta/15 backdrop-blur transition-colors hover:bg-goyn-lila md:top-3 md:right-14 md:size-auto md:px-3.5 md:py-2"
     >
       <CompassIcon className="size-4" aria-hidden /> <span className="hidden md:inline">¿Cómo usar el mapa?</span>
     </button>
@@ -170,7 +191,7 @@ export function MapGuide({ autoStart }: { autoStart: boolean }) {
             </div>
           </div>
         </div>,
-        document.body,
+        fsRoot ?? document.body,
       )}
     </>
   );

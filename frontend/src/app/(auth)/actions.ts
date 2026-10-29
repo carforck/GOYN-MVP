@@ -4,6 +4,7 @@ import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { allowsDemoRoles, DEMO_ROLE_COOKIE, isSupabaseConfigured } from "@/lib/config";
 import { createClient } from "@/lib/supabase/server";
+import { resolveLoginEmail } from "@/app/(auth)/cuentas-prueba";
 
 export type AuthState = { error?: string; message?: string };
 
@@ -22,9 +23,12 @@ export async function enterDemo(formData: FormData) {
 }
 
 export async function signIn(_: AuthState, formData: FormData): Promise<AuthState> {
+  // El campo acepta correo o usuario corto de las cuentas de prueba (NEXT_PUBLIC_CUENTAS_PRUEBA).
+  const email = resolveLoginEmail(String(formData.get("email") ?? ""));
+  if (!email) return { error: "Usuario no reconocido. Escribe tu correo electrónico completo." };
   const supabase = await createClient();
   const { error } = await supabase.auth.signInWithPassword({
-    email: String(formData.get("email")),
+    email,
     password: String(formData.get("password")),
   });
   if (error) return { error: "Correo o contraseña incorrectos." };

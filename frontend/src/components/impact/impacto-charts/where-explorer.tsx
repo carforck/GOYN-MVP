@@ -87,6 +87,7 @@ export function WhereExplorer({
             role="region"
             aria-label="Mapa de calor con desplazamiento horizontal"
           >
+            <p className="sticky left-0 mb-1 text-[11px] font-semibold text-goyn-violeta md:hidden">Desliza para ver todo →</p>
             <table className="w-full min-w-[720px] table-fixed border-separate border-spacing-1 text-xs">
               <caption className="sr-only">
                 Número de programas por zona de incidencia (filas) y área
@@ -246,7 +247,7 @@ export function WhereExplorer({
               type="button"
               aria-pressed={metric === m.key}
               onClick={() => setMetric(m.key)}
-              className="rounded-full px-2.5 py-1.5 text-xs font-semibold sm:px-3 sm:text-sm text-muted-foreground transition-colors aria-pressed:bg-card aria-pressed:text-foreground aria-pressed:shadow-sm focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
+              className="min-h-10 rounded-full px-2.5 py-1.5 text-xs font-semibold sm:min-h-0 sm:px-3 sm:text-sm text-muted-foreground transition-colors aria-pressed:bg-card aria-pressed:text-foreground aria-pressed:shadow-sm focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none"
             >
               {m.label}
             </button>

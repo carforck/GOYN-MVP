@@ -118,7 +118,7 @@ export function ProgramFilters({ compact = false }: { compact?: boolean }) {
                     aria-pressed={on}
                     onClick={() => toggleProgram(group.key, option.code)}
                     className={cn(
-                      "rounded-full border px-3 py-1.5 text-left text-xs font-semibold transition-colors focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none",
+                      "min-h-10 rounded-full border px-3 py-1.5 text-left text-xs sm:min-h-0 font-semibold transition-colors focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none",
                       on ? "border-goyn-violeta bg-goyn-violeta text-white" : "bg-card text-foreground hover:border-goyn-violeta/50",
                       compact && "py-1",
                     )}
@@ -162,7 +162,7 @@ export function FilterGroups({ compact = false }: { compact?: boolean }) {
                     aria-pressed={active}
                     onClick={() => toggle(group.key, option.code)}
                     className={cn(
-                      "rounded-full border px-3 py-1.5 text-left text-xs font-semibold transition-colors focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none",
+                      "min-h-10 rounded-full border px-3 py-1.5 text-left text-xs sm:min-h-0 font-semibold transition-colors focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none",
                       active ? "border-goyn-violeta bg-goyn-violeta text-white" : "bg-card text-foreground hover:border-goyn-violeta/50",
                       compact && "py-1",
                     )}
@@ -437,14 +437,14 @@ export function FilterBar({
           <Link
             href={`/mapa${query}`}
             aria-current={view === "mapa" ? "page" : undefined}
-            className={cn("inline-flex h-9 items-center gap-1.5 rounded-full px-3.5 text-sm font-semibold", view === "mapa" ? "bg-goyn-navy text-white" : "text-foreground")}
+            className={cn("inline-flex h-10 items-center gap-1.5 rounded-full px-3.5 sm:h-9 text-sm font-semibold", view === "mapa" ? "bg-goyn-navy text-white" : "text-foreground")}
           >
             <MapIcon className="size-4" aria-hidden /> Vista mapa
           </Link>
           <Link
             href={`/actores${query}`}
             aria-current={view === "lista" ? "page" : undefined}
-            className={cn("inline-flex h-9 items-center gap-1.5 rounded-full px-3.5 text-sm font-semibold", view === "lista" ? "bg-goyn-navy text-white" : "text-foreground")}
+            className={cn("inline-flex h-10 items-center gap-1.5 rounded-full px-3.5 sm:h-9 text-sm font-semibold", view === "lista" ? "bg-goyn-navy text-white" : "text-foreground")}
           >
             <ListIcon className="size-4" aria-hidden /> Vista lista
           </Link>

@@ -11,6 +11,7 @@ import type {
   ChangeRequestSummary,
   EcosystemFilters,
   EcosystemStats,
+  FeaturedSelection,
   IndicatorReport,
   MapProgram,
   OwnIndicatorReport,
@@ -19,6 +20,7 @@ import type {
   PublicProgram,
   PublicRelation,
 } from "@/lib/types";
+import { MAX_FEATURED_PROGRAMS } from "@/lib/types";
 
 // Repositorio único para las vistas. Con Supabase configurado consulta las vistas públicas
 // (lista blanca, solo publicado); sin él, lee el conjunto sintético de demostración.
@@ -493,4 +495,52 @@ export const listMapPrograms = cache(async (withResults: boolean): Promise<MapPr
     territory_codes: p.territory_codes ?? [],
     results: withResults ? (totals.get(p.id) ?? { conectados: 0, fortalecidos: 0, transformados: 0 }) : null,
   }));
+});
+
+// ─── Programas destacados en el perfil (migración 018) ──────────────────────
+// Decisión GOYN (21-oct): cada organización muestra en su perfil sus 3 programas más relevantes.
+// Esto SOLO decide qué se muestra en /actores/[slug] y el panel: ninguna cifra (impacto, mapa,
+// KPIs, v_ecosystem_stats) filtra por destacado; todos los programas siguen sumando.
+// Sin elección (o antes de aplicar la 018) se muestran por defecto los 3 con más jóvenes
+// conectados (suma de reportes validados); desempate: el de inicio más reciente.
+function defaultFeaturedIds(programs: { id: string; start_date: string | null }[], reports: IndicatorReport[]): string[] {
+  const conectados = new Map<string, number>();
+  for (const r of reports) {
+    if (r.program_id && r.indicator_code === "conectados") conectados.set(r.program_id, (conectados.get(r.program_id) ?? 0) + (r.value ?? 0));
+  }
+  return [...programs]
+    .sort((a, b) => (conectados.get(b.id) ?? 0) - (conectados.get(a.id) ?? 0) || (b.start_date ?? "").localeCompare(a.start_date ?? ""))
+    .slice(0, MAX_FEATURED_PROGRAMS)
+    .map((p) => p.id);
+}
+
+function toSelection(visible: { id: string; start_date: string | null }[], flagged: string[] | null, reports: IndicatorReport[]): FeaturedSelection {
+  const visibleIds = new Set(visible.map((p) => p.id));
+  const chosen = (flagged ?? []).filter((id) => visibleIds.has(id)).slice(0, MAX_FEATURED_PROGRAMS);
+  if (chosen.length) return { ids: chosen, chosen: true, supported: true };
+  return { ids: defaultFeaturedIds(visible, reports), chosen: false, supported: flagged !== null };
+}
+
+// Perfil público: destacados entre los programas visibles (v_public_program).
+export const getFeaturedSelection = cache(async (organizationId: string): Promise<FeaturedSelection> => {
+  const [programs, reports] = await Promise.all([listPrograms(organizationId), listIndicatorReports(organizationId)]);
+  if (!isSupabaseConfigured) {
+    const flagged = programs.filter((p) => (p as PublicProgram & { featured?: boolean }).featured).map((p) => p.id);
+    return toSelection(programs, flagged, reports);
+  }
+  const supabase = await createClient();
+  // Antes de la 018 la vista no tiene `featured`: la consulta falla y se usa el orden por defecto.
+  const { data, error } = await supabase.from("v_public_program").select("id, featured").eq("organization_id", organizationId).eq("featured", true);
+  return toSelection(programs, error ? null : (data ?? []).map((r) => r.id as string), reports);
+});
+
+// Panel de la organización: igual, leyendo la tabla program (RLS: miembros y admins).
+// En el recorrido demo (cookie) se usa el conjunto sintético, sin escritura.
+export const getOwnFeaturedSelection = cache(async (organizationId: string): Promise<FeaturedSelection> => {
+  const [own, reports] = await Promise.all([listOwnPrograms(organizationId), listIndicatorReports(organizationId)]);
+  const visible = own.filter((p) => p.is_visible);
+  if (await usePrivateDemo()) return toSelection(visible, [], reports);
+  const supabase = await createClient();
+  const { data, error } = await supabase.from("program").select("id, featured").eq("organization_id", organizationId).eq("status", "publicado").eq("featured", true);
+  return toSelection(visible, error ? null : (data ?? []).map((r) => r.id as string), reports);
 });

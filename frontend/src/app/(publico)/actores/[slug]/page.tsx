@@ -11,7 +11,7 @@ import { ShareButton } from "@/components/ecosystem/share-button";
 import { buttonVariants } from "@/components/ui/button";
 import { getViewer } from "@/lib/auth";
 import { catalogs, item, label, shortTerritory } from "@/lib/catalogs";
-import { getOrganization, listIndicatorReports, listPrograms, listRelations } from "@/lib/data";
+import { getFeaturedSelection, getOrganization, listIndicatorReports, listPrograms, listRelations } from "@/lib/data";
 import { formatDate, formatNumber } from "@/lib/format";
 import { totals } from "@/lib/impact";
 import { cn } from "@/lib/utils";
@@ -35,8 +35,18 @@ export default async function ActorPage(props: PageProps<"/actores/[slug]">) {
   // la hoja de vida completa y el contacto requieren sesión (la sesión demo por cookie también cuenta).
   if (viewer.role === "visitante") return <PublicProfile org={org} />;
 
-  const [programs, relations, reports] = await Promise.all([listPrograms(org.id), listRelations(org.id), listIndicatorReports(org.id)]);
+  const [programs, relations, reports, featured] = await Promise.all([
+    listPrograms(org.id),
+    listRelations(org.id),
+    listIndicatorReports(org.id),
+    getFeaturedSelection(org.id),
+  ]);
+  // Resultados: TODOS los reportes de la organización (no se filtran por programa destacado).
   const t = totals(reports);
+  // Decisión GOYN (21-oct): el perfil muestra solo 3 programas (los elegidos o, por defecto, los
+  // 3 con más jóvenes conectados), en el orden de la selección.
+  const byId = new Map(programs.map((p) => [p.id, p]));
+  const shownPrograms = featured.ids.map((id) => byId.get(id)).filter((p) => p !== undefined);
   const problemsByArea = org.area_codes.map((area) => ({
     area,
     problems: catalogs.problems.filter((p) => p.area === area && org.problem_codes.includes(p.code)),
@@ -136,8 +146,13 @@ export default async function ActorPage(props: PageProps<"/actores/[slug]">) {
             <h2 id="programas" className="mb-4 text-xl font-extrabold text-foreground">
               Programas y proyectos <span className="text-muted-foreground">({programs.length})</span>
             </h2>
+            {programs.length > shownPrograms.length && (
+              <p className="-mt-2 mb-4 text-sm text-muted-foreground">
+                Mostrando {shownPrograms.length} de {programs.length} programas{featured.chosen ? " destacados por la organización" : ""}; todos suman en las cifras del ecosistema.
+              </p>
+            )}
             <ul className="space-y-3">
-              {programs.map((p) => (
+              {shownPrograms.map((p) => (
                 <li key={p.id} className="rounded-2xl border bg-card p-5">
                   <div className="flex flex-wrap items-start justify-between gap-2">
                     <div>

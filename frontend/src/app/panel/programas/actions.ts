@@ -84,3 +84,20 @@ export async function setProgramVisibility(programId: string, visible: boolean):
   revalidatePath("/panel");
   return { ok: true };
 }
+
+// Destacar (o quitar) un programa en el perfil público: máximo 3 por organización (decisión GOYN
+// 21-oct). Solo cambia qué se muestra; los resultados de todos los programas siguen sumando.
+export async function setProgramFeatured(programId: string, featured: boolean): Promise<Result> {
+  if (await isDemoSession()) return { ok: true, demo: true };
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("set_program_featured", { p_program: programId, p_featured: featured });
+  if (error) {
+    // Antes de aplicar la migración 018 la función no existe.
+    if (error.code === "PGRST202" || error.code === "42883") return { ok: false, error: "Elegir programas destacados aún no está disponible. Mientras tanto mostramos los 3 con más jóvenes conectados." };
+    if (error.hint === "max_featured" || /3 programas/.test(error.message)) return { ok: false, error: "Ya tienes 3 programas destacados. Quita uno antes de elegir otro: los demás siguen sumando en las cifras del ecosistema." };
+    return { ok: false, error: error.message };
+  }
+  revalidatePath("/panel/programas");
+  revalidatePath("/actores/[slug]", "page");
+  return { ok: true };
+}

@@ -3,7 +3,7 @@
 
 export const hero = {
   titulo: "Te damos la bienvenida al mapa de actores y resultados del",
-  tituloResaltado: "Ecosistema de Oportunidades para Jóvenes en Barranquilla A.M.",
+  tituloResaltado: "Ecosistema de Oportunidades para Jóvenes en Barranquilla y su área metropolitana",
   subtitulo:
     "Una herramienta para visibilizar, en un solo lugar, a los actores que conforman esta red y las acciones que están desarrollando para promover el bienestar multidimensional de los jóvenes en Barranquilla y su área metropolitana.",
 };
@@ -12,7 +12,7 @@ export const hero = {
 export const porQueReunidos = {
   titulo: "¿Por qué estamos reunidos?",
   cifras: [
-    { valor: "1 de cada 4", texto: "habitantes de Barranquilla A.M. son jóvenes" },
+    { valor: "1 de cada 4", texto: "habitantes de Barranquilla y su área metropolitana son jóvenes" },
     { valor: "36%", texto: "de los jóvenes permanecen desconectados de oportunidades de educación o empleo formal" },
   ],
   cta: {
@@ -47,7 +47,7 @@ export const acerca = {
     "Visibilizar las acciones y los resultados que cada actor del ecosistema desarrolla por y para los jóvenes.",
     "Facilitar decisiones basadas en evidencia compartida entre los actores del ecosistema.",
     "Acceder a información que promueva y facilite una mayor articulación entre las organizaciones.",
-    "Construir una visión colectiva del impacto del ecosistema de oportunidades para los jóvenes en Barranquilla A.M.",
+    "Construir una visión colectiva del impacto del ecosistema de oportunidades para los jóvenes en Barranquilla y su área metropolitana",
   ],
 };
 
@@ -142,7 +142,7 @@ export const tiposConexion = [
 ] as const;
 
 export const areasIntro =
-  "Definimos siete dimensiones para entender de forma integral las necesidades de los jóvenes con potencial en Barranquilla A.M. y el trabajo que hace el ecosistema alrededor de cada una.";
+  "Definimos siete dimensiones para entender de forma integral las necesidades de los jóvenes con potencial en Barranquilla y su área metropolitana y el trabajo que hace el ecosistema alrededor de cada una.";
 
 // Ajuste 14 (cliente, oct-2026).
 export const ctaRegistro = {

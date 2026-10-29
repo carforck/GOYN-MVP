@@ -65,7 +65,7 @@ export function MapNotifications({ onLocate }: { onLocate: (e: LiveEvent) => voi
               <div className="min-w-0 flex-1">
                 <p className="text-[11px] font-bold tracking-wider text-goyn-magenta-a11y uppercase">Nueva organización</p>
                 <p className="truncate font-heading text-sm font-bold">{toast.orgName}</p>
-                <p className="text-xs text-goyn-navy/70">{toast.territory ? shortTerritory(toast.territory) : "Barranquilla A.M."}</p>
+                <p className="text-xs text-goyn-navy/70">{toast.territory ? shortTerritory(toast.territory) : "Barranquilla y su área metropolitana"}</p>
               </div>
               <button type="button" aria-label="Cerrar aviso" onClick={() => setToast(null)} className="grid size-6 place-items-center rounded-full text-goyn-navy/50 hover:bg-goyn-lila">
                 <XIcon className="size-3.5" aria-hidden />
@@ -105,7 +105,7 @@ export function MapNotifications({ onLocate }: { onLocate: (e: LiveEvent) => voi
                       <span className="block text-[11px] font-bold tracking-wide text-goyn-navy/60 uppercase">{e.historic ? pastLabel[e.kind] : kindLabel[e.kind]}</span>
                       <span className="block truncate text-sm font-semibold">{e.orgName}</span>
                       <span className="block text-xs text-goyn-navy/65">
-                        {describeEvent(e)} · {e.territory ? shortTerritory(e.territory) : "Barranquilla A.M."}
+                        {describeEvent(e)} · {e.territory ? shortTerritory(e.territory) : "Barranquilla y su área metropolitana"}
                       </span>
                       <span className="block text-[11px] text-goyn-navy/45">{formatDateTime(e.at)}</span>
                     </span>

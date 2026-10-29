@@ -874,7 +874,7 @@ function EcosystemMapInner({ orgs: allOrgs, relations: allRelations, stats, orgO
                 <LiveGlobe variant="intro" className="h-full w-full" onArrive={finishIntro} />
                 <div className="pointer-events-none absolute inset-x-0 top-8 px-4 text-center text-white [text-shadow:0_2px_12px_rgba(3,5,26,0.9)]">
                   <p className="text-[11px] font-bold tracking-[0.15em] text-white/80 uppercase sm:text-xs sm:tracking-[0.3em]">Global Opportunity Youth Network</p>
-                  <p className="mt-2 font-heading text-xl font-bold uppercase sm:text-3xl">Entrando a Barranquilla A.M.</p>
+                  <p className="mt-2 font-heading text-xl font-bold uppercase sm:text-3xl">Entrando a Barranquilla y su área metropolitana</p>
                 </div>
                 <button
                   type="button"

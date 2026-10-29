@@ -132,7 +132,7 @@ export default async function ImpactoPage(props: PageProps<"/impacto">) {
           <p className="mt-3 max-w-2xl text-lg text-white/80">
             Lo que logramos juntos: jóvenes conectados, fortalecidos y
             transformados por organizaciones del ecosistema de oportunidades
-            para los jóvenes en Barranquilla A.M.
+            para los jóvenes en Barranquilla y su área metropolitana.
           </p>
         </div>
       </section>

@@ -57,7 +57,7 @@ export function ChallengesTree({ orgs, selName, children }: { orgs: ChartOrg[]; 
       } else next.add(id);
       return next;
     });
-  const btn = "rounded-full border bg-card px-3 py-1 text-xs font-semibold text-foreground hover:bg-muted focus-visible:outline-2 focus-visible:outline-goyn-violeta";
+  const btn = "min-h-10 rounded-full border bg-card px-3 py-1 text-xs sm:min-h-0 font-semibold text-foreground hover:bg-muted focus-visible:outline-2 focus-visible:outline-goyn-violeta";
 
   return (
     <div className="space-y-4">
