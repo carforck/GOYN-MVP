@@ -835,14 +835,14 @@ function EcosystemMapInner({ orgs, relations, stats, orgOptions, className, isAu
             {intro === "globo" ? (
               <>
                 <LiveGlobe variant="intro" className="h-full w-full" onArrive={finishIntro} />
-                <div className="pointer-events-none absolute inset-x-0 top-8 px-4 text-center">
-                  <p className="text-[11px] font-bold tracking-[0.15em] text-white/60 uppercase sm:text-xs sm:tracking-[0.3em]">Global Opportunity Youth Network</p>
-                  <p className="mt-2 font-heading text-xl font-bold uppercase sm:text-3xl">Entrando a Barranquilla</p>
+                <div className="pointer-events-none absolute inset-x-0 top-8 px-4 text-center text-white [text-shadow:0_2px_12px_rgba(3,5,26,0.9)]">
+                  <p className="text-[11px] font-bold tracking-[0.15em] text-white/80 uppercase sm:text-xs sm:tracking-[0.3em]">Global Opportunity Youth Network</p>
+                  <p className="mt-2 font-heading text-xl font-bold uppercase sm:text-3xl">Entrando a Barranquilla A.M.</p>
                 </div>
                 <button
                   type="button"
                   onClick={finishIntro}
-                  className="absolute right-4 bottom-4 inline-flex items-center gap-1.5 rounded-full border border-white/20 bg-white/10 px-4 py-2 text-sm font-semibold backdrop-blur hover:bg-white/20"
+                  className="absolute right-4 bottom-4 inline-flex min-h-10 items-center gap-1.5 rounded-full border border-white/40 bg-white/15 px-4 py-2 text-sm font-semibold text-white backdrop-blur hover:bg-white/25 focus-visible:outline-2 focus-visible:outline-white"
                 >
                   <SkipForwardIcon className="size-4" aria-hidden /> Saltar intro
                 </button>

@@ -439,8 +439,8 @@ export default function GlobeScene({
         data-visible="0"
         className="pointer-events-none absolute top-0 left-0 rounded-xl border border-white/20 bg-[#060a28]/80 px-3 py-1.5 text-center whitespace-nowrap text-white opacity-0 shadow-xl backdrop-blur transition-opacity duration-500 data-[visible=1]:opacity-100"
       >
-        <p className="font-heading text-sm leading-tight font-bold">Barranquilla</p>
-        <p className="text-[10px] text-white/75">{points.length} organizaciones · Colaborativo GOYN</p>
+        <p className="font-heading text-sm leading-tight font-bold">Barranquilla A.M.</p>
+        <p className="text-[10px] text-white/75">{points.length} organizaciones del ecosistema</p>
       </div>
     </div>
   );
