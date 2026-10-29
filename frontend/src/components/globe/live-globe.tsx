@@ -8,6 +8,7 @@ import { useLive } from "@/components/live/live-provider";
 import { catalogs } from "@/lib/catalogs";
 import { cn } from "@/lib/utils";
 import { webglSupported } from "@/lib/webgl";
+import { colorRol } from "@/lib/palette";
 
 // three.js solo existe en el navegador: se carga bajo demanda y sin SSR.
 const GlobeScene = dynamic(() => import("@/components/globe/globe-scene"), {
@@ -23,7 +24,7 @@ function GlobeFallback() {
   );
 }
 
-const roleColor = new Map(catalogs.roles.map((r) => [r.code, r.color ?? "#9B00FF"]));
+const roleColor = new Map(catalogs.roles.map((r) => [r.code, colorRol(r.code)]));
 
 export function LiveGlobe({ variant = "home", className, onArrive }: { variant?: "home" | "intro"; className?: string; onArrive?: () => void }) {
   const live = useLive();

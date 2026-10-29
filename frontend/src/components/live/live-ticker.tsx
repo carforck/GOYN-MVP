@@ -6,8 +6,8 @@ import { useLive } from "@/components/live/live-provider";
 import { label, shortTerritory } from "@/lib/catalogs";
 import type { LiveEvent } from "@/lib/live/types";
 import { cn } from "@/lib/utils";
+import { colorEvento } from "@/lib/palette";
 
-const indicatorColor = { conectados: "#9B00FF", fortalecidos: "#00A0CC", transformados: "#FF01A2" } as const;
 
 export function describeEvent(e: LiveEvent) {
   if (e.kind === "conexion") return e.targetName ? `nueva conexión con ${e.targetName}` : "registró una nueva conexión";
@@ -40,7 +40,7 @@ export function LiveFeed({ limit = 5, className, dark = false }: { limit?: numbe
               <span
                 aria-hidden
                 className="size-2.5 shrink-0 rounded-full"
-                style={{ backgroundColor: e.kind === "reporte" && e.indicator ? indicatorColor[e.indicator] : e.kind === "conexion" ? "#FE5200" : "#0AA066" }}
+                style={{ backgroundColor: colorEvento(e.kind, e.indicator) }}
               />
               <span className="min-w-0 flex-1 truncate">
                 <Link href={`/actores/${e.orgSlug}`} className="font-bold hover:underline">{e.orgName}</Link>{" "}

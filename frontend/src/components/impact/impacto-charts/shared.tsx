@@ -1,13 +1,15 @@
 import type { ReactNode } from "react";
 import { cn } from "@/lib/utils";
+import { INDICATOR_COLORS } from "@/lib/palette";
 
 // Piezas comunes del dashboard "Resultados con jóvenes" (/impacto, ajuste 21).
 
 // Colores de marca por resultado. `solid` es una variante más oscura para texto blanco encima (AA).
+// Fuente única: "@/lib/palette" (pendiente #10). La parte "mujeres" de cada barra usa `solid`.
 export const RESULT_COLORS = {
-  conectados: { base: "#9B00FF", solid: "#7A00CC" },
-  fortalecidos: { base: "#00A0CC", solid: "#00708F" },
-  transformados: { base: "#FF01A2", solid: "#C2007B" },
+  conectados: INDICATOR_COLORS.conectados,
+  fortalecidos: INDICATOR_COLORS.fortalecidos,
+  transformados: INDICATOR_COLORS.transformados,
 } as const;
 
 export type ResultKey = keyof typeof RESULT_COLORS;

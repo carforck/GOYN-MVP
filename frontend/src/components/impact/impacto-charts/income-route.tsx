@@ -10,8 +10,11 @@ import {
   RESULT_COLORS,
   type ResultKey,
 } from "./shared";
+import { BRAND } from "@/lib/palette";
 
-const EMPRENDIMIENTO_COLOR = "#FFBD25";
+// Emprendimiento: amarillo de marca (mismo tono del área "Educación"/"Academia" no aplica; es un
+// sub-resultado de transformados que necesita contrastar con su magenta).
+const EMPRENDIMIENTO_COLOR = BRAND.amarillo;
 
 // Pin 7: ruta conectados → fortalecidos → transformados en Generación de ingresos, con el
 // porcentaje que avanza entre pasos. La barra de transformados se divide en empleo / emprendimiento

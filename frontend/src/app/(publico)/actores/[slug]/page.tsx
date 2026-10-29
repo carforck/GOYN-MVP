@@ -15,6 +15,7 @@ import { getOrganization, listIndicatorReports, listPrograms, listRelations } fr
 import { formatDate, formatNumber } from "@/lib/format";
 import { totals } from "@/lib/impact";
 import { cn } from "@/lib/utils";
+import { colorArea, colorIndicador } from "@/lib/palette";
 
 const plural: Record<string, string> = { socio: "Socios", aliado: "Aliados", colaborador: "Colaboradores" };
 
@@ -106,7 +107,7 @@ export default async function ActorPage(props: PageProps<"/actores/[slug]">) {
               {problemsByArea.map(({ area, problems }) => {
                 const a = item("impactAreas", area);
                 return (
-                  <details key={area} className="group rounded-2xl border bg-card" style={{ borderTopColor: a?.color, borderTopWidth: 4 }}>
+                  <details key={area} className="group rounded-2xl border bg-card" style={{ borderTopColor: colorArea(area), borderTopWidth: 4 }}>
                     <summary className="flex cursor-pointer list-none items-center justify-between gap-3 p-4 focus-visible:ring-3 focus-visible:ring-ring/50 focus-visible:outline-none [&::-webkit-details-marker]:hidden">
                       <span>
                         <span className="block font-heading font-bold text-foreground">{a?.label}</span>
@@ -171,9 +172,9 @@ export default async function ActorPage(props: PageProps<"/actores/[slug]">) {
             <h2 id="resultados" className="mb-1 text-xl font-extrabold text-foreground">Resultados reportados</h2>
             <p className="mb-4 text-sm text-muted-foreground">Suma de reportes validados por GOYN, todos los años.</p>
             <div className="grid gap-3 sm:grid-cols-3">
-              <KpiCard label="Conectados" value={t.conectados} color="#9B00FF" />
-              <KpiCard label="Fortalecidos" value={t.fortalecidos} color="#00A0CC" />
-              <KpiCard label="Transformados" value={t.transformados} color="#FF01A2" />
+              <KpiCard label="Conectados" value={t.conectados} color={colorIndicador("conectados")} />
+              <KpiCard label="Fortalecidos" value={t.fortalecidos} color={colorIndicador("fortalecidos")} />
+              <KpiCard label="Transformados" value={t.transformados} color={colorIndicador("transformados")} />
             </div>
           </section>
         </div>
@@ -302,7 +303,7 @@ function PublicProfile({ org }: { org: Org }) {
           <ul className="flex flex-wrap gap-2">
             {org.area_codes.map((code) => (
               <li key={code} className="inline-flex items-center gap-1.5 rounded-full bg-muted px-3 py-1 text-sm font-semibold text-foreground">
-                <span aria-hidden className="size-2.5 rounded-full" style={{ backgroundColor: item("impactAreas", code)?.color }} />
+                <span aria-hidden className="size-2.5 rounded-full" style={{ backgroundColor: colorArea(code) }} />
                 {label("impactAreas", code)}
               </li>
             ))}

@@ -1,4 +1,5 @@
 import { catalogs, shortTerritory } from "@/lib/catalogs";
+import { HELIX_COLORS } from "@/lib/palette";
 import type { PublicOrganization, PublicRelation } from "@/lib/types";
 
 // Métricas de red del ecosistema para la sección "Lo que el mapa no muestra" (/mapa).
@@ -7,13 +8,15 @@ import type { PublicOrganization, PublicRelation } from "@/lib/types";
 // y conexiones visibles con los filtros actuales.
 
 // Hélices: agrupación de los 9 tipos de organización en los sectores del ecosistema.
-// Colores validados para daltonismo en este orden (skill dataviz, validate_palette.js).
+// Color de hélice = tono de marca de sus tipos de organización (paleta única, pendiente #10), así un
+// actor público se ve naranja/rojo en círculos, red y matriz. Distancia mínima entre hélices con
+// daltonismo simulado (deuteranopía/protanopía) ≈ ΔE 20, igual que la serie anterior.
 export const HELICES = [
-  { code: "publico", label: "Público", short: "Púb.", color: "#9B00FF", types: ["publico_local", "publico_nacional"] },
-  { code: "privado", label: "Privado", short: "Priv.", color: "#0AA066", types: ["privado_empresa", "privado_gremio", "privado_fundacion", "bolsa_empleo"] },
-  { code: "academia", label: "Academia", short: "Acad.", color: "#FE5200", types: ["educativa"] },
-  { code: "sociedad", label: "Sociedad civil", short: "Soc. civil", color: "#0089B0", types: ["comunitaria"] },
-  { code: "juventudes", label: "Juventudes", short: "Juv.", color: "#DB0089", types: ["colectivo_juvenil"] },
+  { code: "publico", label: "Público", short: "Púb.", color: HELIX_COLORS.publico, types: ["publico_local", "publico_nacional"] },
+  { code: "privado", label: "Privado", short: "Priv.", color: HELIX_COLORS.privado, types: ["privado_empresa", "privado_gremio", "privado_fundacion", "bolsa_empleo"] },
+  { code: "academia", label: "Academia", short: "Acad.", color: HELIX_COLORS.academia, types: ["educativa"] },
+  { code: "sociedad", label: "Sociedad civil", short: "Soc. civil", color: HELIX_COLORS.sociedad, types: ["comunitaria"] },
+  { code: "juventudes", label: "Juventudes", short: "Juv.", color: HELIX_COLORS.juventudes, types: ["colectivo_juvenil"] },
 ] as const;
 export type HeliceCode = (typeof HELICES)[number]["code"];
 

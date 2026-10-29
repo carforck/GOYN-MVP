@@ -15,18 +15,8 @@ export const nf = new Intl.NumberFormat("es-CO");
 
 export const pct = (n: number, total: number) => (total ? Math.round((n / total) * 100) : 0);
 
-// Colores para tipos de organización (tokens de marca GOYN; navy y violeta oscuro completan la serie).
-export const ORG_TYPE_COLORS: Record<string, string> = {
-  privado_fundacion: "#9B00FF",
-  privado_empresa: "#00A0CC",
-  privado_gremio: "#1600CC",
-  publico_local: "#FE5200",
-  publico_nacional: "#E20613",
-  educativa: "#FFBD25",
-  bolsa_empleo: "#060A28",
-  colectivo_juvenil: "#FF01A2",
-  comunitaria: "#0AA066",
-};
+// Colores: única fuente de verdad en "@/lib/palette" (pendiente #10).
+export { ORG_TYPE_COLORS, colorRol, colorTipoOrg, colorArea, solidSwatch, contrast, luminance } from "@/lib/palette";
 
 // ─── Circle packing ──────────────────────────────────────────────────────────
 // Empaquetado voraz: los círculos (de mayor a menor) se ubican tangentes a pares de círculos ya
@@ -94,40 +84,4 @@ function tangent(A: Packed, B: Packed, r: number) {
     { x: mx + (h * dy) / d, y: my - (h * dx) / d },
     { x: mx - (h * dy) / d, y: my + (h * dx) / d },
   ];
-}
-
-// ─── Contraste (WCAG 2.x) ────────────────────────────────────────────────────
-const hexRgb = (hex: string) => {
-  const h = hex.replace("#", "");
-  const v = h.length === 3 ? h.replace(/./g, "$&$&") : h.slice(0, 6);
-  return [0, 2, 4].map((i) => parseInt(v.slice(i, i + 2), 16));
-};
-const toHex = (rgb: number[]) => `#${rgb.map((c) => Math.round(Math.max(0, Math.min(255, c))).toString(16).padStart(2, "0")).join("")}`;
-
-export function luminance(hex: string) {
-  const [r, g, b] = hexRgb(hex).map((c) => {
-    const s = c / 255;
-    return s <= 0.03928 ? s / 12.92 : Math.pow((s + 0.055) / 1.055, 2.4);
-  });
-  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
-}
-
-export function contrast(a: string, b: string) {
-  const [l1, l2] = [luminance(a), luminance(b)].sort((x, y) => y - x);
-  return (l1 + 0.05) / (l2 + 0.05);
-}
-
-const INK = "#060A28"; // navy de marca para texto oscuro
-
-// Relleno sólido + color de contenido con contraste AA (≥ 4.5:1). Si el color con blanco no llega,
-// se oscurece el relleno; si habría que oscurecerlo demasiado (amarillos, verdes claros), se conserva
-// el color y el contenido pasa a navy.
-export function solidSwatch(color: string): { fill: string; ink: string } {
-  if (contrast(color, "#ffffff") >= 4.5) return { fill: color, ink: "#ffffff" };
-  const rgb = hexRgb(color);
-  for (let k = 0.04; k <= 0.3 + 1e-9; k += 0.02) {
-    const fill = toHex(rgb.map((c) => c * (1 - k)));
-    if (contrast(fill, "#ffffff") >= 4.5) return { fill, ink: "#ffffff" };
-  }
-  return { fill: color, ink: INK };
 }

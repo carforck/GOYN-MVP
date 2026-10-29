@@ -26,7 +26,7 @@ import { useMemo, useState } from "react";
 import { RoleIcon } from "@/components/ecosystem/role-badge";
 import { catalogs } from "@/lib/catalogs";
 import { cn } from "@/lib/utils";
-import { type ChartOrg, ORG_TYPE_COLORS, nf, packCircles, pct, solidSwatch } from "./shared";
+import { type ChartOrg, colorRol, colorTipoOrg, nf, packCircles, pct, solidSwatch } from "./shared";
 
 // B) "¿Quiénes son las organizaciones que promueven el bienestar juvenil?"
 // Círculos empaquetados: un círculo por categoría, área ∝ número de organizaciones. Relleno sólido con
@@ -94,14 +94,14 @@ export function WhoCircles({ orgs }: { orgs: ChartOrg[] }) {
         ? catalogs.roles.map((r) => ({
             code: r.code,
             label: r.label,
-            color: r.color ?? "#9B00FF",
+            color: colorRol(r.code),
             description: r.description ?? "",
             orgs: orgs.filter((o) => o.primary_role_code === r.code),
           }))
         : catalogs.orgTypes.map((t) => ({
             code: t.code,
             label: t.label,
-            color: ORG_TYPE_COLORS[t.code] ?? "#9B00FF",
+            color: colorTipoOrg(t.code),
             description: TYPE_DESCRIPTIONS[t.code] ?? t.description ?? "",
             orgs: orgs.filter((o) => o.org_type_code === t.code),
           }));

@@ -1,10 +1,11 @@
 import { BadgeCheckIcon, MapPinIcon, Share2Icon, LayersIcon } from "lucide-react";
 import Link from "next/link";
 import { RoleIcon } from "@/components/ecosystem/role-badge";
-import { item, label, shortTerritory } from "@/lib/catalogs";
+import { label, shortTerritory } from "@/lib/catalogs";
 import { formatDate } from "@/lib/format";
 import type { PublicOrganization } from "@/lib/types";
 import { cn } from "@/lib/utils";
+import { colorArea } from "@/lib/palette";
 
 export function OrgInitials({ name, className }: { name: string; className?: string }) {
   const initials = name
@@ -53,7 +54,7 @@ export function OrgCard({ org, href }: { org: PublicOrganization; href?: string 
       <ul className="flex flex-wrap gap-1.5" aria-label="Áreas de impacto">
         {org.area_codes.map((code) => (
           <li key={code} className="inline-flex items-center gap-1.5 rounded-full bg-muted px-2.5 py-0.5 text-xs font-semibold text-foreground">
-            <span aria-hidden className="size-2 rounded-full" style={{ backgroundColor: item("impactAreas", code)?.color }} />
+            <span aria-hidden className="size-2 rounded-full" style={{ backgroundColor: colorArea(code) }} />
             {label("impactAreas", code)}
           </li>
         ))}

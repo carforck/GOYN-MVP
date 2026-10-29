@@ -34,6 +34,7 @@ import {
   type Measure,
 } from "@/lib/impact-metrics";
 import { cn } from "@/lib/utils";
+import { BRAND, colorIndicador } from "@/lib/palette";
 
 export const metadata: Metadata = { title: "Impacto colectivo" };
 
@@ -189,7 +190,7 @@ export default async function ImpactoPage(props: PageProps<"/impacto">) {
               label="Proyectos activos"
               value={formatNumber(P.length)}
               description="Proyectos que cumplen los filtros seleccionados."
-              color="#060A28"
+              color={colorIndicador("programas")}
             />
             <StatCard
               label="Jóvenes conectados"
@@ -277,7 +278,7 @@ export default async function ImpactoPage(props: PageProps<"/impacto">) {
                   label={`Proyectos de ${incomeLabel}`}
                   value={formatNumber(G.length)}
                   description={`De ${formatNumber(P.length)} proyectos en la vista.`}
-                  color="#060A28"
+                  color={colorIndicador("programas")}
                 />
                 <StatCard
                   label="Jóvenes transformados"
@@ -299,7 +300,7 @@ export default async function ImpactoPage(props: PageProps<"/impacto">) {
                     label="Iniciaron o mejoraron un emprendimiento"
                     value={formatNumber(split.emprendimiento)}
                     description="Según el seguimiento del proyecto."
-                    color="#FFBD25"
+                    color={BRAND.amarillo}
                   />
                 )}
               </div>

@@ -9,6 +9,7 @@ import { describeEvent } from "@/components/live/live-ticker";
 import { AnimatedNumber } from "@/components/motion/animated-number";
 import { formatDateTime } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { colorIndicador } from "@/lib/palette";
 
 type Totals = { conectados: number; fortalecidos: number; transformados: number };
 
@@ -24,9 +25,9 @@ function useOrgLive(slug: string) {
 }
 
 const cards = [
-  { key: "conectados", label: "Jóvenes conectados", color: "#9B00FF", from: "from-goyn-violeta/25" },
-  { key: "fortalecidos", label: "Jóvenes fortalecidos", color: "#00A0CC", from: "from-goyn-cian/25" },
-  { key: "transformados", label: "Jóvenes transformados", color: "#FF01A2", from: "from-goyn-magenta/25" },
+  { key: "conectados", label: "Jóvenes conectados", color: colorIndicador("conectados"), from: "from-goyn-violeta/25" },
+  { key: "fortalecidos", label: "Jóvenes fortalecidos", color: colorIndicador("fortalecidos"), from: "from-goyn-cian/25" },
+  { key: "transformados", label: "Jóvenes transformados", color: colorIndicador("transformados"), from: "from-goyn-magenta/25" },
 ] as const;
 
 export function PanelKpis({ slug, base }: { slug: string; base: Totals }) {

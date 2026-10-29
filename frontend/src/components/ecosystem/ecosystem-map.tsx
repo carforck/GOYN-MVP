@@ -22,6 +22,7 @@ import type { MapProgram } from "@/lib/types";
 import type { MapStats } from "@/lib/map-stats";
 import { cn } from "@/lib/utils";
 import { webglSupported } from "@/lib/webgl";
+import { colorArea, colorEvento, colorIndicador, colorRol, EVENT_COLORS, ZONE_COLORS } from "@/lib/palette";
 
 export type MapOrg = {
   slug: string;
@@ -51,32 +52,24 @@ const INTRO_MAX_MS = 14000;
 
 maplibregl.setWorkerUrl("/maplibre/maplibre-gl-worker.mjs");
 
-const roleColors = catalogs.roles.map((r) => [r.code, r.color ?? "#9B00FF"]).flat();
-const areaColors = catalogs.impactAreas.map((a) => [a.code, a.color === "#060A28" ? "#8A86FF" : (a.color ?? "#9B00FF")]).flat();
+// Colores por categoría: paleta única (mismos que leyenda, círculos, red, radar y árbol).
+const roleColors = catalogs.roles.map((r) => [r.code, colorRol(r.code)]).flat();
+const areaColors = catalogs.impactAreas.map((a) => [a.code, colorArea(a.code)]).flat();
 const colorExpr = (by: "rol" | "area") =>
   (by === "rol" ? ["match", ["get", "primary_role_code"], ...roleColors, "#9B00FF"] : ["match", ["get", "area_code"], ...areaColors, "#9B00FF"]) as never;
 export type ColorBy = "rol" | "area";
 // Cifra que dibujan las burbujas por localidad (la elige el usuario en el panel "Cifras").
 export type Metric = "orgs" | "conectados" | "fortalecidos" | "transformados";
 export const METRICS: { key: Metric; label: string; color: string }[] = [
-  { key: "orgs", label: "Organizaciones", color: "#6A00C2" },
-  { key: "conectados", label: "Jóvenes conectados", color: "#9B00FF" },
-  { key: "fortalecidos", label: "Jóvenes fortalecidos", color: "#0089B0" },
-  { key: "transformados", label: "Jóvenes transformados", color: "#DB0089" },
+  // Variante `solid` del indicador: las burbujas llevan la cifra en blanco encima (AA).
+  { key: "orgs", label: "Organizaciones", color: colorIndicador("organizaciones", "solid") },
+  { key: "conectados", label: "Jóvenes conectados", color: colorIndicador("conectados", "solid") },
+  { key: "fortalecidos", label: "Jóvenes fortalecidos", color: colorIndicador("fortalecidos", "solid") },
+  { key: "transformados", label: "Jóvenes transformados", color: colorIndicador("transformados", "solid") },
 ];
 export type GroupBy = "cercania" | "territorio";
 export { relationColors } from "@/components/ecosystem/map-constants";
-const LOCALITY_TONES = [
-  "baq_riomar", "#B98CFF",
-  "baq_norte_centro", "#7A00CC",
-  "baq_suroccidente", "#D4B8FF",
-  "baq_suroriente", "#9B4DFF",
-  "baq_metropolitana", "#5C1AA8",
-  "amb_puerto_colombia", "#8E5CE6",
-  "amb_soledad", "#C59CFF",
-  "amb_galapa", "#6E33C9",
-  "amb_malambo", "#A877F0",
-];
+const LOCALITY_TONES = Object.entries(ZONE_COLORS).flat();
 
 // Localidades del catálogo (centroides) para la capa de referencia del mapa claro.
 const LOCALITIES: GeoJSON.FeatureCollection<GeoJSON.Point> = {
@@ -802,7 +795,7 @@ function EcosystemMapInner({ orgs: allOrgs, relations: allRelations, stats, orgO
     if (!m || e.lat == null || e.lng == null) return;
     m.easeTo({ center: [e.lng, e.lat], zoom: 13, duration: 1400 });
     const now = performance.now() + 900;
-    for (let i = 0; i < 4; i++) ripples.current.push({ id: `${e.id}-ver-${i}-${now}`, lng: e.lng, lat: e.lat, color: "#DB0089", start: now + i * 450, big: true });
+    for (let i = 0; i < 4; i++) ripples.current.push({ id: `${e.id}-ver-${i}-${now}`, lng: e.lng, lat: e.lat, color: EVENT_COLORS.registro, start: now + i * 450, big: true });
     const org = orgs.find((o) => o.slug === e.orgSlug);
     if (org) m.once("moveend", () => openOrgPopup(org, [org.lng, org.lat]));
   };
@@ -812,7 +805,7 @@ function EcosystemMapInner({ orgs: allOrgs, relations: allRelations, stats, orgO
   useEffect(() => {
     if (!lastEvent || lastEvent.lat == null || lastEvent.lng == null) return;
     const now = performance.now();
-    const color = lastEvent.kind === "registro" ? "#DB0089" : lastEvent.kind === "conexion" ? "#FE5200" : lastEvent.indicator === "fortalecidos" ? "#00A0CC" : lastEvent.indicator === "transformados" ? "#FF01A2" : "#B44DFF";
+    const color = colorEvento(lastEvent.kind, lastEvent.indicator);
     ripples.current.push({ id: lastEvent.id, lng: lastEvent.lng, lat: lastEvent.lat, color, start: now, big: false });
     ripples.current.push({ id: `${lastEvent.id}-b`, lng: lastEvent.lng, lat: lastEvent.lat, color, start: now + 350, big: true });
     // Organización nueva: ondas extra para que se note en el mapa.
@@ -935,7 +928,7 @@ function programsHtml(list: MapProgram[], slug: string, full: boolean, matches: 
       const zones = x.territory_codes.filter((c) => c !== "cobertura_general").map(shortTerritory);
       const r = x.results;
       const res = r && r.conectados + r.fortalecidos + r.transformados > 0
-        ? `<span class="text-[#d9b3ff]">${nf(r.conectados)}</span> conectados · <span class="text-[#7fd6ee]">${nf(r.fortalecidos)}</span> fortalecidos · <span class="text-[#ff8fcf]">${nf(r.transformados)}</span> transformados`
+        ? `<span style="color:${colorIndicador("conectados", "onDark")}">${nf(r.conectados)}</span> conectados · <span style="color:${colorIndicador("fortalecidos", "onDark")}">${nf(r.fortalecidos)}</span> fortalecidos · <span style="color:${colorIndicador("transformados", "onDark")}">${nf(r.transformados)}</span> transformados`
         : "Sin resultados reportados aún";
       const hit = matches?.(x) ? '<span class="ml-1 rounded-full bg-[#DB0089] px-1.5 py-px text-[10px] font-bold text-white">Cumple el filtro</span>' : "";
       return `<li class="rounded-lg bg-white/5 px-2.5 py-2">

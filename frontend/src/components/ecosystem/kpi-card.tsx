@@ -1,6 +1,7 @@
 import { InfoIcon } from "lucide-react";
 import { AnimatedNumber } from "@/components/motion/animated-number";
 import { cn } from "@/lib/utils";
+import { colorIndicador } from "@/lib/palette";
 
 // KPI con definición y fuente visibles: "Confianza visible" (PRD §8.3).
 export function KpiCard({
@@ -8,7 +9,7 @@ export function KpiCard({
   value,
   hint,
   source,
-  color = "#9B00FF",
+  color = colorIndicador("conectados"),
   className,
 }: {
   label: string;

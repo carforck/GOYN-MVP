@@ -6,14 +6,15 @@ import { useLive } from "@/components/live/live-provider";
 import { AnimatedNumber } from "@/components/motion/animated-number";
 import { formatDate } from "@/lib/format";
 import { cn } from "@/lib/utils";
+import { colorIndicador } from "@/lib/palette";
 
 const items = [
-  { key: "organizations", label: "Organizaciones", color: "#060A28", href: "/actores" },
-  { key: "programs", label: "Programas", color: "#0AA066", href: "/actores" },
-  { key: "connections", label: "Conexiones", color: "#FE5200", href: "/mapa" },
-  { key: "conectados", label: "Jóvenes conectados", color: "#9B00FF", href: "/impacto" },
-  { key: "fortalecidos", label: "Jóvenes fortalecidos", color: "#00A0CC", href: "/impacto" },
-  { key: "transformados", label: "Jóvenes transformados", color: "#FF01A2", href: "/impacto" },
+  { key: "organizations", label: "Organizaciones", color: colorIndicador("organizaciones"), href: "/actores" },
+  { key: "programs", label: "Programas", color: colorIndicador("programas"), href: "/actores" },
+  { key: "connections", label: "Conexiones", color: colorIndicador("conexiones"), href: "/mapa" },
+  { key: "conectados", label: "Jóvenes conectados", color: colorIndicador("conectados"), href: "/impacto" },
+  { key: "fortalecidos", label: "Jóvenes fortalecidos", color: colorIndicador("fortalecidos"), href: "/impacto" },
+  { key: "transformados", label: "Jóvenes transformados", color: colorIndicador("transformados"), href: "/impacto" },
 ] as const;
 
 // Franja de cifras del ecosistema: contadores animados que se mueven con los datos en vivo.
@@ -83,11 +84,11 @@ export function LiveBigStats({ dark = false, withHints = false, compact = false 
   const { stats } = useLive();
   return (
     <div className={cn("grid gap-3 sm:grid-cols-3", !compact && "gap-4")}>
-      <BigStat compact={compact} dark={dark} value={stats.conectados} label="Jóvenes conectados" color="#9B00FF"
+      <BigStat compact={compact} dark={dark} value={stats.conectados} label="Jóvenes conectados" color={colorIndicador("conectados")}
         hint={withHints ? "Jóvenes que interactúan con actividades, programas, talleres o sesiones de las organizaciones del ecosistema." : undefined} />
-      <BigStat compact={compact} dark={dark} value={stats.fortalecidos} label="Jóvenes fortalecidos" color="#00A0CC"
+      <BigStat compact={compact} dark={dark} value={stats.fortalecidos} label="Jóvenes fortalecidos" color={colorIndicador("fortalecidos")}
         hint={withHints ? "Jóvenes que mejoran habilidades en procesos de formación de más de 5 horas." : undefined} />
-      <BigStat compact={compact} dark={dark} value={stats.transformados} label="Jóvenes transformados" color="#FF01A2"
+      <BigStat compact={compact} dark={dark} value={stats.transformados} label="Jóvenes transformados" color={colorIndicador("transformados")}
         hint={withHints ? "Jóvenes con empleo formal, emprendimiento formalizado o mejora estable de ingresos." : undefined} />
     </div>
   );

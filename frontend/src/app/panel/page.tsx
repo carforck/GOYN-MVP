@@ -25,6 +25,7 @@ import { formatDate, isStale } from "@/lib/format";
 import { byYear, reportYear, totals } from "@/lib/impact";
 import type { PublicOrganization } from "@/lib/types";
 import { cn } from "@/lib/utils";
+import { BRAND, colorIndicador } from "@/lib/palette";
 
 export const metadata: Metadata = { title: "Mi panel" };
 
@@ -156,9 +157,9 @@ export default async function PanelPage() {
                   </p>
                   <dl className="mt-3 grid grid-cols-3 gap-2 text-center">
                     {[
-                      { k: "Conectados", v: r.conectados, c: "#9B00FF" },
-                      { k: "Fortalecidos", v: r.fortalecidos, c: "#00A0CC" },
-                      { k: "Transformados", v: r.transformados, c: "#DB0089" },
+                      { k: "Conectados", v: r.conectados, c: colorIndicador("conectados") },
+                      { k: "Fortalecidos", v: r.fortalecidos, c: colorIndicador("fortalecidos") },
+                      { k: "Transformados", v: r.transformados, c: colorIndicador("transformados") },
                     ].map((x) => (
                       <div key={x.k} className="flex flex-col-reverse rounded-xl bg-card p-2">
                         <dt className="flex items-center justify-center gap-1 text-[11px] font-semibold text-muted-foreground">
@@ -213,9 +214,9 @@ export default async function PanelPage() {
 
       <div className="grid gap-4 md:grid-cols-3">
         {[
-          { href: "/panel/programas", title: "Programas", value: programs.length, text: "activos en tu perfil", icon: FolderKanbanIcon, color: "#0AA066" },
-          { href: "/panel/relaciones", title: "Relaciones", value: relations.length, text: "socios, aliados y colaboradores", icon: Share2Icon, color: "#FE5200" },
-          { href: "/panel/indicadores", title: "Reportes de indicador", value: reports.length, text: "validados por GOYN", icon: BarChart3Icon, color: "#9B00FF" },
+          { href: "/panel/programas", title: "Programas", value: programs.length, text: "activos en tu perfil", icon: FolderKanbanIcon, color: colorIndicador("programas") },
+          { href: "/panel/relaciones", title: "Relaciones", value: relations.length, text: "socios, aliados y colaboradores", icon: Share2Icon, color: colorIndicador("conexiones") },
+          { href: "/panel/indicadores", title: "Reportes de indicador", value: reports.length, text: "validados por GOYN", icon: BarChart3Icon, color: BRAND.violeta },
         ].map((c, i) => (
           <Reveal key={c.href} delay={i * 0.06}>
             <Link href={c.href} className="group flex items-center gap-4 rounded-3xl border bg-card p-5 transition-all hover:-translate-y-1 hover:shadow-lg">

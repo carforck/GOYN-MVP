@@ -6,6 +6,7 @@ import { type ReactNode, useState } from "react";
 import { catalogs } from "@/lib/catalogs";
 import { cn } from "@/lib/utils";
 import type { ChartOrg } from "./shared";
+import { colorArea } from "@/lib/palette";
 
 // D) "Retos por área de impacto": árbol horizontal desplegable
 // raíz → área (n orgs) → problemática/barrera (n orgs) → organizaciones.
@@ -28,7 +29,7 @@ function buildTree(orgs: ChartOrg[], selName: string): Node {
             id: `${a.code}/${p.code}`,
             label: p.label,
             count: withProblem.length,
-            color: a.color,
+            color: colorArea(a.code),
             children: [...withProblem]
               .sort((x, y) => x.name.localeCompare(y.name, "es"))
               .map((o) => ({ id: `${a.code}/${p.code}/${o.slug}`, label: o.name, href: `/actores/${o.slug}` })),
@@ -36,7 +37,7 @@ function buildTree(orgs: ChartOrg[], selName: string): Node {
         })
         .filter((p) => (p.count ?? 0) > 0)
         .sort((x, y) => (y.count ?? 0) - (x.count ?? 0) || x.label.localeCompare(y.label, "es"));
-      return { id: a.code, label: a.label, count: inArea.length, color: a.color, icon: `/images/areas/${a.code}.svg`, children: problems };
+      return { id: a.code, label: a.label, count: inArea.length, color: colorArea(a.code), icon: `/images/areas/${a.code}.svg`, children: problems };
     })
     .filter((a) => (a.count ?? 0) > 0)
     .sort((x, y) => (y.count ?? 0) - (x.count ?? 0) || x.label.localeCompare(y.label, "es"));

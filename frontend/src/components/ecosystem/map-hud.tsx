@@ -4,7 +4,7 @@ import { ChevronDownIcon, GlobeIcon, LayersIcon, Share2Icon, SlidersHorizontalIc
 import { useSearchParams } from "next/navigation";
 import { useState } from "react";
 import { METRICS, type ColorBy, type GroupBy, type Metric } from "@/components/ecosystem/ecosystem-map";
-import { relationColors } from "@/components/ecosystem/map-constants";
+import { colorArea, colorConexion, colorRol, CONNECTION_STYLES, svgDash } from "@/lib/palette";
 import { FilterGroups, FilterHeader, OrgPicker, ProgramFilters } from "@/components/ecosystem/filter-panel";
 import { useLive } from "@/components/live/live-provider";
 import { AnimatedNumber } from "@/components/motion/animated-number";
@@ -12,13 +12,17 @@ import { catalogs } from "@/lib/catalogs";
 import { countActive, parseFilters } from "@/lib/filters";
 import type { MapStats } from "@/lib/map-stats";
 import { cn } from "@/lib/utils";
+import { YOUTH_BY_MUNICIPALITY, YOUTH_SOURCE, YOUTH_TOTAL, YOUTH_YEAR, youthForZone } from "@/lib/youth-population";
 
 // Leyenda de conexiones: mismo trazo que en el mapa (sólida / guiones / puntos).
-const relationLegend = [
-  { code: "socio", label: "Socios", color: relationColors.socio, dash: undefined, width: 3 },
-  { code: "aliado", label: "Aliados", color: relationColors.aliado, dash: "6 3", width: 2.2 },
-  { code: "colaborador", label: "Colaboradores", color: relationColors.colaborador, dash: "0.1 4.5", width: 2.6 },
-];
+// Color, grosor y patrón salen de la paleta única (los mismos que dibuja el mapa y la red de actores).
+const relationLegend = (
+  [
+    { code: "socio", label: "Socios" },
+    { code: "aliado", label: "Aliados" },
+    { code: "colaborador", label: "Colaboradores" },
+  ] as const
+).map((r) => ({ ...r, color: colorConexion(r.code), width: CONNECTION_STYLES[r.code].width, dash: svgDash(r.code) }));
 
 // Panel del mapa (referencia: panel por país del cybermap): contadores en vivo por territorio,
 // leyenda de conexiones y controles.
@@ -181,6 +185,7 @@ export function MapHud({
                   ? `Organizaciones con sede aquí (puntos del mapa). ${ts.presencia} declaran presencia en esta localidad. Jóvenes: reportes validados de programas que se ejecutan aquí.`
                   : "Con los filtros actuales. Jóvenes: suma de reportes validados (no personas únicas)."}
               </p>
+              <YouthPopulation territory={territory} />
             </Section>
 
             <Section
@@ -211,7 +216,7 @@ export function MapHud({
                 <ul className="grid grid-cols-2 gap-x-2 gap-y-1 text-[11px] text-goyn-navy/75" aria-label={colorBy === "rol" ? "Colores por rol" : "Colores por área de impacto"}>
                   {(colorBy === "rol" ? catalogs.roles : catalogs.impactAreas).map((c) => (
                     <li key={c.code} className="flex items-center gap-1.5 truncate">
-                      <span aria-hidden className="size-2 shrink-0 rounded-full" style={{ backgroundColor: c.color ?? "#9B00FF" }} />
+                      <span aria-hidden className="size-2 shrink-0 rounded-full" style={{ backgroundColor: colorBy === "rol" ? colorRol(c.code) : colorArea(c.code) }} />
                       <span className="truncate">{c.label}</span>
                     </li>
                   ))}
@@ -274,6 +279,34 @@ export function MapHud({
           </div>
         )}
       </div>
+    </div>
+  );
+}
+
+const fmt = new Intl.NumberFormat("es-CO");
+
+// Contexto poblacional (DANE): jóvenes de 14 a 28 años del municipio. Las localidades de
+// Barranquilla no tienen dato oficial, así que se muestra el total del Distrito como referencia.
+function YouthPopulation({ territory }: { territory: string }) {
+  const z = territory === "todo" ? null : youthForZone(territory);
+  if (territory !== "todo" && !z) return null;
+  return (
+    <div className="rounded-xl border border-goyn-navy/10 bg-goyn-lila/40 px-2.5 py-2" title={YOUTH_SOURCE}>
+      <p className="text-[11px] font-bold tracking-wide text-goyn-navy/60 uppercase">Jóvenes de 14 a 28 años · DANE {YOUTH_YEAR}</p>
+      {territory === "todo" ? (
+        <p className="mt-0.5 text-xs text-goyn-navy/80">
+          <span className="font-heading text-lg font-bold text-goyn-navy">{fmt.format(YOUTH_TOTAL)}</span> en Barranquilla A.M. (5 municipios)
+        </p>
+      ) : z?.kind === "municipio" ? (
+        <p className="mt-0.5 text-xs text-goyn-navy/80">
+          <span className="font-heading text-lg font-bold text-goyn-navy">{fmt.format(z.youth)}</span> en {z.name} ({Math.round(z.share * 100)} % de su población)
+        </p>
+      ) : (
+        <p className="mt-0.5 text-xs text-goyn-navy/80">
+          Sin dato oficial por localidad. Barranquilla: <span className="font-bold text-goyn-navy">{fmt.format(YOUTH_BY_MUNICIPALITY.barranquilla.youth)}</span>
+        </p>
+      )}
+      <p className="mt-1 text-[10px] leading-snug text-goyn-navy/50">Fuente: proyecciones de población municipal del DANE (base CNPV 2018).</p>
     </div>
   );
 }

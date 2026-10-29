@@ -9,10 +9,11 @@ import { shortTerritory } from "@/lib/catalogs";
 import { formatDateTime } from "@/lib/format";
 import type { LiveEvent } from "@/lib/live/types";
 import { cn } from "@/lib/utils";
+import { EVENT_COLORS } from "@/lib/palette";
 
 const kindLabel = { registro: "Nueva organización", conexion: "Nueva conexión", reporte: "Nuevo reporte" } as const;
 const pastLabel = { registro: "Organización publicada", conexion: "Conexión", reporte: "Reporte validado" } as const;
-const kindColor = { registro: "#DB0089", conexion: "#FE5200", reporte: "#9B00FF" } as const;
+const kindColor = EVENT_COLORS;
 
 // Campana de novedades del mapa (reemplaza el panel "Actividad en vivo"): cuenta lo nuevo,
 // avisa cuando se registra una organización y lleva cada novedad a su lugar en el mapa.

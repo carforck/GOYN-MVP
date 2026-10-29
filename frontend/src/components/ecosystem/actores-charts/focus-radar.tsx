@@ -3,6 +3,7 @@
 import { catalogs, shortTerritory } from "@/lib/catalogs";
 import { cn } from "@/lib/utils";
 import type { ChartOrg } from "./shared";
+import { colorArea } from "@/lib/palette";
 
 // C) "¿En qué están enfocadas las organizaciones de la red colaborativa?" — radar de áreas de impacto
 // (pines 5, 6 y 7 de la propuesta). Escala fija (0 → máximo de toda la red redondeado a múltiplo de 4)
@@ -48,7 +49,7 @@ export function ZoneChips({ orgs, zones, onChange }: { orgs: ChartOrg[]; zones: 
 // Áreas ordenadas por número de organizaciones en toda la red (mismo orden de los ejes del radar).
 export function rankAreas(orgs: ChartOrg[]) {
   return catalogs.impactAreas
-    .map((a) => ({ code: a.code, label: a.label, color: a.color ?? "#9B00FF", total: orgs.filter((o) => o.area_codes.includes(a.code)).length }))
+    .map((a) => ({ code: a.code, label: a.label, color: colorArea(a.code), total: orgs.filter((o) => o.area_codes.includes(a.code)).length }))
     .sort((a, b) => b.total - a.total || a.label.localeCompare(b.label, "es"));
 }
 

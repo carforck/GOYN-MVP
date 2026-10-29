@@ -8,6 +8,7 @@ import { LiveFeed } from "@/components/live/live-ticker";
 import { catalogs, label, shortTerritory } from "@/lib/catalogs";
 import { getEcosystemStats, listChangeRequests, listOrganizations } from "@/lib/data";
 import { formatDateTime } from "@/lib/format";
+import { BRAND, colorIndicador } from "@/lib/palette";
 
 export const metadata: Metadata = { title: "Consola GOYN" };
 
@@ -29,9 +30,9 @@ export default async function AdminHome() {
 
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <KpiCard label="Organizaciones publicadas" value={stats.organizations} color="#060A28" />
-        <KpiCard label="Solicitudes pendientes" value={pending.length} color="#FE5200" />
-        <KpiCard label="Programas" value={stats.programs} color="#0AA066" />
-        <KpiCard label="Conexiones" value={stats.connections} color="#00A0CC" />
+        <KpiCard label="Solicitudes pendientes" value={pending.length} color={BRAND.amarillo} />
+        <KpiCard label="Programas" value={stats.programs} color={colorIndicador("programas")} />
+        <KpiCard label="Conexiones" value={stats.connections} color={colorIndicador("conexiones")} />
       </div>
 
       <div className="grid gap-4 xl:grid-cols-[1.6fr_1fr]">

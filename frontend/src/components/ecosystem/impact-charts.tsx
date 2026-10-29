@@ -18,12 +18,13 @@ import {
   YAxis,
 } from "recharts";
 import { formatCompact, formatNumber } from "@/lib/format";
+import { colorIndicador } from "@/lib/palette";
 
 export type SeriesPoint = { period: string; conectados: number; fortalecidos: number; transformados: number };
 export type CategoryPoint = { name: string; conectados: number; fortalecidos: number; transformados: number };
 
 // Colores del Manual de identidad; ejes y rejilla usan variables CSS para responder al modo oscuro.
-const COLORS = { conectados: "#9B00FF", fortalecidos: "#00A0CC", transformados: "#FF01A2" } as const;
+const COLORS = { conectados: colorIndicador("conectados"), fortalecidos: colorIndicador("fortalecidos"), transformados: colorIndicador("transformados") } as const;
 const NAMES = { conectados: "Conectados", fortalecidos: "Fortalecidos", transformados: "Transformados" } as const;
 const keys = ["conectados", "fortalecidos", "transformados"] as const;
 
@@ -113,7 +114,7 @@ export function CategoryChart({ data, layout = "vertical", height }: { data: Cat
 }
 
 // Proporción (p. ej. mujeres vs. total conectado).
-export function DonutChart({ value, total, label, color = "#FF01A2" }: { value: number; total: number; label: string; color?: string }) {
+export function DonutChart({ value, total, label, color = colorIndicador("transformados") }: { value: number; total: number; label: string; color?: string }) {
   const pct = total > 0 ? Math.round((value / total) * 100) : 0;
   const data = [
     { name: label, value },

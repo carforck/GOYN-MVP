@@ -5,7 +5,8 @@ import Link from "next/link";
 import { useEffect, useLayoutEffect, useMemo, useRef, useState, useSyncExternalStore, type PointerEvent as ReactPointerEvent } from "react";
 import { catalogs, label, shortTerritory } from "@/lib/catalogs";
 import { cn } from "@/lib/utils";
-import { type ChartOrg, ORG_TYPE_COLORS, nf } from "./shared";
+import { type ChartOrg, colorRol, colorTipoOrg, nf } from "./shared";
+import { colorConexion, svgDash } from "@/lib/palette";
 
 // E) "¿Cómo se relacionan los actores?" (pines 9 y 10 de la propuesta de gráficos).
 // Grafo de fuerzas en SVG: nodos = organizaciones, aristas = relaciones (socio / aliado / colaborador).
@@ -22,11 +23,14 @@ type RelType = "socio" | "aliado" | "colaborador";
 type ColorBy = "rol" | "tipo";
 
 // Los códigos de cat_relation_type coinciden 1:1 con las tres categorías de la propuesta.
-const REL_TYPES: { code: RelType; label: string; width: number; dash?: string }[] = [
-  { code: "socio", label: "Socio", width: 3.2 },
-  { code: "aliado", label: "Aliado", width: 1.8 },
-  { code: "colaborador", label: "Colaborador", width: 1.3, dash: "4 3" },
-];
+// Color y patrón de trazo vienen de la paleta única (los mismos que las conexiones del mapa).
+const REL_TYPES: { code: RelType; label: string; width: number; dash?: string; color: string }[] = (
+  [
+    { code: "socio", label: "Socio", width: 3.2 },
+    { code: "aliado", label: "Aliado", width: 1.8 },
+    { code: "colaborador", label: "Colaborador", width: 1.6 },
+  ] as const
+).map((t) => ({ ...t, dash: svgDash(t.code, t.width), color: colorConexion(t.code) }));
 const REL_RANK: Record<RelType, number> = { socio: 0, aliado: 1, colaborador: 2 };
 const relLabel = (code: RelType) => catalogs.relationTypes.find((r) => r.code === code)?.label ?? REL_TYPES[REL_RANK[code]].label;
 
@@ -325,14 +329,14 @@ export function NetworkGraph({ orgs, relations }: { orgs: ChartOrg[]; relations:
 
   const colorOf = (o: ChartOrg) =>
     colorBy === "rol"
-      ? (catalogs.roles.find((r) => r.code === o.primary_role_code)?.color ?? "#9B00FF")
-      : (ORG_TYPE_COLORS[o.org_type_code] ?? "#9B00FF");
+      ? colorRol(o.primary_role_code)
+      : colorTipoOrg(o.org_type_code);
 
   const legend = (colorBy === "rol" ? catalogs.roles : catalogs.orgTypes)
     .map((c) => ({
       code: c.code,
       label: c.label,
-      color: colorBy === "rol" ? (c.color ?? "#9B00FF") : (ORG_TYPE_COLORS[c.code] ?? "#9B00FF"),
+      color: colorBy === "rol" ? colorRol(c.code) : colorTipoOrg(c.code),
       n: orgs.filter((o) => (colorBy === "rol" ? o.primary_role_code : o.org_type_code) === c.code).length,
     }))
     .filter((c) => c.n > 0)
@@ -552,8 +556,9 @@ export function NetworkGraph({ orgs, relations }: { orgs: ChartOrg[]; relations:
                   const on = types.includes(t.code);
                   return (
                     <button key={t.code} type="button" aria-pressed={on} onClick={() => toggleType(t.code)} className={chip(on)}>
-                      <svg width="22" height="8" viewBox="0 0 22 8" aria-hidden className="shrink-0">
-                        <line x1="1" y1="4" x2="21" y2="4" stroke="currentColor" strokeWidth={t.width} strokeDasharray={t.dash} strokeLinecap="round" />
+                      {/* Muestra del trazo sobre fondo claro: el chip activo es violeta y taparía el color. */}
+                      <svg width="30" height="12" viewBox="-4 -2 30 12" aria-hidden className="shrink-0 rounded-full bg-white">
+                        <line x1="1" y1="4" x2="21" y2="4" stroke={t.color} strokeWidth={t.width} strokeDasharray={t.dash} strokeLinecap={t.code === "colaborador" ? "round" : "butt"} />
                       </svg>
                       {relLabel(t.code)}
                     </button>
@@ -613,10 +618,12 @@ export function NetworkGraph({ orgs, relations }: { orgs: ChartOrg[]; relations:
                       key={`${e.s}-${e.t}`}
                       data-s={e.s}
                       data-t={e.t}
+                      stroke={spec.color}
                       strokeWidth={spec.width}
                       strokeDasharray={spec.dash}
-                      className={cn(lit ? "stroke-foreground" : "stroke-muted-foreground", "transition-[stroke-opacity]")}
-                      strokeOpacity={lit ? 0.9 : dim ? 0.08 : 0.4}
+                      strokeLinecap={spec.code === "colaborador" ? "round" : "butt"}
+                      className="transition-[stroke-opacity]"
+                      strokeOpacity={lit ? 0.95 : dim ? 0.08 : 0.5}
                     />
                   );
                 })}
