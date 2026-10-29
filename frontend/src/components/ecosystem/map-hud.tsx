@@ -216,7 +216,12 @@ export function MapHud({
                 <ul className="grid grid-cols-2 gap-x-2 gap-y-1 text-[11px] text-goyn-navy/75" aria-label={colorBy === "rol" ? "Colores por rol" : "Colores por área de impacto"}>
                   {(colorBy === "rol" ? catalogs.roles : catalogs.impactAreas).map((c) => (
                     <li key={c.code} className="flex items-center gap-1.5 truncate">
-                      <span aria-hidden className="size-2 shrink-0 rounded-full" style={{ backgroundColor: colorBy === "rol" ? colorRol(c.code) : colorArea(c.code) }} />
+                      {colorBy === "rol" && c.icon ? (
+                        // eslint-disable-next-line @next/next/no-img-element
+                        <img src={`/images/roles/${c.icon}.webp`} alt="" width={16} height={16} className="size-4 shrink-0" aria-hidden />
+                      ) : (
+                        <span aria-hidden className="size-2 shrink-0 rounded-full" style={{ backgroundColor: colorBy === "rol" ? colorRol(c.code) : colorArea(c.code) }} />
+                      )}
                       <span className="truncate">{c.label}</span>
                     </li>
                   ))}

@@ -16,7 +16,7 @@ import { MapNotifications } from "@/components/ecosystem/map-notifications";
 import { ARC_STYLES, relationColors } from "@/components/ecosystem/map-constants";
 import type { LiveEvent } from "@/lib/live/types";
 import { type BasemapProvider, loadBasemap } from "@/components/ecosystem/map-style";
-import { catalogs, label as catalogLabel, shortTerritory } from "@/lib/catalogs";
+import { catalogs, item, label as catalogLabel, shortTerritory } from "@/lib/catalogs";
 import { countProgramFilters, filterByPrograms, matchesProgram, parseFilters } from "@/lib/filters";
 import type { MapProgram } from "@/lib/types";
 import type { MapStats } from "@/lib/map-stats";
@@ -228,7 +228,7 @@ function EcosystemMapInner({ orgs: allOrgs, relations: allRelations, stats, orgO
         <div class="${own.length && isAuthenticated !== false ? "w-72" : "w-64"} p-4">
           <p class="text-[11px] font-bold uppercase tracking-wider text-[#a9a6cc]">${escapeHtml(p.org_type_label)}</p>
           <p class="mt-1 font-heading text-base font-bold leading-snug text-white">${escapeHtml(p.name)}</p>
-          <p class="mt-2 text-sm text-white/80">${escapeHtml(p.primary_role_label)} · ${escapeHtml(p.territory)}</p>
+          <p class="mt-2 flex items-center gap-2 text-sm text-white/80">${roleIconHtml(p.primary_role_code, 22)}<span>${escapeHtml(p.primary_role_label)} · ${escapeHtml(p.territory)}</span></p>
           ${p.precision === "aproximada" ? '<p class="mt-1 text-[11px] text-[#a9a6cc]">Ubicación aproximada (zona)</p>' : ""}
           ${programsHtml(own, p.slug, isAuthenticated !== false, programKey ? (x) => matchesProgram(x, urlFilters) : null)}
           <a href="${escapeHtml(target)}" class="mt-3 inline-flex min-h-9 w-full items-center justify-center rounded-full bg-[#9B00FF] px-3 py-1.5 text-center text-sm font-bold text-white">${cta}</a>
@@ -612,7 +612,7 @@ function EcosystemMapInner({ orgs: allOrgs, relations: allRelations, stats, orgO
               <div class="w-56 px-3.5 py-3">
                 <p class="text-[10px] font-bold uppercase tracking-wider text-[#a9a6cc]">${escapeHtml(p.org_type_label)}</p>
                 <p class="mt-0.5 font-heading text-sm font-bold leading-snug text-white">${escapeHtml(p.name)}</p>
-                <p class="mt-1 text-xs text-white/80">${escapeHtml(p.primary_role_label)} · ${escapeHtml(p.territory)}</p>
+                <p class="mt-1 flex items-center gap-1.5 text-xs text-white/80">${roleIconHtml(p.primary_role_code, 18)}<span>${escapeHtml(p.primary_role_label)} · ${escapeHtml(p.territory)}</span></p>
               </div>`)
             .addTo(instance);
         };
@@ -941,6 +941,12 @@ function programsHtml(list: MapProgram[], slug: string, full: boolean, matches: 
     })
     .join("");
   return `${head}<p class="mt-0.5 text-[11px] text-white/60">${count}</p><ul class="mt-1.5 max-h-52 space-y-1.5 overflow-y-auto pr-1">${items}</ul>`;
+}
+
+// Ícono de marca del rol (RECURSOS GRAFICOS/ICONOS/ROLES) para las fichas del mapa.
+function roleIconHtml(code: string, size: number) {
+  const icon = item("roles", code)?.icon;
+  return icon ? `<img src="/images/roles/${icon}.webp" alt="" width="${size}" height="${size}" class="shrink-0" />` : "";
 }
 
 function escapeHtml(value: string) {

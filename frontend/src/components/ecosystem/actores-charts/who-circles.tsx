@@ -24,7 +24,7 @@ import {
 import Link from "next/link";
 import { useMemo, useState } from "react";
 import { RoleIcon } from "@/components/ecosystem/role-badge";
-import { catalogs } from "@/lib/catalogs";
+import { catalogs, item } from "@/lib/catalogs";
 import { cn } from "@/lib/utils";
 import { type ChartOrg, colorRol, colorTipoOrg, nf, packCircles, pct, solidSwatch } from "./shared";
 
@@ -45,8 +45,7 @@ const TYPE_ICONS: Record<string, LucideIcon> = {
   comunitaria: HouseIcon,
 };
 
-// Íconos de línea para los roles dentro de los círculos sólidos (los íconos de marca, que traen su
-// propio disco de color, se usan en el panel de detalle).
+// Respaldo de línea por si un rol no tiene ícono de marca en el catálogo.
 const ROLE_ICONS: Record<string, LucideIcon> = {
   articulador: NetworkIcon,
   implementador: WrenchIcon,
@@ -77,6 +76,12 @@ const W = 400; // ancho virtual del lienzo
 const SMALL = 0.075; // radio relativo bajo el cual solo se muestra el ícono
 
 function CategoryIcon({ view, code, color, className }: { view: View; code: string; color: string; className?: string }) {
+  // Roles: ícono de marca GOYN (RECURSOS GRAFICOS/ICONOS/ROLES, disco del color del rol + pictograma blanco).
+  const brand = view === "rol" ? item("roles", code)?.icon : null;
+  if (brand) {
+    // eslint-disable-next-line @next/next/no-img-element
+    return <img src={`/images/roles/${brand}.webp`} alt="" className={cn("aspect-square object-contain", className)} aria-hidden />;
+  }
   const Icon = (view === "rol" ? ROLE_ICONS[code] : TYPE_ICONS[code]) ?? UsersIcon;
   return <Icon className={className} style={{ color }} aria-hidden />;
 }
@@ -108,7 +113,10 @@ export function WhoCircles({ orgs }: { orgs: ChartOrg[] }) {
     return list
       .filter((g) => g.orgs.length > 0)
       .sort((a, b) => b.orgs.length - a.orgs.length)
-      .map((g) => ({ ...g, ...solidSwatch(g.color) }));
+      .map((g) => {
+        const sw = solidSwatch(g.color);
+        return view === "rol" ? { ...g, ...sw, fill: g.color } : { ...g, ...sw };
+      });
   }, [orgs, view]);
 
   const layout = useMemo(() => {
