@@ -8,7 +8,7 @@ import { datasets } from "@/lib/export";
 export const metadata: Metadata = { title: "Exportar datos" };
 
 export default async function ExportarPage() {
-  const periods = [...new Set((await listIndicatorReports()).map((r) => r.period_label))].sort().reverse();
+  const periods = [...new Set((await listIndicatorReports()).map((r) => r.year))].sort().reverse();
   return (
     <div className="space-y-6">
       <PageHeader title="Exportar datos" description="Descarga los datos publicados en CSV o XLSX, filtrados como necesites, para análisis y reportes. Cada exportación queda registrada." />

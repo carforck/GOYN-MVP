@@ -169,7 +169,7 @@ export default async function ActorPage(props: PageProps<"/actores/[slug]">) {
 
           <section aria-labelledby="resultados">
             <h2 id="resultados" className="mb-1 text-xl font-extrabold text-foreground">Resultados reportados</h2>
-            <p className="mb-4 text-sm text-muted-foreground">Suma de reportes validados por GOYN, todos los periodos.</p>
+            <p className="mb-4 text-sm text-muted-foreground">Suma de reportes validados por GOYN, todos los años.</p>
             <div className="grid gap-3 sm:grid-cols-3">
               <KpiCard label="Conectados" value={t.conectados} color="#9B00FF" />
               <KpiCard label="Fortalecidos" value={t.fortalecidos} color="#00A0CC" />

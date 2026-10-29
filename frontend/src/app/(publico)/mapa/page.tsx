@@ -80,6 +80,7 @@ export default async function MapaPage(props: PageProps<"/mapa">) {
           problem_codes: o.problem_codes ?? [],
         }))}
         investment={investment}
+        relations={relations.map((r) => ({ source: r.source_slug, target: r.target_slug, type: r.relation_type_code }))}
       />
     </div>
   );

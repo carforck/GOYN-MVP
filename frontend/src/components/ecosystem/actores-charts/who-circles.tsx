@@ -84,6 +84,7 @@ export function WhoCircles({ orgs }: { orgs: ChartOrg[] }) {
   const activeIdx = groups.findIndex((g) => g.code === active);
   const tipGroup = activeIdx >= 0 ? groups[activeIdx] : null;
   const tipCircle = activeIdx >= 0 ? layout.circles[activeIdx] : null;
+  const tipBelow = !!tipCircle && tipCircle.y < layout.h / 2;
 
   return (
     <section aria-labelledby="actores-quienes" className="space-y-4">
@@ -138,8 +139,9 @@ export function WhoCircles({ orgs }: { orgs: ChartOrg[] }) {
                     onClick={() => setActive((a) => (a === g.code ? null : g.code))}
                     aria-label={`${g.label}: ${g.orgs.length} organizaciones`}
                     className={cn(
-                      "absolute flex flex-col items-center justify-center rounded-full border-2 transition-transform focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-goyn-violeta",
+                      "absolute flex flex-col items-center justify-center rounded-full border-2 transition-[transform,opacity] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-goyn-violeta",
                       active === g.code && "z-10 scale-[1.04]",
+                      active && active !== g.code && "opacity-45",
                     )}
                     style={{
                       left: `${((c.x - c.r) / W) * 100}%`,
@@ -163,21 +165,32 @@ export function WhoCircles({ orgs }: { orgs: ChartOrg[] }) {
               {tipGroup && tipCircle && (
                 <div
                   role="tooltip"
-                  className="pointer-events-none absolute z-20 w-64 max-w-[80vw] -translate-x-1/2 -translate-y-full rounded-xl border bg-card px-3 py-2 text-xs shadow-xl"
+                  className={cn(
+                    "pointer-events-none absolute z-20 max-w-full -translate-x-1/2 rounded-xl border bg-card px-3 py-2 text-xs shadow-xl",
+                    tipGroup.orgs.length > 10 ? "w-[30rem]" : "w-64",
+                    // Círculos de la mitad superior: el listado va debajo para no quedar bajo el encabezado fijo.
+                    !tipBelow && "-translate-y-full",
+                  )}
                   style={{
-                    left: `${Math.min(80, Math.max(20, (tipCircle.x / W) * 100))}%`,
-                    top: `calc(${((tipCircle.y - tipCircle.r) / layout.h) * 100}% - 6px)`,
+                    // Centrado en el lienzo para que el listado nunca se salga de la pantalla en móvil.
+                    left: "50%",
+                    top: tipBelow
+                      ? `calc(${((tipCircle.y + tipCircle.r) / layout.h) * 100}% + 6px)`
+                      : `calc(${((tipCircle.y - tipCircle.r) / layout.h) * 100}% - 6px)`,
                   }}
                 >
                   <p className="font-bold text-foreground">{tipGroup.label}</p>
                   <p className="text-muted-foreground">
                     {tipGroup.orgs.length} de {total} organizaciones · {pct(tipGroup.orgs.length, total)}%
                   </p>
-                  <ul className="mt-1 max-h-40 list-disc space-y-0.5 overflow-hidden pl-4 text-foreground">
-                    {tipGroup.orgs.slice(0, 12).map((o) => (
-                      <li key={o.slug}>{o.name}</li>
-                    ))}
-                    {tipGroup.orgs.length > 12 && <li className="list-none text-muted-foreground">y {tipGroup.orgs.length - 12} más…</li>}
+                  <ul className={cn("mt-1 list-disc gap-x-5 pl-4 leading-snug text-foreground", tipGroup.orgs.length > 10 && "columns-2")}>
+                    {[...tipGroup.orgs]
+                      .sort((a, b) => a.name.localeCompare(b.name, "es"))
+                      .map((o) => (
+                        <li key={o.slug} className="mb-0.5 break-inside-avoid">
+                          {o.name}
+                        </li>
+                      ))}
                   </ul>
                 </div>
               )}
@@ -202,11 +215,12 @@ export function WhoCircles({ orgs }: { orgs: ChartOrg[] }) {
           </ul>
         </div>
 
-        <aside className="space-y-3 text-sm leading-relaxed text-muted-foreground lg:border-l lg:pl-6">
+        <aside className="space-y-3 text-sm leading-relaxed text-muted-foreground lg:border-l lg:pl-6" aria-live="polite">
           <h3 className="text-lg font-bold text-foreground">Un ecosistema que se reconoce</h3>
           <p>
-            <strong className="text-foreground">{nf.format(total)} organizaciones</strong> hacen parte de la red y aportan, desde distintos lugares, al bienestar de
-            las juventudes de Barranquilla y su área metropolitana.
+            Esta visualización reúne en una sola imagen a las <strong className="text-foreground">{nf.format(total)} organizaciones</strong> que hacen parte del
+            ecosistema. Verlas juntas nos permite reconocer que el trabajo por los jóvenes de Barranquilla A.M. es el resultado de una red con capacidades distintas que
+            se complementan.
           </p>
           {view === "rol" ? (
             <p>
@@ -219,7 +233,10 @@ export function WhoCircles({ orgs }: { orgs: ChartOrg[] }) {
               entidades públicas y colectivos juveniles. Esa mezcla de naturalezas y miradas es la base de la acción colectiva por los jóvenes.
             </p>
           )}
-          <p className="text-xs">El tamaño de cada círculo es proporcional al número de organizaciones. Pasa el cursor (o toca) un círculo para ver quiénes lo componen.</p>
+          <p>
+            Cada círculo reúne a las organizaciones que comparten un mismo rol o tipo, y su tamaño muestra cuántas son. Adentro van el ícono del grupo y su número de
+            organizaciones; la leyenda dice su nombre. Al pasar el cursor por un círculo (o al tocarlo) aparece el listado de las organizaciones que lo componen.
+          </p>
         </aside>
       </div>
     </section>

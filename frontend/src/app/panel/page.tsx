@@ -22,7 +22,7 @@ import { getViewer } from "@/lib/auth";
 import { label } from "@/lib/catalogs";
 import { getOwnOrganization, listIndicatorReports, listPrograms, listRelations } from "@/lib/data";
 import { formatDate, isStale } from "@/lib/format";
-import { byPeriod, totals } from "@/lib/impact";
+import { byYear, reportYear, totals } from "@/lib/impact";
 import type { PublicOrganization } from "@/lib/types";
 import { cn } from "@/lib/utils";
 
@@ -72,6 +72,8 @@ export default async function PanelPage() {
     const sum = (code: string) => r.filter((x) => x.indicator_code === code).reduce((n, x) => n + x.value, 0);
     return { name: p.name, conectados: sum("conectados"), fortalecidos: sum("fortalecidos"), transformados: sum("transformados") };
   });
+  // Ajuste 26: consolidado en el tiempo por AÑO (el de la fecha de inicio de cada programa), no por trimestre.
+  const yearly = byYear(reports);
 
   return (
     <div className="space-y-6">
@@ -150,7 +152,7 @@ export default async function PanelPage() {
                 <li key={p.id} className="rounded-2xl border bg-muted/40 p-4">
                   <p className="font-heading font-bold text-foreground">{p.name}</p>
                   <p className="text-sm text-muted-foreground">
-                    {label("impactAreas", p.primary_area_code)} · {label("modalities", p.modality_code)}
+                    {label("impactAreas", p.primary_area_code)} · {label("modalities", p.modality_code)} · Año {reportYear(p.start_date, "—")}
                   </p>
                   <dl className="mt-3 grid grid-cols-3 gap-2 text-center">
                     {[
@@ -181,13 +183,14 @@ export default async function PanelPage() {
         <Reveal className="rounded-3xl border bg-card p-5 sm:p-6">
           <div className="mb-4 flex items-center justify-between">
             <h2 className="flex items-center gap-2 font-heading text-lg font-bold text-foreground">
-              <BarChart3Icon className="size-5 text-goyn-violeta" aria-hidden /> Evolución de tus resultados
+              <BarChart3Icon className="size-5 text-goyn-violeta" aria-hidden /> Consolidado por año
             </h2>
             <span className="inline-flex items-center gap-1.5 text-xs font-semibold text-muted-foreground">
               <span className="goyn-live-dot" aria-hidden /> En vivo
             </span>
           </div>
-          <PanelTrend slug={org.slug} series={byPeriod(reports)} />
+          <p className="-mt-2 mb-3 text-sm text-muted-foreground">Conectados, fortalecidos y transformados según el año de inicio de cada programa.</p>
+          <PanelTrend slug={org.slug} series={yearly} />
         </Reveal>
         <Reveal delay={0.08} className="rounded-3xl border bg-card p-5 sm:p-6">
           <PanelActivity slug={org.slug} />

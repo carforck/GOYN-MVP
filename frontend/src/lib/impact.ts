@@ -1,9 +1,15 @@
 import { catalogs, label, shortTerritory } from "@/lib/catalogs";
-import { formatPeriod } from "@/lib/format";
 import type { IndicatorReport } from "@/lib/types";
 
 // Agregación del tablero de impacto. Regla ADR 007: se suman reportes APROBADOS; el resultado se
 // rotula "suma de reportes validados", no "personas únicas", mientras no exista método aprobado.
+
+// Año de un reporte (ajustes 26/28, 2026-10-29): ya no se reporta por trimestre; cada reporte se
+// consolida en el año de la FECHA DE INICIO de su programa. Sin programa (o sin fecha) se usa el
+// año del periodo reportado ("2025" o "2025-T1" → "2025").
+export function reportYear(programStartDate: string | null | undefined, periodLabel: string) {
+  return /^\d{4}/.test(programStartDate ?? "") ? programStartDate!.slice(0, 4) : periodLabel.slice(0, 4);
+}
 
 export type ImpactFilters = { periodo?: string; area?: string; territorio?: string; tipo?: string };
 
@@ -13,7 +19,7 @@ const empty = (): Totals => ({ conectados: 0, fortalecidos: 0, transformados: 0 
 export function filterReports(reports: IndicatorReport[], f: ImpactFilters) {
   return reports.filter(
     (r) =>
-      (!f.periodo || r.period_label.startsWith(f.periodo)) &&
+      (!f.periodo || r.year === f.periodo) &&
       (!f.area || r.primary_area_code === f.area) &&
       (!f.territorio || r.territory_codes.includes(f.territorio)) &&
       (!f.tipo || r.org_type_code === f.tipo),
@@ -27,14 +33,15 @@ export function totals(reports: IndicatorReport[]) {
   return { ...t, mujeresConectadas: women, organizaciones: new Set(reports.map((r) => r.organization_id)).size };
 }
 
-export function byPeriod(reports: IndicatorReport[]) {
+// Consolidado por año (año de inicio del programa). Reemplaza la antigua serie por trimestre.
+export function byYear(reports: IndicatorReport[]) {
   const map = new Map<string, Totals>();
-  for (const r of [...reports].sort((a, b) => a.period_start.localeCompare(b.period_start))) {
-    const row = map.get(r.period_label) ?? empty();
+  for (const r of reports) {
+    const row = map.get(r.year) ?? empty();
     row[r.indicator_code] += r.value;
-    map.set(r.period_label, row);
+    map.set(r.year, row);
   }
-  return [...map.entries()].map(([period, t]) => ({ period: formatPeriod(period), ...t }));
+  return [...map.entries()].sort(([a], [b]) => a.localeCompare(b)).map(([period, t]) => ({ period, ...t }));
 }
 
 export function byArea(reports: IndicatorReport[]) {
@@ -60,5 +67,5 @@ export function byTerritory(reports: IndicatorReport[]) {
 }
 
 export function periodsAvailable(reports: IndicatorReport[]) {
-  return [...new Set(reports.map((r) => r.period_label.slice(0, 4)))].sort();
+  return [...new Set(reports.map((r) => r.year))].sort();
 }

@@ -13,7 +13,7 @@ export const datasets = {
 } as const;
 export type Dataset = keyof typeof datasets;
 
-// Filtros de exportación: los mismos del mapa/directorio + periodo para indicadores.
+// Filtros de exportación: los mismos del mapa/directorio + año (inicio del programa) para indicadores.
 export type ExportFilters = EcosystemFilters & { periodo?: string };
 
 export function parseExportFilters(sp: URLSearchParams): ExportFilters {
@@ -53,10 +53,10 @@ export async function buildRows(dataset: Dataset, filters: ExportFilters = {}): 
     { periodo, area: filters.area?.[0], territorio: filters.territorio?.[0] },
   );
   return {
-    columns: ["Organización", "Programa", "Indicador", "Periodo", "Inicio", "Fin", "Valor", "Mujeres", "Fuente"],
+    columns: ["Organización", "Programa", "Indicador", "Año", "Periodo reportado", "Inicio", "Fin", "Valor", "Mujeres", "Fuente", "Actualizado"],
     rows: reports.map((r) => [
-      r.organization_slug, r.program_id ?? "", label("indicators", r.indicator_code), r.period_label, r.period_start, r.period_end,
-      r.value, r.value_women ?? "", r.source ?? "",
+      r.organization_slug, r.program_id ?? "", label("indicators", r.indicator_code), r.year, r.period_label, r.period_start, r.period_end,
+      r.value, r.value_women ?? "", r.source ?? "", r.updated_at ?? "",
     ]),
   };
 }

@@ -111,6 +111,23 @@ export type IndicatorReport = {
   value: number;
   value_women: number | null;
   source: string | null;
+  // Ajustes 26/28 (2026-10-29): los reportes se consolidan por AÑO, el de la fecha de inicio del
+  // programa. La capa de datos siempre los completa (ver normalizeReport en src/lib/data).
+  program_start_date: string | null;
+  updated_at: string | null;
+  year: string;
+};
+
+// Reporte visto por su propia organización en /panel/indicadores (todos los estados).
+export type OwnIndicatorReport = {
+  id: string;
+  program_id: string | null;
+  indicator_code: IndicatorReport["indicator_code"];
+  year: string;
+  value: number | null;
+  value_women: number | null;
+  status: "borrador" | "enviado" | "aprobado" | "rechazado";
+  updated_at: string;
 };
 
 export type EcosystemStats = {

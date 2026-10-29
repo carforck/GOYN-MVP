@@ -4,6 +4,7 @@ import { isDemoSession } from "@/lib/auth";
 import { isSupabaseConfigured } from "@/lib/config";
 import { label as catalogLabel, type CatalogName } from "@/lib/catalogs";
 import { matchesFilters } from "@/lib/filters";
+import { reportYear } from "@/lib/impact";
 import type { LiveEvent, LiveSnapshot, TerritoryTotals } from "@/lib/live/types";
 import { createClient } from "@/lib/supabase/server";
 import type {
@@ -11,6 +12,7 @@ import type {
   EcosystemFilters,
   EcosystemStats,
   IndicatorReport,
+  OwnIndicatorReport,
   OwnProgram,
   PublicOrganization,
   PublicProgram,
@@ -21,15 +23,33 @@ import type {
 // (lista blanca, solo publicado); sin él, lee el conjunto sintético de demostración.
 // Las vistas nunca importan Supabase ni el JSON demo directamente: siempre pasan por aquí.
 
+// Reporte tal como llega de la vista (antes de la migración 016 no trae program_start_date ni updated_at).
+type RawReport = Omit<IndicatorReport, "program_start_date" | "updated_at" | "year"> &
+  Partial<Pick<IndicatorReport, "program_start_date" | "updated_at">> & { reviewed_at?: string | null };
+
+// Completa año (de la fecha de inicio del programa) y fecha de actualización de cada reporte.
+function normalizeReports(rows: RawReport[], programStarts: Map<string, string>): IndicatorReport[] {
+  return rows.map((r) => {
+    const program_start_date = r.program_start_date ?? (r.program_id ? programStarts.get(r.program_id) ?? null : null);
+    return {
+      ...r,
+      program_start_date,
+      updated_at: r.updated_at ?? r.reviewed_at ?? r.period_end ?? null,
+      year: reportYear(program_start_date, r.period_label),
+    };
+  });
+}
+
 const loadDemo = cache(async () => {
-  const data = (await import("@/lib/demo/demo-data.json")).default;
-  return data as unknown as {
+  const data = (await import("@/lib/demo/demo-data.json")).default as unknown as {
     organizations: PublicOrganization[];
     programs: PublicProgram[];
     relations: PublicRelation[];
-    reports: IndicatorReport[];
+    reports: RawReport[];
     sampleRequests: ChangeRequestSummary[];
   };
+  const starts = new Map(data.programs.map((p) => [p.id, p.start_date]));
+  return { ...data, reports: normalizeReports(data.reports, starts) };
 });
 
 // Supabase (PostgREST) entrega como máximo 1.000 filas por consulta: se pagina para no perder datos
@@ -106,10 +126,56 @@ export const listIndicatorReports = cache(async (organizationId?: string): Promi
     return organizationId ? reports.filter((r) => r.organization_id === organizationId) : reports;
   }
   const supabase = await createClient();
-  return fetchAll<IndicatorReport>(() => {
+  const rows = await fetchAll<RawReport>(() => {
     const query = supabase.from("v_public_indicator_report").select("*").order("period_start").order("id");
     return organizationId ? query.eq("organization_id", organizationId) : query;
   });
+  // Sin la migración 016 la vista no trae la fecha de inicio del programa: se toma de los programas públicos.
+  let starts = new Map<string, string>();
+  if (rows.length && !("program_start_date" in rows[0])) {
+    const programs = await fetchAll<{ id: string; start_date: string }>(() => supabase.from("v_public_program").select("id, start_date").order("id"));
+    starts = new Map(programs.map((p) => [p.id, p.start_date]));
+  }
+  return normalizeReports(rows, starts);
+});
+
+// Historial de reportes de la propia organización (/panel/indicadores): todos los estados, con su
+// año (inicio del programa) y fecha de la última carga. RLS: solo miembros de la organización.
+export const listOwnIndicatorReports = cache(async (organizationId: string): Promise<OwnIndicatorReport[]> => {
+  const toOwn = (r: IndicatorReport): OwnIndicatorReport => ({
+    id: r.id,
+    program_id: r.program_id,
+    indicator_code: r.indicator_code,
+    year: r.year,
+    value: r.value,
+    value_women: r.value_women,
+    status: "aprobado",
+    updated_at: r.updated_at ?? r.period_end,
+  });
+  if (await usePrivateDemo()) {
+    const { reports } = await loadDemo();
+    return reports.filter((r) => r.organization_id === organizationId).map(toOwn);
+  }
+  const supabase = await createClient();
+  const rows = await fetchAll<{
+    id: string;
+    program_id: string | null;
+    indicator_code: IndicatorReport["indicator_code"];
+    period_label: string;
+    value: number | null;
+    value_women: number | null;
+    status: OwnIndicatorReport["status"];
+    updated_at: string;
+    program: { start_date: string | null } | null;
+  }>(() =>
+    supabase
+      .from("indicator_report")
+      .select("id, program_id, indicator_code, period_label, value, value_women, status, updated_at, program:program(start_date)")
+      .eq("organization_id", organizationId)
+      .order("updated_at", { ascending: false })
+      .order("id"),
+  );
+  return rows.map(({ program, period_label, ...r }) => ({ ...r, year: reportYear(program?.start_date, period_label) }));
 });
 
 export const getEcosystemStats = cache(async (): Promise<EcosystemStats> => {
@@ -203,7 +269,7 @@ export const getChangeRequestDetail = cache(async (id: string): Promise<(ChangeR
       changes: [
         { field: "Programa", before: "", after: (data.program as { name: string } | null)?.name ?? "—" },
         { field: "Indicador", before: "", after: catalogLabel("indicators", data.indicator_code) },
-        { field: "Periodo", before: "", after: data.period_label },
+        { field: "Año", before: "", after: data.period_label.slice(0, 4) },
         { field: "Valor reportado", before: "", after: String(data.value ?? `Sin dato: ${data.null_reason ?? ""}`) },
         { field: "Fuente", before: "", after: data.source ?? "—" },
       ],

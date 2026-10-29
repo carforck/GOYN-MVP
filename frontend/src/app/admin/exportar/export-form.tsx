@@ -47,7 +47,7 @@ export function ExportForm({ datasets, periods }: { datasets: Record<string, str
             </label>
           ))}
           <label className="space-y-1 text-xs font-bold text-muted-foreground uppercase">
-            Periodo (indicadores)
+            Año (indicadores)
             <select value={filters.periodo ?? ""} onChange={(e) => setFilters({ ...filters, periodo: e.target.value })} className={selectClass}>
               <option value="">Todos</option>
               {periods.map((p) => <option key={p} value={p}>{p}</option>)}
