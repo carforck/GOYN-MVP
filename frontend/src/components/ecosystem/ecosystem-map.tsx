@@ -835,8 +835,8 @@ function EcosystemMapInner({ orgs, relations, stats, orgOptions, className, isAu
             {intro === "globo" ? (
               <>
                 <LiveGlobe variant="intro" className="h-full w-full" onArrive={finishIntro} />
-                <div className="pointer-events-none absolute inset-x-0 top-8 text-center">
-                  <p className="text-xs font-bold tracking-[0.3em] text-white/60 uppercase">Global Opportunity Youth Network</p>
+                <div className="pointer-events-none absolute inset-x-0 top-8 px-4 text-center">
+                  <p className="text-[11px] font-bold tracking-[0.15em] text-white/60 uppercase sm:text-xs sm:tracking-[0.3em]">Global Opportunity Youth Network</p>
                   <p className="mt-2 font-heading text-xl font-bold uppercase sm:text-3xl">Entrando a Barranquilla</p>
                 </div>
                 <button

@@ -75,7 +75,7 @@ export function MobileAppNav({ items, areaLabel, userName, userEmail }: { items:
   const [open, setOpen] = useState(false);
   return (
     <Sheet open={open} onOpenChange={setOpen}>
-      <SheetTrigger render={<Button variant="ghost" size="icon-lg" aria-label="Abrir menú del área" />}>
+      <SheetTrigger render={<Button variant="ghost" size="icon-lg" className="size-11" aria-label="Abrir menú del área" />}>
         <MenuIcon className="size-6" />
       </SheetTrigger>
       <SheetContent side="left" className="flex w-[80vw] max-w-xs flex-col bg-sidebar p-0 text-sidebar-foreground">

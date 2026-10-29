@@ -19,18 +19,18 @@ export function SiteFooter() {
         <div>
           <h2 className="mb-3 text-xs font-bold tracking-widest text-white/60 uppercase">Explora</h2>
           <ul className="space-y-2 text-sm">
-            <li><Link className="hover:text-goyn-magenta" href="/mapa">Mapa del ecosistema</Link></li>
-            <li><Link className="hover:text-goyn-magenta" href="/actores">Directorio de actores</Link></li>
-            <li><Link className="hover:text-goyn-magenta" href="/impacto">Impacto colectivo</Link></li>
-            <li><Link className="hover:text-goyn-magenta" href="/registro">Registra tu organización</Link></li>
+            <li><Link className="inline-block py-1.5 hover:text-goyn-magenta sm:py-0" href="/mapa">Mapa del ecosistema</Link></li>
+            <li><Link className="inline-block py-1.5 hover:text-goyn-magenta sm:py-0" href="/actores">Directorio de actores</Link></li>
+            <li><Link className="inline-block py-1.5 hover:text-goyn-magenta sm:py-0" href="/impacto">Impacto colectivo</Link></li>
+            <li><Link className="inline-block py-1.5 hover:text-goyn-magenta sm:py-0" href="/registro">Registra tu organización</Link></li>
           </ul>
         </div>
         <div>
           <h2 className="mb-3 text-xs font-bold tracking-widest text-white/60 uppercase">Ecosistema</h2>
           <ul className="space-y-2 text-sm">
-            <li><a className="hover:text-goyn-magenta" href="https://goynbarranquilla.com/" target="_blank" rel="noreferrer">goynbarranquilla.com</a></li>
-            <li><a className="hover:text-goyn-magenta" href="https://goynbarranquilla.com/colaborativo/" target="_blank" rel="noreferrer">Súmate al ecosistema GOYN Barranquilla</a></li>
-            <li><a className="hover:text-goyn-magenta" href="https://www.fundacioncorona.org/tratamientodedatos" target="_blank" rel="noreferrer">Política de tratamiento de datos</a></li>
+            <li><a className="inline-block py-1.5 hover:text-goyn-magenta sm:py-0" href="https://goynbarranquilla.com/" target="_blank" rel="noreferrer">goynbarranquilla.com</a></li>
+            <li><a className="inline-block py-1.5 hover:text-goyn-magenta sm:py-0" href="https://goynbarranquilla.com/colaborativo/" target="_blank" rel="noreferrer">Súmate al ecosistema GOYN Barranquilla</a></li>
+            <li><a className="inline-block py-1.5 hover:text-goyn-magenta sm:py-0" href="https://www.fundacioncorona.org/tratamientodedatos" target="_blank" rel="noreferrer">Política de tratamiento de datos</a></li>
           </ul>
         </div>
       </div>

@@ -70,7 +70,7 @@ export function OrgCard({ org, href }: { org: PublicOrganization; href?: string 
         </span>
         <span className="inline-flex items-center gap-1">
           <Share2Icon className="size-3.5" aria-hidden />
-          {org.connections_count} conexiones
+          {org.connections_count} {org.connections_count === 1 ? "conexión" : "conexiones"}
         </span>
         <span className="ml-auto">Act. {formatDate(org.updated_at)}</span>
       </div>

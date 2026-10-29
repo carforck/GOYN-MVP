@@ -32,9 +32,9 @@ export default async function CatalogosPage() {
           const items = catalogs[f.key] as { code: string; label: string }[];
           return (
             <section key={f.key} className="rounded-2xl border bg-card p-5">
-              <div className="mb-3 flex items-baseline justify-between gap-2">
+              <div className="mb-3 flex flex-wrap items-baseline justify-between gap-x-2 gap-y-1">
                 <h2 className="font-heading text-lg font-bold text-foreground">{f.title}</h2>
-                <span className="text-xs text-muted-foreground">{items.length} · {f.source}</span>
+                <span className="min-w-0 break-words text-xs text-muted-foreground">{items.length} · {f.source}</span>
               </div>
               <ul className="max-h-64 space-y-1 overflow-y-auto text-sm">
                 {items.map((i) => (
