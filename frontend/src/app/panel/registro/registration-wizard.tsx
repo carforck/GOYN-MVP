@@ -273,10 +273,6 @@ export function RegistrationWizard({
               <ChoiceGroup label="Tipo de alcance territorial" multiple={false} describe options={catalogs.scopes}
                 value={p.caracterizacion.scope_code ? [p.caracterizacion.scope_code] : []}
                 onChange={([v]) => update((x) => void (x.caracterizacion.scope_code = v))} />
-              <ChoiceGroup label="¿En qué líneas de trabajo se enfoca tu organización?" hint="Opcional. Puedes seleccionar varias." columns
-                options={catalogs.workLines}
-                value={p.caracterizacion.work_line_codes ?? []}
-                onChange={(v) => update((x) => void (x.caracterizacion.work_line_codes = v))} />
             </>
           )}
 

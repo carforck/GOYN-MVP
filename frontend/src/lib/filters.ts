@@ -1,7 +1,7 @@
 import type { EcosystemFilters, PublicOrganization } from "@/lib/types";
 
 // Claves de URL (en español, compartibles): /mapa?tipo=colectivo_juvenil&territorio=amb_soledad
-export const FILTER_KEYS = ["tipo", "rol", "area", "linea", "poblacion", "territorio"] as const;
+export const FILTER_KEYS = ["tipo", "rol", "area", "poblacion", "territorio"] as const;
 export const SORTS = [
   { value: "nombre", label: "Nombre (A–Z)" },
   { value: "reciente", label: "Actualización más reciente" },
@@ -20,7 +20,7 @@ export function parseFilters(params: RawParams): EcosystemFilters {
   };
   const q = typeof params.q === "string" && params.q.trim() ? params.q.trim() : undefined;
   const orden = SORTS.find((s) => s.value === params.orden)?.value;
-  return { q, tipo: list("tipo"), rol: list("rol"), area: list("area"), linea: list("linea"), poblacion: list("poblacion"), territorio: list("territorio"), org: list("org"), orden };
+  return { q, tipo: list("tipo"), rol: list("rol"), area: list("area"), poblacion: list("poblacion"), territorio: list("territorio"), org: list("org"), orden };
 }
 
 export function filtersToQuery(filters: EcosystemFilters) {
@@ -65,7 +65,6 @@ export function matchesFilters(org: PublicOrganization, f: EcosystemFilters) {
     overlaps([org.org_type_code], f.tipo) &&
     overlaps(org.role_codes, f.rol) &&
     overlaps(org.area_codes, f.area) &&
-    overlaps(org.work_line_codes ?? [], f.linea) &&
     overlaps(org.population_codes, f.poblacion) &&
     overlaps(org.territory_codes, f.territorio)
   );

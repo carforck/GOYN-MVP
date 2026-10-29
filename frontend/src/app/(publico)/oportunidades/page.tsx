@@ -9,7 +9,7 @@ export default function OportunidadesPage() {
       title="Oportunidades para jóvenes"
       phase="MVP opcional"
       image="/images/fotos/enfoque-1.webp"
-      description="Una vitrina de ofertas de formación, empleo, emprendimiento y participación publicadas por las organizaciones del Colaborativo, organizada por lo que cada joven quiere hacer."
+      description="Una vitrina de ofertas de formación, empleo, emprendimiento y participación publicadas por las organizaciones del ecosistema de oportunidades para los jóvenes, organizada por lo que cada joven quiere hacer."
       features={[
         "Navegación por intención: ¿quieres estudiar, trabajar, emprender o participar?",
         "Filtros por localidad, área de interés, modalidad y requisitos.",

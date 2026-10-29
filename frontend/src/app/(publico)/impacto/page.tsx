@@ -39,7 +39,7 @@ export default async function ImpactoPage(props: PageProps<"/impacto">) {
           <span className="goyn-eyebrow bg-goyn-magenta-a11y">Quiero medir el impacto</span>
           <h1 className="mt-4 text-3xl font-bold uppercase sm:text-5xl">Impacto colectivo del ecosistema</h1>
           <p className="mt-3 max-w-2xl text-lg text-white/80">
-            Lo que logramos juntos: jóvenes conectados, fortalecidos y transformados por las organizaciones del Colaborativo.
+            Lo que logramos juntos: jóvenes conectados, fortalecidos y transformados por organizaciones del ecosistema de oportunidades para los jóvenes en Barranquilla A.M.
           </p>
         </div>
       </section>

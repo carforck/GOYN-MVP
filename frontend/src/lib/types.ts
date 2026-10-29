@@ -145,7 +145,6 @@ export type EcosystemFilters = {
   area?: string[];
   poblacion?: string[];
   territorio?: string[];
-  linea?: string[];
   // Micro-ecosistema: organizaciones elegidas (slugs) + sus conexiones directas. Solo en /mapa.
   org?: string[];
   orden?: "nombre" | "reciente" | "programas" | "conexiones";

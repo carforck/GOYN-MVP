@@ -2,14 +2,17 @@ import Image from "next/image";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
-// Marca del producto: símbolo (asterisco de las texturas GOYN sobre violeta) + nombre de trabajo.
+// Marca del producto: símbolo (asterisco de las texturas GOYN sobre violeta) + nombre de la herramienta: Mapa de Actores y Resultados (MAR).
 // El logo institucional completo de GOYN Barranquilla se usa como respaldo en el pie de página.
 export function ProductLogo({ className, inverted = false }: { className?: string; inverted?: boolean }) {
   return (
-    <Link href="/" className={cn("group inline-flex items-center gap-2.5", className)} aria-label="GOYN Conecta BAQ, inicio">
+    <Link href="/" className={cn("group inline-flex items-center gap-2.5", className)} aria-label="Mapa de Actores y Resultados (MAR), inicio">
       <Image src="/icon.webp" alt="" width={36} height={36} className="size-9 transition-transform group-hover:rotate-45" priority />
-      <span className={cn("font-heading text-[15px] leading-none font-extrabold tracking-tight whitespace-nowrap", inverted ? "text-white" : "text-foreground")}>
-        GOYN <span className={inverted ? "text-goyn-magenta" : "text-goyn-violeta"}>Conecta</span> BAQ
+      <span className="flex flex-col leading-none">
+        <span className={cn("font-heading text-lg font-extrabold tracking-tight", inverted ? "text-goyn-magenta" : "text-goyn-violeta")}>MAR</span>
+        <span className={cn("text-[10.5px] font-semibold whitespace-nowrap", inverted ? "text-white/80" : "text-muted-foreground")}>
+          Mapa de Actores y Resultados
+        </span>
       </span>
     </Link>
   );

@@ -1,18 +1,33 @@
-import { ArrowRightIcon, MapIcon } from "lucide-react";
+import { ArrowRightIcon, HandshakeIcon, MapIcon, PuzzleIcon, UsersIcon, type LucideIcon } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { Suspense } from "react";
 import { RoleIcon } from "@/components/ecosystem/role-badge";
 import { HeroBackground, HeroPhotoRail } from "@/components/home/hero-slideshow";
+import { HomeMap, HomeMapSkeleton } from "@/components/home/home-map";
 import { Pillars } from "@/components/home/pillars";
-import { LiveKpiStrip } from "@/components/live/live-kpis";
+import { WhoWeAre, WhyTogether } from "@/components/home/why-together";
 import { FloatingShape } from "@/components/motion/floating-shape";
 import { Reveal } from "@/components/motion/reveal";
 import { buttonVariants } from "@/components/ui/button";
 import { catalogs } from "@/lib/catalogs";
-import { acerca, areasIntro, ctaRegistro, glosario, pilaresIntro, proposito } from "@/lib/home-content";
+import { parseFilters } from "@/lib/filters";
+import { acerca, areasIntro, ctaRegistro, glosario, hero, pilaresIntro, proposito, tiposConexion } from "@/lib/home-content";
 import { cn } from "@/lib/utils";
 
-export default function HomePage() {
+const conexionIcons: Record<(typeof tiposConexion)[number]["code"], LucideIcon> = {
+  socio: HandshakeIcon,
+  aliado: UsersIcon,
+  colaborador: PuzzleIcon,
+};
+
+// Regla de redacción del cliente: la herramienta y su público son "el ecosistema", no "el Colaborativo".
+// Las definiciones de roles vienen del catálogo compartido; aquí se ajusta solo su presentación en el inicio.
+const sinColaborativo = (t = "") => t.replace(/\bdel Colaborativo\b/g, "del ecosistema").replace(/\bel Colaborativo\b/g, "el ecosistema");
+
+export default async function HomePage(props: PageProps<"/">) {
+  // Los filtros del mapa embebido viajan en la URL del inicio (igual que en /mapa).
+  const filters = parseFilters(await props.searchParams);
 
   return (
     <>
@@ -22,20 +37,15 @@ export default function HomePage() {
         <HeroPhotoRail />
         <div className="goyn-container relative py-20 sm:py-28 lg:py-36">
           <div className="max-w-2xl space-y-6 xl:max-w-3xl">
-            <div className="goyn-enter" style={{ ["--d" as string]: "0.05s" }}>
-              <span className="goyn-eyebrow bg-goyn-magenta-a11y">
-                <span className="goyn-live-dot bg-white" aria-hidden /> Colaborativo GOYN Barranquilla · Fase Mapear 2026
-              </span>
-            </div>
             <div className="goyn-enter" style={{ ["--d" as string]: "0.15s" }}>
               <h1 className="text-3xl leading-[1.1] font-bold tracking-tight sm:text-5xl">
-                Te damos la bienvenida al mapeo de acciones y resultados del{" "}
-                <span className="text-goyn-amarillo">Colaborativo GOYN Barranquilla</span>
+                {hero.titulo}{" "}
+                <span className="text-goyn-amarillo">{hero.tituloResaltado}</span>
               </h1>
             </div>
             <div className="goyn-enter" style={{ ["--d" as string]: "0.3s" }}>
               <p className="max-w-xl text-lg text-white/85 sm:text-xl">
-                Una herramienta para ver, en un solo lugar, todo lo que las organizaciones de nuestro ecosistema están haciendo por las oportunidades de los jóvenes en Barranquilla y su área metropolitana.
+                {hero.subtitulo}
               </p>
             </div>
             <div className="goyn-enter flex flex-col gap-3 pt-2 sm:flex-row" style={{ ["--d" as string]: "0.42s" }}>
@@ -53,13 +63,22 @@ export default function HomePage() {
         </div>
       </section>
 
-      {/* KPIs del ecosistema: contadores en vivo */}
-      <section aria-labelledby="kpis" className="relative -mt-12 pb-4">
-        <div className="goyn-container">
-          <h2 id="kpis" className="sr-only">Cifras del ecosistema</h2>
-          <LiveKpiStrip />
-        </div>
+      {/* Mapa del ecosistema embebido (ajuste 03): reemplaza la franja de cifras */}
+      <section aria-labelledby="explora" className="goyn-container pt-14 pb-4 sm:pt-16">
+        <Reveal className="mb-5 space-y-2">
+          <span className="goyn-eyebrow">
+            <span className="goyn-live-dot bg-white" aria-hidden /> Mapa de Actores y Resultados (MAR)
+          </span>
+          <h2 id="explora" className="text-3xl font-bold text-foreground sm:text-4xl">Explora el ecosistema</h2>
+          <p className="max-w-3xl text-muted-foreground">Cada punto es una organización del ecosistema de oportunidades para los jóvenes, ubicada en su localidad. Navega, filtra y abre su ficha.</p>
+        </Reveal>
+        <Suspense fallback={<HomeMapSkeleton />}>
+          <HomeMap filters={filters} />
+        </Suspense>
       </section>
+
+      <WhyTogether />
+      <WhoWeAre />
 
       {/* Acerca de esta herramienta */}
       <section aria-labelledby="acerca" className="goyn-container py-16 sm:py-20">
@@ -74,14 +93,7 @@ export default function HomePage() {
           </Reveal>
           <Reveal delay={0.08} className="rounded-3xl border-2 border-goyn-magenta/40 bg-card p-6 sm:p-8">
             <h3 className="font-heading text-2xl font-bold text-goyn-magenta-a11y">¿Para quién es?</h3>
-            <ul className="mt-3 space-y-2">
-              {acerca.paraQuien.map((x) => (
-                <li key={x.title} className="flex gap-2.5 text-foreground/80">
-                  <span aria-hidden className="mt-2 size-2 shrink-0 rounded-full bg-goyn-magenta-a11y" />
-                  <span><strong className="text-foreground">{x.title}:</strong> {x.text}</span>
-                </li>
-              ))}
-            </ul>
+            <p className="mt-3 text-foreground/80">{acerca.paraQuien}</p>
           </Reveal>
           <Reveal delay={0.12} className="rounded-3xl border-2 border-goyn-magenta/40 bg-card p-6 sm:p-8 md:col-span-2">
             <h3 className="font-heading text-2xl font-bold text-goyn-magenta-a11y">¿Para qué sirve?</h3>
@@ -116,7 +128,7 @@ export default function HomePage() {
             <FloatingShape name="asterisco" size={48} white className="top-[34%] left-0 z-20" spin={360} duration={14} parallax={0} />
             <Image
               src="/images/fotos/proposito-silueta.webp"
-              alt="Joven del Colaborativo GOYN Barranquilla con la camiseta Jóvenes inspirando jóvenes"
+              alt="Joven del ecosistema GOYN Barranquilla con la camiseta Jóvenes inspirando jóvenes"
               fill
               sizes="(min-width: 768px) 32vw, 85vw"
               className="z-10 object-contain object-bottom drop-shadow-[0_18px_30px_rgba(6,10,40,0.35)]"
@@ -147,7 +159,19 @@ export default function HomePage() {
             {glosario.map((g, i) => (
               <Reveal key={g.term} delay={(i % 3) * 0.06}>
                 <dt className="font-heading text-xl font-bold">{g.term}</dt>
-                <dd className={cn("mt-1 font-medium leading-relaxed text-white/90", g.pendiente && "italic text-white/70")}>{g.text}</dd>
+                <dd className="mt-1 font-medium leading-relaxed text-white/90">
+                  {g.text}
+                  {g.niveles && (
+                    <ul className="mt-3 space-y-2">
+                      {g.niveles.map((n) => (
+                        <li key={n.title} className="flex gap-2.5">
+                          <span aria-hidden className="mt-2 size-2 shrink-0 rounded-full bg-goyn-amarillo" />
+                          <span><strong className="text-goyn-amarillo">{n.title}:</strong> {n.text}</span>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                </dd>
               </Reveal>
             ))}
           </dl>
@@ -191,7 +215,7 @@ export default function HomePage() {
                     </span>
                     <span className="font-heading font-bold text-foreground">{r.label}</span>
                   </span>
-                  <span className="text-sm leading-relaxed text-muted-foreground">{r.description}</span>
+                  <span className="text-sm leading-relaxed text-muted-foreground">{sinColaborativo(r.description)}</span>
                 </Link>
               </Reveal>
             ))}
@@ -199,13 +223,37 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* Tipos de conexión entre actores (ajuste 13) */}
+      <section aria-labelledby="conexiones" className="goyn-container py-16 sm:py-20">
+        <Reveal className="mb-8 space-y-3">
+          <span className="goyn-eyebrow">Cómo nos relacionamos</span>
+          <h2 id="conexiones" className="text-3xl font-bold text-foreground sm:text-4xl">Tipos de conexión</h2>
+        </Reveal>
+        <ul className="grid gap-3 md:grid-cols-3">
+          {tiposConexion.map((t, i) => {
+            const Icon = conexionIcons[t.code];
+            return (
+              <Reveal as="li" key={t.code} delay={i * 0.06} className="flex h-full flex-col gap-3 rounded-2xl border bg-card p-5">
+                <span className="flex items-center gap-3">
+                  <span className="grid size-12 shrink-0 place-items-center rounded-full bg-goyn-violeta text-white">
+                    <Icon className="size-6" aria-hidden />
+                  </span>
+                  <span className="font-heading text-lg font-bold text-foreground">{t.label}</span>
+                </span>
+                <span className="text-sm leading-relaxed text-muted-foreground">{t.text}</span>
+              </Reveal>
+            );
+          })}
+        </ul>
+      </section>
+
       {/* CTA registro */}
       <section className="goyn-container py-16 sm:py-20">
         <Reveal className="relative grid overflow-hidden rounded-3xl bg-goyn-magenta-a11y text-white lg:grid-cols-2">
           <div className="relative space-y-5 p-8 sm:p-12">
-            <h2 className="text-3xl font-bold uppercase sm:text-4xl">¿Aún no te ves reflejado?</h2>
+            <h2 className="text-3xl font-bold uppercase sm:text-4xl">{ctaRegistro.titulo}</h2>
             <p className="max-w-md text-lg text-white">
-              {ctaRegistro}
+              {ctaRegistro.texto}
             </p>
             <Link href="/registro" className={cn(buttonVariants(), "h-12 rounded-full bg-goyn-violeta px-6 text-base font-bold text-white hover:bg-goyn-violeta/90")}>
               Registrar mi organización <ArrowRightIcon aria-hidden />

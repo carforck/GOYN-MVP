@@ -13,11 +13,11 @@ const marker = Permanent_Marker({ variable: "--font-permanent-marker", subsets: 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL ?? "http://localhost:3000"),
   title: {
-    default: "GOYN Conecta BAQ · Mapa del ecosistema juvenil de Barranquilla",
-    template: "%s · GOYN Conecta BAQ",
+    default: "Mapa de Actores y Resultados (MAR) · Ecosistema de oportunidades para los jóvenes en Barranquilla A.M.",
+    template: "%s · MAR",
   },
   description:
-    "El espejo digital del ecosistema juvenil de Barranquilla: ver, conectar y medir lo que hacen las organizaciones del Colaborativo GOYN por las juventudes.",
+    "Mapa de Actores y Resultados (MAR): ver, conectar y medir lo que hacen las organizaciones del ecosistema de oportunidades para los jóvenes en Barranquilla A.M.",
   icons: { icon: "/icon.webp" },
 };
 

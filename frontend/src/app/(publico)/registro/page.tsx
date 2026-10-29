@@ -11,7 +11,7 @@ export const metadata: Metadata = { title: "Registra tu organización" };
 
 const flow = [
   { title: "Registra tu organización", text: "Completa el formulario guiado. Se guarda solo y puedes retomarlo cuando quieras." },
-  { title: "GOYN valida", text: "El equipo GOYN revisa la información y puede pedirte ajustes puntuales." },
+  { title: "GOYN Barranquilla valida", text: "El equipo de GOYN Barranquilla revisa la información y pide ajustes puntuales." },
   { title: "Apareces en el mapa", text: "Tu perfil se publica en el mapa y el directorio, y puedes actualizarlo desde tu panel." },
 ];
 
@@ -22,7 +22,7 @@ export default function RegistroPage() {
         <Image src="/images/fotos/como-funciona.webp" alt="" fill sizes="100vw" className="-z-10 object-cover opacity-20" />
         <Shape name="rompecabezas" size={130} className="right-[6%] bottom-6 hidden brightness-0 invert md:block" />
         <div className="goyn-container py-14 sm:py-20">
-          <span className="goyn-eyebrow bg-goyn-magenta-a11y">Únete al mapa del Colaborativo</span>
+          <span className="goyn-eyebrow bg-goyn-magenta-a11y">Únete al mapa del ecosistema</span>
           <h1 className="mt-4 max-w-3xl text-4xl font-black sm:text-5xl">¿Aún no te ves reflejado?</h1>
           <p className="mt-4 max-w-2xl text-lg text-white/85">
             Si tu organización trabaja con y para jóvenes de Barranquilla y su área metropolitana, regístrala para que el ecosistema sepa quién eres, qué haces y con quién te conectas.
@@ -53,7 +53,7 @@ export default function RegistroPage() {
             ))}
           </ol>
           <ul className="mt-8 grid gap-3 sm:grid-cols-3">
-            <li className="rounded-2xl bg-muted p-4 text-sm"><ClockIcon className="mb-2 size-5 text-goyn-violeta" aria-hidden />Unos 15 a 20 minutos</li>
+            <li className="rounded-2xl bg-muted p-4 text-sm"><ClockIcon className="mb-2 size-5 text-goyn-violeta" aria-hidden />Menos de 10 minutos</li>
             <li className="rounded-2xl bg-muted p-4 text-sm"><SaveIcon className="mb-2 size-5 text-goyn-violeta" aria-hidden />Guardado automático por paso</li>
             <li className="rounded-2xl bg-muted p-4 text-sm"><ShieldCheckIcon className="mb-2 size-5 text-goyn-violeta" aria-hidden />Tu celular nunca se publica</li>
           </ul>

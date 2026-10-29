@@ -26,10 +26,10 @@ export function SiteFooter() {
           </ul>
         </div>
         <div>
-          <h2 className="mb-3 text-xs font-bold tracking-widest text-white/60 uppercase">Colaborativo</h2>
+          <h2 className="mb-3 text-xs font-bold tracking-widest text-white/60 uppercase">Ecosistema</h2>
           <ul className="space-y-2 text-sm">
             <li><a className="hover:text-goyn-magenta" href="https://goynbarranquilla.com/" target="_blank" rel="noreferrer">goynbarranquilla.com</a></li>
-            <li><a className="hover:text-goyn-magenta" href="https://goynbarranquilla.com/colaborativo/" target="_blank" rel="noreferrer">Haz parte del Colaborativo</a></li>
+            <li><a className="hover:text-goyn-magenta" href="https://goynbarranquilla.com/colaborativo/" target="_blank" rel="noreferrer">Súmate al ecosistema GOYN Barranquilla</a></li>
             <li><a className="hover:text-goyn-magenta" href="https://www.fundacioncorona.org/tratamientodedatos" target="_blank" rel="noreferrer">Política de tratamiento de datos</a></li>
           </ul>
         </div>
@@ -37,7 +37,7 @@ export function SiteFooter() {
       <div className="border-t border-white/10">
         <div className="goyn-container flex flex-col items-start justify-between gap-4 py-6 sm:flex-row sm:items-center">
           <GoynLogo variant="blanco" className="w-48" />
-          <p className="text-xs text-white/60">© 2026 Colaborativo GOYN Barranquilla · GOYN Conecta BAQ · MVP Fase Mapear</p>
+          <p className="text-xs text-white/60">© 2026 Mapa de Actores y Resultados (MAR) · Ecosistema de Oportunidades para Jóvenes en Barranquilla A.M.</p>
         </div>
       </div>
     </footer>

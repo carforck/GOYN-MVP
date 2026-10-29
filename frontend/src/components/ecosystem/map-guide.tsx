@@ -11,7 +11,7 @@ import { cn } from "@/lib/utils";
 const STEPS = [
   { target: "mapa", title: "Así se lee el mapa", text: "Cada punto es una organización y cada zona delimitada es una localidad. Los círculos con número agrupan organizaciones cercanas: tócalos para acercarte. Toca un punto para ver su ficha y su hoja de vida." },
   { target: "cifras", title: "Mapa interactivo", text: "Tú decides qué ver: elige una localidad para ir a ella (o tócala directamente en el mapa) y toca una cifra —organizaciones o jóvenes conectados, fortalecidos, transformados— para verla dibujada por localidad: más grande = más." },
-  { target: "filtros", title: "Filtra lo que ves", text: "Muestra solo las organizaciones que te interesan: por tipo, rol, área, población, territorio o línea de trabajo. El mapa, las cifras y las gráficas se actualizan con tus filtros." },
+  { target: "filtros", title: "Filtra lo que ves", text: "Muestra solo las organizaciones que te interesan: por tipo, rol, área, población o territorio. El mapa, las cifras y las gráficas se actualizan con tus filtros." },
   { target: "capas", title: "Suma capas", text: "Ve organizaciones una a una o agrupadas por localidad, coloréalas por rol o por área y enciende las conexiones (socios, aliados, colaboradores) cuando las necesites." },
   { target: "buscar", title: "Busca o cambia de vista", text: "Escribe el nombre de una organización o un tema. Con «Vista lista» ves los mismos resultados como directorio." },
   { target: "feed", title: "Novedades en vivo", text: "La campana te avisa cuando se registra una organización, llega un reporte o nace una conexión. Ábrela y toca una novedad para verla en el mapa: se marca con ondas." },

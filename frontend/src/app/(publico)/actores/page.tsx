@@ -18,7 +18,7 @@ export default async function ActoresPage(props: PageProps<"/actores">) {
         <span className="goyn-eyebrow">Quiero conectar</span>
         <h1 className="text-3xl font-extrabold text-foreground sm:text-4xl">Directorio de actores</h1>
         <p className="max-w-2xl text-muted-foreground">
-          Organizaciones del Colaborativo con perfil validado por el equipo GOYN. Filtra por tipo, rol, área de impacto, línea de trabajo, población y territorio, y ordena como prefieras.
+          Organizaciones del ecosistema de oportunidades para los jóvenes con un perfil validado por el equipo GOYN Barranquilla. Filtra por tipo, rol, área de impacto, población y territorio, y ordena como prefieras.
         </p>
       </div>
       <div className="grid gap-6 xl:grid-cols-[300px_1fr]">

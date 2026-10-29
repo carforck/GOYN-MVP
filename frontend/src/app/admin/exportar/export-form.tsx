@@ -12,7 +12,6 @@ const filterDefs = [
   { key: "tipo", label: "Tipo de organización", options: catalogs.orgTypes },
   { key: "rol", label: "Rol", options: catalogs.roles },
   { key: "area", label: "Área de impacto", options: catalogs.impactAreas },
-  { key: "linea", label: "Línea de trabajo", options: catalogs.workLines },
   { key: "territorio", label: "Territorio", options: catalogs.territories },
 ] as const;
 

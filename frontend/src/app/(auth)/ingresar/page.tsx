@@ -34,7 +34,7 @@ export default async function IngresarPage(props: PageProps<"/ingresar">) {
       <div className="flex flex-col px-4 py-8 sm:px-10">
         <ProductLogo />
         <div className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center py-10">
-          <h1 className="text-3xl font-extrabold text-foreground">Ingresa a GOYN Conecta</h1>
+          <h1 className="text-3xl font-extrabold text-foreground">Ingresa a Mapa de Actores y Resultados</h1>
           <p className="mt-2 text-muted-foreground">Accede al panel de tu organización o a la consola del equipo GOYN.</p>
 
           {allowsDemoRoles && (

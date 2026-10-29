@@ -4,7 +4,7 @@
 
 export const registrationSteps = [
   { id: "identificacion", title: "Identificación y contacto", summary: "Nombre, descripción, NIT (opcional) y contacto estratégico.", modules: "Módulo 1 · P1–P9" },
-  { id: "caracterizacion", title: "Rol y características", summary: "Tipo de organización, rol principal, otros roles, alcance y líneas de trabajo.", modules: "Módulo 2 · P10–P12" },
+  { id: "caracterizacion", title: "Rol y características", summary: "Tipo de organización, rol principal, otros roles y alcance.", modules: "Módulo 2 · P10–P12" },
   { id: "territorio", title: "Territorio", summary: "Zonas de Barranquilla A.M. donde tienes incidencia y tu sede.", modules: "Módulo 2 · P13" },
   { id: "enfoque", title: "Enfoque estratégico", summary: "Áreas de impacto y problemáticas que atiendes.", modules: "Módulo 3 · P14–P21" },
   { id: "relaciones", title: "Alianzas", summary: "Con quién trabajas como socio, aliado o colaborador.", modules: "Módulo 4 · P22–P27" },
@@ -52,7 +52,7 @@ export type RegistrationPayload = {
     social: { instagram?: string; linkedin?: string; facebook?: string };
   };
   contacto: { name: string; position: string; phone: string; email: string; address: string };
-  caracterizacion: { org_type_code: string; primary_role_code: string; role_codes: string[]; scope_code: string; work_line_codes: string[] };
+  caracterizacion: { org_type_code: string; primary_role_code: string; role_codes: string[]; scope_code: string; work_line_codes?: string[] };
   territorio: { territory_codes: string[]; location_territory_code: string; municipality: string };
   enfoque: { area_codes: string[]; problem_codes: string[]; problem_other: Record<string, string> };
   relaciones: { relation_type_code: string; target_org_id: string; target_name_free: string }[];

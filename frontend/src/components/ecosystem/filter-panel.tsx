@@ -18,7 +18,6 @@ const groups: { key: FilterKey; title: string; options: CatalogItem[] }[] = [
   { key: "area", title: "Área de impacto", options: catalogs.impactAreas },
   { key: "poblacion", title: "Población objetivo", options: catalogs.populations },
   { key: "territorio", title: "Territorio", options: catalogs.territories },
-  { key: "linea", title: "Línea de trabajo", options: catalogs.workLines },
 ];
 
 function useFilters() {

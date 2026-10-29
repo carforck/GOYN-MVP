@@ -60,7 +60,6 @@ export const listOrganizations = cache(async (filters: EcosystemFilters = {}): P
   if (filters.area?.length) query = query.overlaps("area_codes", filters.area);
   if (filters.poblacion?.length) query = query.overlaps("population_codes", filters.poblacion);
   if (filters.territorio?.length) query = query.overlaps("territory_codes", filters.territorio);
-  if (filters.linea?.length) query = query.overlaps("work_line_codes", filters.linea);
     return query;
   });
 });
@@ -245,7 +244,6 @@ export const getChangeRequestDetail = cache(async (id: string): Promise<(ChangeR
     { field: "Tipo de organización", before: current ? catalogLabel("orgTypes", current.org_type_code) : "", after: catalogLabel("orgTypes", p.caracterizacion?.org_type_code) },
     { field: "Rol principal", before: current ? catalogLabel("roles", current.primary_role_code) : "", after: catalogLabel("roles", p.caracterizacion?.primary_role_code) },
     { field: "Otros roles", before: current ? list(current.role_codes, "roles") : "", after: list(p.caracterizacion?.role_codes, "roles") },
-    { field: "Líneas de trabajo", before: current ? list(current.work_line_codes, "workLines") : "", after: list(p.caracterizacion?.work_line_codes, "workLines") },
     { field: "Territorios", before: current ? list(current.territory_codes, "territories") : "", after: list(p.territorio?.territory_codes, "territories") },
     { field: "Áreas de impacto", before: current ? list(current.area_codes, "impactAreas") : "", after: list(p.enfoque?.area_codes, "impactAreas") },
     {
@@ -377,4 +375,33 @@ export const getLiveSnapshot = cache(async (): Promise<LiveSnapshot> => {
     events,
     source: isSupabaseConfigured ? "supabase" : "demo",
   };
+});
+
+// ─── Recursos movilizados (P38) ─────────────────────────────────────────────
+// Suma de inversión social (`organization.social_investment_cop`, P38 del formulario) para la
+// tarjeta "Los actores en cifras" de /mapa. Esa columna NO está en `v_public_organization`, así
+// que se lee de la tabla `organization` (status = 'publicado'); con la sesión anónima las RLS
+// devuelven 0 filas y el resultado queda "por recolectar". Solo se suman los valores reportados
+// (null = no respondió; no se cuenta como cero). El conjunto demo no trae este campo.
+// Pendiente: exponer el agregado en una vista pública (p. ej. v_ecosystem_stats) para el modo anónimo.
+export type SocialInvestment = { totalCop: number | null; reported: number };
+
+export const getSocialInvestment = cache(async (): Promise<SocialInvestment> => {
+  const sum = (values: (number | string | null | undefined)[]): SocialInvestment => {
+    const nums = values.filter((v) => v !== null && v !== undefined && v !== "").map(Number).filter((n) => Number.isFinite(n));
+    return { totalCop: nums.length ? nums.reduce((a, b) => a + b, 0) : null, reported: nums.length };
+  };
+  if (!isSupabaseConfigured) {
+    const { organizations } = await loadDemo();
+    return sum(organizations.map((o) => (o as unknown as { social_investment_cop?: number | null }).social_investment_cop));
+  }
+  try {
+    const supabase = await createClient();
+    const rows = await fetchAll<{ social_investment_cop: number | string | null }>(() =>
+      supabase.from("organization").select("social_investment_cop").eq("status", "publicado").not("social_investment_cop", "is", null).order("id"),
+    );
+    return sum(rows.map((r) => r.social_investment_cop));
+  } catch {
+    return { totalCop: null, reported: 0 };
+  }
 });

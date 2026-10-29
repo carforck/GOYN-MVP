@@ -5,9 +5,11 @@ import { notFound } from "next/navigation";
 import { Shape } from "@/components/brand/shape";
 import { KpiCard } from "@/components/ecosystem/kpi-card";
 import { OrgInitials } from "@/components/ecosystem/org-card";
+import { ProfileGate } from "@/components/ecosystem/profile-gate";
 import { RoleBadge } from "@/components/ecosystem/role-badge";
 import { ShareButton } from "@/components/ecosystem/share-button";
 import { buttonVariants } from "@/components/ui/button";
+import { getViewer } from "@/lib/auth";
 import { catalogs, item, label, shortTerritory } from "@/lib/catalogs";
 import { getOrganization, listIndicatorReports, listPrograms, listRelations } from "@/lib/data";
 import { formatDate, formatNumber } from "@/lib/format";
@@ -17,14 +19,20 @@ import { cn } from "@/lib/utils";
 const plural: Record<string, string> = { socio: "Socios", aliado: "Aliados", colaborador: "Colaboradores" };
 
 export async function generateMetadata(props: PageProps<"/actores/[slug]">): Promise<Metadata> {
-  const org = await getOrganization((await props.params).slug);
-  return org ? { title: org.name, description: org.description.slice(0, 160) } : { title: "Organización no encontrada" };
+  const [org, viewer] = await Promise.all([getOrganization((await props.params).slug), getViewer()]);
+  if (!org) return { title: "Organización no encontrada" };
+  // Sin sesión no se expone la descripción completa (ni siquiera en las metaetiquetas).
+  const signedIn = viewer.role !== "visitante";
+  return { title: org.name, description: signedIn ? org.description.slice(0, 160) : `${org.org_type_label} · ${org.primary_role_label} en el ecosistema GOYN Conecta BAQ.` };
 }
 
 export default async function ActorPage(props: PageProps<"/actores/[slug]">) {
   const { slug } = await props.params;
-  const org = await getOrganization(slug);
+  const [org, viewer] = await Promise.all([getOrganization(slug), getViewer()]);
   if (!org) notFound();
+  // Decisión GOYN: sin registro solo se ve lo básico (lo de la tarjeta del directorio y del mapa);
+  // la hoja de vida completa y el contacto requieren sesión (la sesión demo por cookie también cuenta).
+  if (viewer.role === "visitante") return <PublicProfile org={org} />;
 
   const [programs, relations, reports] = await Promise.all([listPrograms(org.id), listRelations(org.id), listIndicatorReports(org.id)]);
   const t = totals(reports);
@@ -93,17 +101,6 @@ export default async function ActorPage(props: PageProps<"/actores/[slug]">) {
 
           <section aria-labelledby="enfoque">
             <h2 id="enfoque" className="mb-4 text-xl font-extrabold text-foreground">Enfoque estratégico</h2>
-            {org.work_line_codes?.length > 0 && (
-              <ul className="mb-4 flex flex-wrap gap-2" aria-label="Líneas de trabajo">
-                {org.work_line_codes.map((c) => (
-                  <li key={c}>
-                    <Link href={`/actores?linea=${c}`} className="inline-block rounded-full bg-goyn-lila px-3 py-1 text-sm font-semibold text-goyn-violeta hover:underline">
-                      {label("workLines", c)}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            )}
             {/* Cada área es desplegable: la lectura inicial es corta y se profundiza donde interese. */}
             <div className="grid items-start gap-3 sm:grid-cols-2">
               {problemsByArea.map(({ area, problems }) => {
@@ -248,6 +245,71 @@ export default async function ActorPage(props: PageProps<"/actores/[slug]">) {
             </div>
           )}
         </aside>
+      </div>
+    </article>
+  );
+}
+
+type Org = NonNullable<Awaited<ReturnType<typeof getOrganization>>>;
+
+// Vista para visitantes sin sesión: nombre, tipo, rol, territorio y áreas de impacto, más el aviso para ingresar.
+// No incluye contacto (correo, web, redes), programas, resultados ni conexiones detalladas.
+function PublicProfile({ org }: { org: Org }) {
+  return (
+    <article>
+      <header className="relative overflow-hidden border-b bg-goyn-lila/50">
+        <Shape name="malla_puntos" size={260} className="-top-10 -right-10 opacity-20" />
+        <div className="goyn-container relative space-y-6 py-8 sm:py-12">
+          <Link href="/actores" className="inline-flex items-center gap-1.5 text-sm font-semibold text-goyn-violeta hover:underline">
+            <ArrowLeftIcon className="size-4" aria-hidden /> Directorio de actores
+          </Link>
+          <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
+            <div className="flex items-start gap-4 sm:gap-5">
+              <OrgInitials name={org.name} className="size-16 rounded-3xl text-xl sm:size-20 sm:text-2xl" />
+              <div className="space-y-3">
+                <p className="text-sm font-bold tracking-wider text-muted-foreground uppercase">{org.org_type_label}</p>
+                <h1 className="text-3xl font-black text-foreground sm:text-4xl">{org.name}</h1>
+                <div className="flex flex-wrap items-center gap-2">
+                  <RoleBadge code={org.primary_role_code} primary />
+                  {org.role_codes.filter((r) => r !== org.primary_role_code).map((r) => <RoleBadge key={r} code={r} />)}
+                </div>
+                <p className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-muted-foreground">
+                  {org.verified_at && (
+                    <span className="inline-flex items-center gap-1 font-semibold text-goyn-violeta">
+                      <BadgeCheckIcon className="size-4" aria-hidden /> Verificado por GOYN
+                    </span>
+                  )}
+                  <span className="inline-flex items-center gap-1">
+                    <MapPinIcon className="size-4" aria-hidden />
+                    {org.location_territory_code ? shortTerritory(org.location_territory_code) : "Sin sede georreferenciada"}
+                  </span>
+                  <span className="inline-flex items-center gap-1">
+                    <CalendarIcon className="size-4" aria-hidden /> Actualizado el {formatDate(org.updated_at)}
+                  </span>
+                </p>
+              </div>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              <ShareButton title={org.name} />
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <div className="goyn-container space-y-8 py-10">
+        <section aria-labelledby="areas">
+          <h2 id="areas" className="mb-3 text-xl font-extrabold text-foreground">Áreas de impacto</h2>
+          <ul className="flex flex-wrap gap-2">
+            {org.area_codes.map((code) => (
+              <li key={code} className="inline-flex items-center gap-1.5 rounded-full bg-muted px-3 py-1 text-sm font-semibold text-foreground">
+                <span aria-hidden className="size-2.5 rounded-full" style={{ backgroundColor: item("impactAreas", code)?.color }} />
+                {label("impactAreas", code)}
+              </li>
+            ))}
+          </ul>
+        </section>
+
+        <ProfileGate slug={org.slug} name={org.name} />
       </div>
     </article>
   );

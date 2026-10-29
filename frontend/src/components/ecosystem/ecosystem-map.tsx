@@ -106,7 +106,18 @@ function arc(from: [number, number], to: [number, number], steps = 40): [number,
 
 type Ripple = { id: string; lng: number; lat: number; color: string; start: number; big: boolean };
 
-type MapProps = { orgs: MapOrg[]; relations: MapRelation[]; stats: MapStats; orgOptions: { slug: string; name: string }[]; className?: string };
+type MapProps = {
+  orgs: MapOrg[];
+  relations: MapRelation[];
+  stats: MapStats;
+  orgOptions: { slug: string; name: string }[];
+  className?: string;
+  // Sesión del visitante. Si se pasa `false`, la ficha invita a iniciar sesión en vez de enlazar la hoja de vida.
+  // Si no se pasa, el enlace va a /actores/<slug>, que ya muestra el aviso a quien no tiene sesión.
+  isAuthenticated?: boolean;
+  /** Abre la guía automáticamente la primera vez (en /mapa sí; en el inicio no). */
+  guideAutoStart?: boolean;
+};
 
 // Envoltorio de seguridad: si algo del mapa falla, la página y la lista siguen funcionando.
 export function EcosystemMap(props: MapProps) {
@@ -123,9 +134,12 @@ export function EcosystemMap(props: MapProps) {
   );
 }
 
-function EcosystemMapInner({ orgs, relations, stats, orgOptions, className }: MapProps) {
+function EcosystemMapInner({ orgs, relations, stats, orgOptions, className, isAuthenticated, guideAutoStart = true }: MapProps) {
   const container = useRef<HTMLDivElement>(null);
   const map = useRef<MapLibreMap | null>(null);
+  // Vista previa ligera al pasar el cursor sobre un punto (sin registro se ve la información básica).
+  const hoverPopup = useRef<maplibregl.Popup | null>(null);
+  const clickedSlug = useRef("");
   const ready = useRef(false);
   const ripples = useRef<Ripple[]>([]);
   const flights = useRef<{ id: string; coords: [number, number][]; start: number }[]>([]);
@@ -176,7 +190,11 @@ function EcosystemMapInner({ orgs, relations, stats, orgOptions, className }: Ma
   const openOrgPopup = (p: MapOrg, at: [number, number]) => {
     const m = map.current;
     if (!m) return;
+    hoverPopup.current?.remove();
     document.querySelectorAll(".goyn-popup").forEach((el) => el.remove());
+    const profile = `/actores/${p.slug}`;
+    const target = isAuthenticated === false ? `/ingresar?siguiente=${encodeURIComponent(profile)}` : profile;
+    const cta = isAuthenticated === false ? "Inicia sesión para ver la hoja de vida" : "Ver hoja de vida";
     const popup = new maplibregl.Popup({ offset: 14, maxWidth: "280px", className: "goyn-popup" })
       .setLngLat(at)
       .setHTML(`
@@ -185,12 +203,16 @@ function EcosystemMapInner({ orgs, relations, stats, orgOptions, className }: Ma
           <p class="mt-1 font-heading text-base font-bold leading-snug text-white">${escapeHtml(p.name)}</p>
           <p class="mt-2 text-sm text-white/80">${escapeHtml(p.primary_role_label)} · ${escapeHtml(p.territory)}</p>
           ${p.precision === "aproximada" ? '<p class="mt-1 text-[11px] text-[#a9a6cc]">Ubicación aproximada (zona)</p>' : ""}
-          <a href="/actores/${encodeURIComponent(p.slug)}" class="mt-3 inline-flex h-9 w-full items-center justify-center rounded-full bg-[#9B00FF] text-sm font-bold text-white">Ver hoja de vida</a>
+          <a href="${escapeHtml(target)}" class="mt-3 inline-flex min-h-9 w-full items-center justify-center rounded-full bg-[#9B00FF] px-3 py-1.5 text-center text-sm font-bold text-white">${cta}</a>
         </div>`)
       .addTo(m);
+    clickedSlug.current = p.slug;
+    popup.on("close", () => {
+      if (clickedSlug.current === p.slug) clickedSlug.current = "";
+    });
     popup.getElement().querySelector("a")?.addEventListener("click", (ev) => {
       ev.preventDefault();
-      router.push(`/actores/${p.slug}`);
+      router.push(target);
     });
   };
   const openOrgPopupRef = useRef(openOrgPopup);
@@ -529,7 +551,41 @@ function EcosystemMapInner({ orgs, relations, stats, orgOptions, className }: Ma
         });
         instance.on("click", "points-hit", (e) => {
           const f = e.features?.[0];
+          hoverPopup.current?.remove();
           if (f) openOrgPopupRef.current(f.properties as MapOrg, (f.geometry as GeoJSON.Point).coordinates as [number, number]);
+        });
+        // Hover: vista previa con la información básica (nombre, tipo, rol principal y localidad).
+        // No aplica en táctil (no hay mouseenter); el clic sigue abriendo la ficha completa.
+        let hoverSlug = "";
+        const showHover = (e: maplibregl.MapLayerMouseEvent) => {
+          const f = e.features?.[0];
+          if (!f) return;
+          const p = f.properties as MapOrg;
+          // Si ya está abierta la ficha de clic de esta misma organización, no se duplica.
+          if (clickedSlug.current === p.slug && document.querySelector(".goyn-popup:not(.goyn-popup-hover)")) {
+            hoverPopup.current?.remove();
+            hoverSlug = "";
+            return;
+          }
+          const at = (f.geometry as GeoJSON.Point).coordinates as [number, number];
+          if (hoverSlug === p.slug && hoverPopup.current?.isOpen()) return;
+          hoverSlug = p.slug;
+          hoverPopup.current?.remove();
+          hoverPopup.current = new maplibregl.Popup({ closeButton: false, closeOnClick: false, offset: 12, maxWidth: "260px", className: "goyn-popup goyn-popup-hover pointer-events-none" })
+            .setLngLat(at)
+            .setHTML(`
+              <div class="w-56 px-3.5 py-3">
+                <p class="text-[10px] font-bold uppercase tracking-wider text-[#a9a6cc]">${escapeHtml(p.org_type_label)}</p>
+                <p class="mt-0.5 font-heading text-sm font-bold leading-snug text-white">${escapeHtml(p.name)}</p>
+                <p class="mt-1 text-xs text-white/80">${escapeHtml(p.primary_role_label)} · ${escapeHtml(p.territory)}</p>
+              </div>`)
+            .addTo(instance);
+        };
+        instance.on("mouseenter", "points-hit", showHover);
+        instance.on("mousemove", "points-hit", showHover);
+        instance.on("mouseleave", "points-hit", () => {
+          hoverPopup.current?.remove();
+          hoverSlug = "";
         });
         // Burbuja de localidad: ficha con la cifra y acceso a sus organizaciones.
         instance.on("click", "terr-bubbles", (e) => {
@@ -739,7 +795,7 @@ function EcosystemMapInner({ orgs, relations, stats, orgOptions, className }: Ma
         </div>
       )}
 
-      <MapGuide autoStart={intro === "listo"} />
+      <MapGuide autoStart={guideAutoStart && intro === "listo"} />
 
       <MapHud
         showArcs={showArcs}

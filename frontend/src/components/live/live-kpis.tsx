@@ -84,7 +84,7 @@ export function LiveBigStats({ dark = false, withHints = false, compact = false 
   return (
     <div className={cn("grid gap-3 sm:grid-cols-3", !compact && "gap-4")}>
       <BigStat compact={compact} dark={dark} value={stats.conectados} label="Jóvenes conectados" color="#9B00FF"
-        hint={withHints ? "Jóvenes que interactúan con actividades, programas, talleres o sesiones del Colaborativo." : undefined} />
+        hint={withHints ? "Jóvenes que interactúan con actividades, programas, talleres o sesiones de las organizaciones del ecosistema." : undefined} />
       <BigStat compact={compact} dark={dark} value={stats.fortalecidos} label="Jóvenes fortalecidos" color="#00A0CC"
         hint={withHints ? "Jóvenes que mejoran habilidades en procesos de formación de más de 5 horas." : undefined} />
       <BigStat compact={compact} dark={dark} value={stats.transformados} label="Jóvenes transformados" color="#FF01A2"

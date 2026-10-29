@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
     await supabase.from("export_job").insert({ requested_by: viewer.userId, format, dataset, filters, status: "listo" });
   }
   const stamp = new Date().toISOString().slice(0, 10);
-  const filename = `goyn-conecta-${dataset}-${stamp}.${format}`;
+  const filename = `mar-${dataset}-${stamp}.${format}`;
 
   if (format === "csv") {
     return new NextResponse(toCsv(columns, rows), {
@@ -35,7 +35,7 @@ export async function GET(request: NextRequest) {
   }
 
   const workbook = new ExcelJS.Workbook();
-  workbook.creator = "GOYN Conecta BAQ";
+  workbook.creator = "Mapa de Actores y Resultados (MAR)";
   const sheet = workbook.addWorksheet(datasets[dataset]);
   sheet.addRow(columns).font = { bold: true, color: { argb: "FFFFFFFF" } };
   sheet.getRow(1).fill = { type: "pattern", pattern: "solid", fgColor: { argb: "FF8100E4" } };

@@ -3,10 +3,10 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { EcosystemMap, type MapOrg, type MapRelation } from "@/components/ecosystem/ecosystem-map";
 import { FilterBar } from "@/components/ecosystem/filter-panel";
-import { EcosystemInsights } from "@/components/ecosystem/ecosystem-insights";
+import { ActoresCharts } from "@/components/ecosystem/actores-charts";
 import { shortTerritory } from "@/lib/catalogs";
-import { listIndicatorReports, listOrganizations, listRelations } from "@/lib/data";
-import { computeEcosystemMetrics } from "@/lib/ecosystem-metrics";
+import { getViewer } from "@/lib/auth";
+import { getSocialInvestment, listIndicatorReports, listOrganizations, listRelations } from "@/lib/data";
 import { computeMapStats } from "@/lib/map-stats";
 import { microEcosystem, parseFilters } from "@/lib/filters";
 
@@ -14,7 +14,7 @@ export const metadata: Metadata = { title: "Mapa del ecosistema en vivo" };
 
 export default async function MapaPage(props: PageProps<"/mapa">) {
   const filters = parseFilters(await props.searchParams);
-  const [all, filtered, relations, reports] = await Promise.all([listOrganizations(), listOrganizations(filters), listRelations(), listIndicatorReports()]);
+  const [all, filtered, relations, reports, viewer] = await Promise.all([listOrganizations(), listOrganizations(filters), listRelations(), listIndicatorReports(), getViewer()]);
   // Micro-ecosistema: organizaciones elegidas + sus conexiones directas (reunión 08-oct).
   const orgs = microEcosystem(filtered, relations, filters.org);
   const chosen = new Set(filters.org ?? []);
@@ -42,7 +42,7 @@ export default async function MapaPage(props: PageProps<"/mapa">) {
     .filter((r) => coords.has(r.source_slug) && coords.has(r.target_slug))
     .map((r) => ({ type: r.relation_type_code, from: coords.get(r.source_slug)!, to: coords.get(r.target_slug)! }));
 
-  const metrics = computeEcosystemMetrics(orgs, relations);
+  const investment = await getSocialInvestment();
   const stats = computeMapStats(orgs, reports);
 
   return (
@@ -53,7 +53,7 @@ export default async function MapaPage(props: PageProps<"/mapa">) {
         </span>
         <h1 className="text-3xl font-bold text-foreground sm:text-4xl">Mapa del ecosistema en vivo</h1>
         <p className="max-w-3xl text-muted-foreground">
-          Cada punto es una organización del Colaborativo, ubicada en su localidad. Filtra desde el panel del mapa y suma capas, como las conexiones entre organizaciones.
+          Cada punto es una organización dentro del ecosistema de oportunidades para los jóvenes, ubicada en su localidad. Filtra desde el panel del mapa y suma capas, como las conexiones entre organizaciones.
         </p>
       </div>
 
@@ -62,13 +62,25 @@ export default async function MapaPage(props: PageProps<"/mapa">) {
         <FilterBar view="mapa" total={all.length} shown={orgs.length} orgOptions={all.map((o) => ({ slug: o.slug, name: o.name }))} filterButton="mobile" />
       </Suspense>
 
-      <EcosystemMap orgs={points} relations={arcs} stats={stats} orgOptions={all.map((o) => ({ slug: o.slug, name: o.name }))} className="h-[78vh] min-h-[520px]" />
+      <EcosystemMap orgs={points} relations={arcs} stats={stats} orgOptions={all.map((o) => ({ slug: o.slug, name: o.name }))} isAuthenticated={viewer.role !== "visitante"} className="h-[78vh] min-h-[520px]" />
 
       <p className="text-xs text-muted-foreground">
         Las ubicaciones aproximadas se muestran en el centro de su zona. ¿Prefieres leer las organizaciones una por una? Usa la <Link href="/actores" className="font-semibold text-goyn-violeta underline-offset-2 hover:underline">vista lista</Link>. Mapa: © OpenStreetMap, OpenFreeMap. Globo: NASA Blue Marble.
       </p>
 
-      <EcosystemInsights metrics={metrics} shown={orgs.length} />
+      {/* Gráficos del ecosistema (ajuste 15): cifras, quiénes son, foco por áreas y retos. */}
+      <ActoresCharts
+        orgs={orgs.map((o) => ({
+          slug: o.slug,
+          name: o.name,
+          org_type_code: o.org_type_code,
+          primary_role_code: o.primary_role_code,
+          territory_codes: o.territory_codes ?? [],
+          area_codes: o.area_codes ?? [],
+          problem_codes: o.problem_codes ?? [],
+        }))}
+        investment={investment}
+      />
     </div>
   );
 }
