@@ -72,14 +72,10 @@ export default async function IngresarPage(props: PageProps<"/ingresar">) {
 
           {isSupabaseConfigured && <TestAccounts cuentas={cuentas} siguiente={siguiente} />}
 
-          {isSupabaseConfigured && (
-            <div className={cuentas.length > 0 ? "mt-8 border-t pt-6" : undefined}>
-              {cuentas.length > 0 && <p className="text-sm font-semibold text-foreground">O ingresa con tu correo o usuario</p>}
-              <LoginForms siguiente={siguiente} />
-            </div>
-          )}
+          {/* En la demo (con cuentas de prueba) solo se muestran esas cuentas; en producción, el formulario. */}
+          {isSupabaseConfigured && cuentas.length === 0 && <LoginForms siguiente={siguiente} />}
 
-          {allowsDemoRoles && (
+          {allowsDemoRoles && cuentas.length === 0 && (
             <section aria-labelledby="recorrido-titulo" className={isSupabaseConfigured ? "mt-10 border-t pt-6" : "mt-8"}>
               <h2 id="recorrido-titulo" className="text-sm font-semibold text-foreground">
                 Recorrido sin cuenta (solo lectura)
