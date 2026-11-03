@@ -45,6 +45,15 @@ export async function proxy(request: NextRequest) {
 
   const { data } = await supabase.auth.getClaims();
   if (needsSession && !data?.claims && !demoAllows(request, pathname)) return redirectToLogin(request);
+
+  // Cuentas creadas por el equipo con clave inicial: deben cambiarla antes de usar el panel.
+  const metadata = data?.claims?.user_metadata as { must_change_password?: boolean } | undefined;
+  if (needsSession && metadata?.must_change_password) {
+    const target = request.nextUrl.clone();
+    target.pathname = "/cambiar-clave";
+    target.search = `?siguiente=${encodeURIComponent(pathname)}`;
+    return NextResponse.redirect(target);
+  }
   return response;
 }
 

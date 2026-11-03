@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import { sendMagicLink, signIn, signUp, type AuthState } from "@/app/(auth)/actions";
+import { requestPasswordReset, sendMagicLink, signIn, signUp, type AuthState } from "@/app/(auth)/actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -11,10 +11,39 @@ type Mode = "ingresar" | "crear" | "enlace";
 
 export function LoginForms({ siguiente }: { siguiente: string }) {
   const [mode, setMode] = useState<Mode>("ingresar");
+  const [forgot, setForgot] = useState(false);
   const [signInState, signInAction, signingIn] = useActionState<AuthState, FormData>(signIn, {});
   const [signUpState, signUpAction, signingUp] = useActionState<AuthState, FormData>(signUp, {});
   const [linkState, linkAction, sendingLink] = useActionState<AuthState, FormData>(sendMagicLink, {});
+  const [resetState, resetAction, sendingReset] = useActionState<AuthState, FormData>(requestPasswordReset, {});
   const state = mode === "ingresar" ? signInState : mode === "crear" ? signUpState : linkState;
+
+  if (forgot) {
+    return (
+      <div className="mt-8 space-y-5">
+        <div>
+          <h2 className="text-lg font-bold text-foreground">Restablecer contraseña</h2>
+          <p className="mt-1 text-sm text-muted-foreground">
+            Escribe el correo con el que ingresas y te enviaremos un enlace para crear una nueva contraseña.
+          </p>
+        </div>
+        <form action={resetAction} className="space-y-4">
+          <div className="space-y-1.5">
+            <Label htmlFor="reset-email">Correo electrónico</Label>
+            <Input id="reset-email" name="email" type="email" required autoComplete="email" autoCapitalize="none" spellCheck={false} className="h-11" />
+          </div>
+          {resetState.error && <p role="alert" className="text-sm font-semibold text-destructive">{resetState.error}</p>}
+          {resetState.message && <p role="status" className="rounded-xl bg-goyn-lila p-3 text-sm text-foreground">{resetState.message}</p>}
+          <Button type="submit" disabled={sendingReset} className="h-11 w-full rounded-full font-bold">
+            {sendingReset ? "Enviando…" : "Enviarme el enlace"}
+          </Button>
+        </form>
+        <button type="button" onClick={() => setForgot(false)} className="text-sm font-semibold text-goyn-violeta hover:underline">
+          ← Volver a ingresar
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="mt-8 space-y-5">
@@ -57,7 +86,14 @@ export function LoginForms({ siguiente }: { siguiente: string }) {
         </div>
         {mode !== "enlace" && (
           <div className="space-y-1.5">
-            <Label htmlFor="password">Contraseña</Label>
+            <div className="flex items-center justify-between gap-3">
+              <Label htmlFor="password">Contraseña</Label>
+              {mode === "ingresar" && (
+                <button type="button" onClick={() => setForgot(true)} className="py-1 text-xs font-semibold text-goyn-violeta hover:underline">
+                  ¿Olvidaste tu contraseña?
+                </button>
+              )}
+            </div>
             <Input id="password" name="password" type="password" required minLength={8} autoComplete={mode === "crear" ? "new-password" : "current-password"} className="h-11" />
           </div>
         )}
