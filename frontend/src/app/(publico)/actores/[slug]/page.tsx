@@ -24,7 +24,7 @@ export async function generateMetadata(props: PageProps<"/actores/[slug]">): Pro
   if (!org) return { title: "Organización no encontrada" };
   // Sin sesión no se expone la descripción completa (ni siquiera en las metaetiquetas).
   const signedIn = viewer.role !== "visitante";
-  return { title: org.name, description: signedIn ? org.description.slice(0, 160) : `${org.org_type_label} · ${org.primary_role_label} en el ecosistema GOYN Conecta BAQ.` };
+  return { title: org.name, description: signedIn && org.description.trim() ? org.description.slice(0, 160) : `${org.org_type_label} · ${org.primary_role_label} en el ecosistema GOYN Conecta BAQ.` };
 }
 
 export default async function ActorPage(props: PageProps<"/actores/[slug]">) {
@@ -106,7 +106,11 @@ export default async function ActorPage(props: PageProps<"/actores/[slug]">) {
         <div className="min-w-0 space-y-10">
           <section aria-labelledby="quienes">
             <h2 id="quienes" className="mb-3 text-xl font-extrabold text-foreground">¿Quiénes son y qué hacen?</h2>
-            <p className="text-lg leading-relaxed text-foreground/85">{org.description}</p>
+            {org.description.trim() ? (
+              <p className="whitespace-pre-line text-lg leading-relaxed text-foreground/85">{org.description}</p>
+            ) : (
+              <p className="text-muted-foreground italic">Esta organización aún no ha publicado su descripción.</p>
+            )}
             {org.mission && <p className="mt-3 text-muted-foreground"><strong className="text-foreground">Misión:</strong> {org.mission}</p>}
           </section>
 
