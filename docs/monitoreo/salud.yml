@@ -12,7 +12,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 5
     env:
-      SITE: ${{ vars.SITE_URL || 'https://goyn-conecta-baq.vercel.app' }}
+      SITE: ${{ vars.SITE_URL || 'https://mar.goynbarranquilla.com' }}
     steps:
       - name: Páginas principales
         run: |

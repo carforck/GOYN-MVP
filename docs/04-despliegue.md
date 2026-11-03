@@ -1,44 +1,65 @@
-# Despliegue: Supabase + Vercel
+# Despliegue: Vercel + Supabase
 
-## 1. Supabase (backend)
+MAR tiene **dos entornos** que salen del mismo código (rama `main` de `carforck/GOYN-MVP`). Cada uno es un proyecto
+de Vercel distinto, conectado al repositorio, con **Root Directory `frontend`** y su propio proyecto de Supabase.
 
-1. Crear un proyecto en Supabase (región sugerida: `us-east-1` o la más cercana acordada con GOYN).
-2. Desde `backend/`:
-   ```bash
-   npx supabase login
-   npx supabase link --project-ref <ref-del-proyecto>
-   npx supabase db push                 # aplica las 8 migraciones
-   npx supabase db push --include-seed  # opcional: carga las 42 organizaciones sintéticas (is_demo = true)
-   ```
-3. En **Authentication → URL Configuration**, poner como *Site URL* la URL de Vercel y agregar
-   `https://<dominio>/auth/callback` en *Redirect URLs*.
-4. Crear el primer superadministrador: registrarse en `/ingresar` y luego, en el editor SQL:
-   ```sql
-   update public.profile set platform_role = 'superadmin' where email = 'correo@goyn.org';
-   ```
-5. Retirar los datos demo antes del lanzamiento: `delete from public.organization where is_demo;`
+| Entorno | Sitio | Supabase | Variables propias |
+|---|---|---|---|
+| **Oficial** | https://mar.goynbarranquilla.com | Proyecto de GOYN con datos reales | Sin `NEXT_PUBLIC_DATOS_SINTETICOS` ni `NEXT_PUBLIC_CUENTAS_PRUEBA` |
+| **Demo** | https://goyn-mar-demo.vercel.app y https://goyn-conecta-baq.vercel.app | Proyecto demo con seed sintético | `NEXT_PUBLIC_DATOS_SINTETICOS=1` y `NEXT_PUBLIC_CUENTAS_PRUEBA` |
 
-## 2. Vercel (frontend)
+La diferencia entre entornos es **solo de variables de entorno**. No hay ramas ni código específico por entorno.
 
-1. Importar el repositorio `carforck/GOYN-MVP` en Vercel.
-2. **Root Directory: `frontend`**. Framework: Next.js (se detecta solo). Node 22 o superior.
-3. Variables de entorno (Production y Preview):
+## 1. Despliegue continuo (Vercel)
 
-   | Variable | Valor |
-   |---|---|
-   | `NEXT_PUBLIC_SUPABASE_URL` | `https://<ref>.supabase.co` |
-   | `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` | Clave *publishable* (o *anon*) del proyecto |
-   | `NEXT_PUBLIC_SITE_URL` | URL pública del sitio |
+- Cada `git push` a `main` despliega **automáticamente los dos sitios**. No se usa `vercel deploy --prod` manual.
+- Framework Next.js (se detecta solo), Node 22 o superior.
+- Variables de entorno por proyecto (Production y Preview); la tabla completa está en
+  [../frontend/README.md](../frontend/README.md#variables-de-entorno):
+  `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `NEXT_PUBLIC_SITE_URL` en ambos;
+  `NEXT_PUBLIC_DATOS_SINTETICOS` y `NEXT_PUBLIC_CUENTAS_PRUEBA` solo en la demo.
+- Las variables `NEXT_PUBLIC_*` se incrustan en la compilación: después de cambiarlas hay que **redesplegar**.
+- El dominio `mar.goynbarranquilla.com` apunta a Vercel desde el DNS del dominio de GOYN.
 
-   Sin las dos primeras, el despliegue funciona en **modo demo**, útil para mostrar maquetas.
-4. Cada pull request genera una URL de vista previa.
+## 2. Supabase
 
-## 3. Verificación después de desplegar
+1. Esquema: migraciones 001–018 de `backend/supabase/migrations`, aplicadas en **ambos** proyectos. Procedimiento
+   para crear y aplicar una migración en cada entorno: [../backend/README.md](../backend/README.md#crear-y-aplicar-una-migración-nueva).
+2. Datos: la demo usa `seed.sql` (42 organizaciones sintéticas, `is_demo = true`). **Nunca** cargar el seed en el
+   proyecto oficial.
+3. **Authentication → URL Configuration** de cada proyecto: *Site URL* = el sitio del entorno; en *Redirect URLs*
+   el dominio del entorno con `/**` (cubre `/auth/confirm` y `/auth/callback`) y `http://localhost:3000/**` solo en
+   la demo.
+4. **Correo de Auth:** SMTP propio (buzón no-reply del dominio de GOYN, en Hostinger) y plantillas en español con
+   enlaces `token_hash` hacia `/auth/confirm` (sirven en otro dispositivo). Se configuran en el panel de Supabase,
+   no en el repositorio. Sin SMTP propio Supabase limita mucho los envíos y los correos de restablecer pueden no
+   llegar.
+5. **Cuentas:**
+   - Organizaciones del oficial: las crea el equipo con una clave inicial y `user_metadata.must_change_password = true`;
+     en el primer ingreso la app obliga a cambiarla en `/cambiar-clave`. La clave inicial se entrega por canal
+     privado y nunca se escribe en el repositorio.
+   - Equipo GOYN / superadministración: una vez creada la cuenta, en el editor SQL:
+     ```sql
+     update public.profile set platform_role = 'admin_goyn' where email = '<correo>';  -- o 'superadmin'
+     ```
+   - Cuentas de prueba (solo demo): `frontend/scripts/crear-usuarios-prueba.mjs` y la variable
+     `NEXT_PUBLIC_CUENTAS_PRUEBA` del proyecto demo en Vercel.
 
-- `/` muestra KPIs y el aviso demo desaparece si hay Supabase.
-- `/mapa` carga teselas y marcadores (el worker de MapLibre se sirve desde `/maplibre/`).
-- Registrar una organización de prueba, aprobarla desde `/admin/solicitudes` y verla en `/mapa`.
-- `backend: npm test` pasa antes de cada cambio de migraciones.
+## 3. Checklist de despliegue
+
+Antes del push:
+
+- [ ] `backend: npm test` pasa (si hubo cambios de base de datos).
+- [ ] Migraciones nuevas aplicadas en **demo y oficial** (`npx supabase migration list` en cada uno).
+- [ ] `frontend: npm run lint` y `npm run build` sin errores.
+- [ ] `git status` limpio de secretos: nada de `.env.local`, llaves, claves iniciales ni datos personales (el repo es público).
+
+Después del push (Vercel despliega ambos):
+
+- [ ] Revisar primero la **demo**: `/`, `/mapa`, `/actores`, `/impacto`, `/ingresar` con una cuenta de prueba, `/panel` y `/admin`.
+- [ ] Revisar el **oficial**: https://mar.goynbarranquilla.com responde 200, sin franja de datos sintéticos y sin cuentas de prueba en `/ingresar`.
+- [ ] `GET /api/salud` devuelve `ok` en ambos.
+- [ ] Si algo falla, en Vercel se puede volver al despliegue anterior (*Instant Rollback*) mientras se corrige.
 
 ## Resistencia del mapa y monitoreo
 

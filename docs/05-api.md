@@ -48,7 +48,9 @@ organización, una relación o un reporte aprobado (migración 009). El mensaje 
 |---|---|---|---|
 | `/api/ecosistema` | GET | Público | Instantánea en vivo: `stats`, `territories`, `orgs` (id, slug, nombre, territorio, rol, lat/lng), `events` recientes, `source` (`demo` \| `supabase`) |
 | `/admin/exportar/descargar` | GET | Admin GOYN | `?dataset=organizaciones\|programas\|indicadores&format=csv\|xlsx` + filtros opcionales `tipo`, `rol`, `area`, `linea`, `territorio`, `periodo`. Registra la exportación en `export_job` |
-| `/auth/callback` | GET | Público | Intercambia el código de confirmación de Supabase Auth por la sesión |
+| `/api/salud` | GET | Público | Monitoreo: `ok`, `degradado` (mapa en respaldo) o `caido` (503) |
+| `/auth/confirm` | GET | Público | `?token_hash=…&type=…`: verifica el enlace de los correos de Auth (`verifyOtp`) y redirige (restablecer → `/cambiar-clave`) |
+| `/auth/callback` | GET | Público | `?code=…`: intercambia el código de Supabase Auth por la sesión (mismo navegador) |
 
 Las acciones de servidor (formularios de registro, captura de indicadores, decisiones de la consola)
 llaman a las funciones de la sección 1 con la sesión del usuario.

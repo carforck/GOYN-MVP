@@ -39,8 +39,8 @@ asignan a `--font-heading`.
 - Tamaño mínimo digital: **130 × 32 px**. En el pie se usa a 192 px de ancho.
 - Versiones: principal (morado/magenta), positivo y negativo (blanco sobre fondos oscuros).
 - No estirar, no recolorear parcialmente, no cambiar la tipografía y no ponerlo sobre fondos complejos.
-- El símbolo del producto "GOYN Conecta BAQ" (asterisco de las texturas) es un sub-sello del MVP: convive con el
-  logo institucional y no lo reemplaza. Debe aprobarse cuando se defina el nombre final.
+- El símbolo del producto **MAR · Mapa de Actores y Resultados** (asterisco de las texturas; durante el desarrollo
+  "GOYN Conecta BAQ") es un sub-sello: convive con el logo institucional y no lo reemplaza.
 
 ## Estilo visual (manual §7)
 
@@ -81,4 +81,4 @@ No se usaron las fotos de Polaris porque son de jóvenes de Bogotá.
 ## Pendiente de GOYN
 
 Licencia web de Brandon Grotesque · confirmar el mapeo de íconos a roles · fotos propias con autorización de uso
-en la plataforma · aprobar el sub-sello "GOYN Conecta BAQ" o el nombre final.
+en la plataforma · aprobar el sub-sello del producto MAR.

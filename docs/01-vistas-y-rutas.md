@@ -16,8 +16,10 @@ Todas comparten el mismo repositorio de datos (`src/lib/data`) y los mismos cat�
 | | `/oportunidades` | Vitrina para jóvenes | FR-009 | **Próximamente** |
 | | `/conexiones` | Grafo de red | FR-014/015 | **Próximamente · Fase 2** |
 | | `/historias` | Casos de éxito | FR-017 | **Próximamente · Fase 2** |
-| **Acceso** · `app/(auth)` | `/ingresar` | Ingreso, creación de cuenta, enlace por correo (modo demo: elegir rol) | FR-007 | MVP |
-| | `/auth/callback` | Confirmación de correo de Supabase | — | MVP |
+| **Acceso** · `app/(auth)` | `/ingresar` | Pestañas Ingresar y Crear cuenta (casilla obligatoria de Política de tratamiento de datos), «¿Olvidaste tu contraseña?». En la demo: solo las cuentas de prueba (o elegir rol en modo demo local) | FR-007 | MVP |
+| | `/cambiar-clave` | Nueva contraseña; obligatoria en el primer ingreso (`must_change_password`) | — | MVP |
+| | `/auth/confirm` | Enlaces de los correos de Auth con `token_hash` (restablecer, confirmar); funcionan en otro dispositivo | — | MVP |
+| | `/auth/callback` | Flujo con `code` de Supabase Auth (mismo navegador) | — | MVP |
 | **Organización** · `app/panel` | `/panel` | Resumen: estado de publicación, frescura (6 meses), KPIs propios | — | MVP |
 | | `/panel/registro` | Formulario por pasos de 9 módulos con guardado automático | FR-006 | MVP |
 | | `/panel/programas` | Programas publicados | FR-008 | MVP |
@@ -56,7 +58,7 @@ aplica RLS y las funciones `security definer` validan el rol antes de escribir. 
 src/
 ├── app/
 │   ├── (publico)/         layout con encabezado, pie y aviso demo; páginas públicas
-│   ├── (auth)/            ingresar, callback y acciones de sesión (server actions)
+│   ├── (auth)/            ingresar, cambiar-clave, auth/confirm, auth/callback y acciones de sesión
 │   ├── panel/             layout AppShell "Panel de organización" + páginas + acciones de registro
 │   └── admin/             layout AppShell "Consola GOYN" + páginas + ruta de exportación
 ├── components/
@@ -82,9 +84,12 @@ src/
 
 `src/lib/config.ts` detecta si hay `NEXT_PUBLIC_SUPABASE_URL` y `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`.
 
-- **Sin variables** → modo demo: datos sintéticos, rol por cookie, borradores en el navegador y un aviso naranja fijo.
+- **Sin variables** → modo demo local: datos sintéticos desde JSON, rol por cookie, borradores en el navegador y un aviso naranja fijo.
 - **Con variables** → modo conectado: las mismas pantallas leen las vistas públicas, el registro crea
   `change_request`, la consola llama `decide_change_request` y la auditoría lee `audit_log`.
+- **Con variables y `NEXT_PUBLIC_DATOS_SINTETICOS=1`** → entorno **demo** (https://goyn-mar-demo.vercel.app): base
+  con el seed sintético, franja de datos sintéticos y, si existe `NEXT_PUBLIC_CUENTAS_PRUEBA`, cuentas de prueba en
+  `/ingresar`. El entorno **oficial** (https://mar.goynbarranquilla.com) no define esas dos variables.
 
 Las vistas no cambian entre modos; solo cambia la implementación de `src/lib/data`.
 
