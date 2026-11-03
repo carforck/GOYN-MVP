@@ -40,13 +40,14 @@ export async function signIn(_: AuthState, formData: FormData): Promise<AuthStat
 }
 
 export async function signUp(_: AuthState, formData: FormData): Promise<AuthState> {
+  if (formData.get("acepta_datos") !== "si") return { error: "Debes aceptar la Política de tratamiento de datos para crear tu cuenta." };
   const supabase = await createClient();
   const origin = (await headers()).get("origin") ?? process.env.NEXT_PUBLIC_SITE_URL ?? "";
   const { error } = await supabase.auth.signUp({
     email: String(formData.get("email")),
     password: String(formData.get("password")),
     options: {
-      data: { full_name: String(formData.get("full_name") ?? "") },
+      data: { full_name: String(formData.get("full_name") ?? ""), data_policy_accepted_at: new Date().toISOString() },
       emailRedirectTo: `${origin}/auth/callback?siguiente=/panel/registro`,
     },
   });

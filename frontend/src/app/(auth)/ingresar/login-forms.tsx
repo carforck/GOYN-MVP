@@ -9,6 +9,8 @@ import { cn } from "@/lib/utils";
 
 type Mode = "ingresar" | "crear" | "enlace";
 
+const DATA_POLICY_URL = "https://www.fundacioncorona.org/tratamientodedatos";
+
 export function LoginForms({ siguiente }: { siguiente: string }) {
   const [mode, setMode] = useState<Mode>("ingresar");
   const [forgot, setForgot] = useState(false);
@@ -38,6 +40,11 @@ export function LoginForms({ siguiente }: { siguiente: string }) {
             {sendingReset ? "Enviando…" : "Enviarme el enlace"}
           </Button>
         </form>
+        <p className="text-xs text-muted-foreground">
+          Tus datos se tratan según la{" "}
+          <a href={DATA_POLICY_URL} target="_blank" rel="noreferrer" className="font-semibold text-goyn-violeta underline">Política de tratamiento de datos</a>{" "}
+          de Fundación Corona.
+        </p>
         <button type="button" onClick={() => setForgot(false)} className="text-sm font-semibold text-goyn-violeta hover:underline">
           ← Volver a ingresar
         </button>
@@ -97,6 +104,18 @@ export function LoginForms({ siguiente }: { siguiente: string }) {
             <Input id="password" name="password" type="password" required minLength={8} autoComplete={mode === "crear" ? "new-password" : "current-password"} className="h-11" />
           </div>
         )}
+        {mode === "crear" && (
+          <label className="flex items-start gap-3 rounded-xl border p-3 text-sm leading-snug">
+            <input type="checkbox" name="acepta_datos" value="si" required className="mt-0.5 size-4 shrink-0 accent-goyn-violeta" />
+            <span>
+              Acepto la{" "}
+              <a href={DATA_POLICY_URL} target="_blank" rel="noreferrer" className="font-semibold text-goyn-violeta underline">
+                Política de tratamiento de datos
+              </a>{" "}
+              de Fundación Corona para el uso de mi nombre y correo en esta plataforma.
+            </span>
+          </label>
+        )}
         {state.error && <p role="alert" className="text-sm font-semibold text-destructive">{state.error}</p>}
         {state.message && <p role="status" className="rounded-xl bg-goyn-lila p-3 text-sm text-foreground">{state.message}</p>}
         <Button type="submit" disabled={signingIn || signingUp || sendingLink} className="h-11 w-full rounded-full font-bold">
@@ -104,7 +123,15 @@ export function LoginForms({ siguiente }: { siguiente: string }) {
         </Button>
       </form>
       <p className="text-xs text-muted-foreground">
-        Al crear tu cuenta podrás registrar tu organización. El equipo GOYN valida cada registro antes de publicarlo.
+        {mode === "crear"
+          ? "Al crear tu cuenta podrás registrar tu organización. El equipo GOYN valida cada registro antes de publicarlo."
+          : "Al ingresar aceptas el uso de tus datos según la "}
+        {mode !== "crear" && (
+          <a href={DATA_POLICY_URL} target="_blank" rel="noreferrer" className="font-semibold text-goyn-violeta underline">
+            Política de tratamiento de datos
+          </a>
+        )}
+        {mode !== "crear" && " de Fundación Corona."}
       </p>
     </div>
   );

@@ -27,10 +27,10 @@ export default async function IngresarPage(props: PageProps<"/ingresar">) {
       <div className="relative hidden overflow-hidden bg-goyn-violeta lg:sticky lg:top-0 lg:block lg:h-screen">
         <WaveLinesBackground />
         <div className="absolute inset-0 bg-linear-to-t from-goyn-navy/85 via-goyn-navy/10 to-transparent" />
-        <Shape name="asterisco" size={100} className="top-10 right-10" />
-        <div className="absolute inset-x-0 bottom-0 space-y-3 p-12 text-white">
+        <Shape name="asterisco" size={100} className="top-10 right-10 motion-safe:animate-[spin_18s_linear_infinite]" />
+        <div className="absolute inset-x-0 bottom-0 space-y-3 p-12 text-center text-white">
           <p className="font-marker text-3xl text-goyn-magenta">El futuro es joven</p>
-          <p className="max-w-md text-2xl font-extrabold">Juntos vemos, conectamos y medimos lo que hacemos por las juventudes de Barranquilla.</p>
+          <p className="mx-auto max-w-md text-2xl font-extrabold">Juntos vemos, conectamos y medimos lo que hacemos por las juventudes de Barranquilla.</p>
         </div>
       </div>
 
