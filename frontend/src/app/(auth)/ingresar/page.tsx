@@ -39,6 +39,11 @@ export default async function IngresarPage(props: PageProps<"/ingresar">) {
         <div className="mx-auto flex w-full max-w-md flex-1 flex-col justify-center py-10">
           <h1 className="text-3xl font-extrabold text-foreground">Ingresa a Mapa de Actores y Resultados</h1>
           <p className="mt-2 text-muted-foreground">Accede al panel de tu organización o a la consola del equipo GOYN.</p>
+          {sp.error === "enlace" && (
+            <p role="alert" className="mt-4 rounded-xl border border-destructive/30 bg-destructive/5 p-3 text-sm text-foreground">
+              El enlace del correo venció o ya fue usado. Pide uno nuevo con «¿Olvidaste tu contraseña?».
+            </p>
+          )}
 
           {isSupabaseConfigured && <TestAccounts cuentas={cuentas} siguiente={siguiente} />}
 
