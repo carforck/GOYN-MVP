@@ -12,6 +12,7 @@ export type Viewer = {
   name: string | null;
   organizationIds: string[];
   demo: boolean;
+  mustChangePassword?: boolean;
 };
 
 const anonymous: Viewer = { role: "visitante", userId: null, email: null, name: null, organizationIds: [], demo: false };
@@ -51,6 +52,7 @@ export const getViewer = cache(async (): Promise<Viewer> => {
     name: profile?.full_name ?? null,
     organizationIds: (memberships ?? []).map((m) => m.organization_id),
     demo: false,
+    mustChangePassword: (claims?.claims?.user_metadata as { must_change_password?: boolean } | undefined)?.must_change_password === true,
   };
 });
 

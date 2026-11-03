@@ -15,6 +15,7 @@ const nav: AppNavItem[] = [
 export default async function PanelLayout({ children }: LayoutProps<"/panel">) {
   const viewer = await getViewer();
   if (viewer.role === "visitante") redirect("/ingresar?siguiente=/panel");
+  if (viewer.mustChangePassword) redirect("/cambiar-clave?siguiente=/panel");
   if (isAdminRole(viewer.role) && viewer.demo) redirect("/admin");
   const org = await getOwnOrganization(viewer.organizationIds);
   return (

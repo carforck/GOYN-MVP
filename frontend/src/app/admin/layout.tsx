@@ -7,6 +7,7 @@ import { listChangeRequests } from "@/lib/data";
 export default async function AdminLayout({ children }: LayoutProps<"/admin">) {
   const viewer = await getViewer();
   if (!isAdminRole(viewer.role)) redirect("/ingresar?siguiente=/admin");
+  if (viewer.mustChangePassword) redirect("/cambiar-clave?siguiente=/admin");
   const pending = (await listChangeRequests()).filter((r) => r.status === "enviada").length;
 
   const nav: AppNavItem[] = [

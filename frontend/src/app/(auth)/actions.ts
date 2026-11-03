@@ -27,13 +27,16 @@ export async function signIn(_: AuthState, formData: FormData): Promise<AuthStat
   const email = resolveLoginEmail(String(formData.get("email") ?? ""));
   if (!email) return { error: "Usuario no reconocido. Escribe tu correo electrónico completo." };
   const supabase = await createClient();
-  const { error } = await supabase.auth.signInWithPassword({
+  const { data, error } = await supabase.auth.signInWithPassword({
     email,
     password: String(formData.get("password")),
   });
   if (error) return { error: "Correo o contraseña incorrectos." };
   (await cookies()).delete(DEMO_ROLE_COOKIE);
-  redirect(safeNext(formData.get("siguiente"), "/panel"));
+  const next = safeNext(formData.get("siguiente"), "/panel");
+  // Cuentas con clave inicial: primero crean su propia contraseña.
+  if (data.user?.user_metadata?.must_change_password === true) redirect(`/cambiar-clave?siguiente=${encodeURIComponent(next)}`);
+  redirect(next);
 }
 
 export async function signUp(_: AuthState, formData: FormData): Promise<AuthState> {
