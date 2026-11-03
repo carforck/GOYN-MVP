@@ -1,12 +1,12 @@
 import { Building2Icon, ShieldCheckIcon, SparklesIcon } from "lucide-react";
 import type { Metadata } from "next";
-import Image from "next/image";
 import { enterDemo } from "@/app/(auth)/actions";
 import { getCuentasPrueba } from "@/app/(auth)/cuentas-prueba";
 import { LoginForms } from "@/app/(auth)/ingresar/login-forms";
 import { TestAccounts } from "@/components/auth/test-accounts";
 import { ProductLogo } from "@/components/brand/logo";
 import { Shape } from "@/components/brand/shape";
+import { WaveLinesBackground } from "@/components/brand/wave-lines";
 import { allowsDemoRoles, isDemoMode, isSupabaseConfigured } from "@/lib/config";
 
 export const metadata: Metadata = { title: "Ingresar" };
@@ -24,9 +24,9 @@ export default async function IngresarPage(props: PageProps<"/ingresar">) {
 
   return (
     <div className="grid min-h-screen lg:grid-cols-2">
-      <div className="relative hidden overflow-hidden bg-goyn-violeta lg:block">
-        <Image src="/images/fotos/ilustracion-165.webp" alt="" fill sizes="50vw" className="object-cover opacity-80" priority />
-        <div className="absolute inset-0 bg-linear-to-t from-goyn-navy/90 via-goyn-violeta/30 to-transparent" />
+      <div className="relative hidden overflow-hidden bg-goyn-violeta lg:sticky lg:top-0 lg:block lg:h-screen">
+        <WaveLinesBackground />
+        <div className="absolute inset-0 bg-linear-to-t from-goyn-navy/85 via-goyn-navy/10 to-transparent" />
         <Shape name="asterisco" size={100} className="top-10 right-10" />
         <div className="absolute inset-x-0 bottom-0 space-y-3 p-12 text-white">
           <p className="font-marker text-3xl text-goyn-magenta">El futuro es joven</p>
