@@ -1,13 +1,13 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import { requestPasswordReset, sendMagicLink, signIn, signUp, type AuthState } from "@/app/(auth)/actions";
+import { requestPasswordReset, signIn, signUp, type AuthState } from "@/app/(auth)/actions";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
 
-type Mode = "ingresar" | "crear" | "enlace";
+type Mode = "ingresar" | "crear";
 
 const DATA_POLICY_URL = "https://www.fundacioncorona.org/tratamientodedatos";
 
@@ -16,9 +16,8 @@ export function LoginForms({ siguiente }: { siguiente: string }) {
   const [forgot, setForgot] = useState(false);
   const [signInState, signInAction, signingIn] = useActionState<AuthState, FormData>(signIn, {});
   const [signUpState, signUpAction, signingUp] = useActionState<AuthState, FormData>(signUp, {});
-  const [linkState, linkAction, sendingLink] = useActionState<AuthState, FormData>(sendMagicLink, {});
   const [resetState, resetAction, sendingReset] = useActionState<AuthState, FormData>(requestPasswordReset, {});
-  const state = mode === "ingresar" ? signInState : mode === "crear" ? signUpState : linkState;
+  const state = mode === "ingresar" ? signInState : signUpState;
 
   if (forgot) {
     return (
@@ -54,8 +53,8 @@ export function LoginForms({ siguiente }: { siguiente: string }) {
 
   return (
     <div className="mt-8 space-y-5">
-      <div className="grid grid-cols-3 rounded-full bg-muted p-1 text-sm font-semibold" role="tablist">
-        {(["ingresar", "crear", "enlace"] as Mode[]).map((m) => (
+      <div className="grid grid-cols-2 rounded-full bg-muted p-1 text-sm font-semibold" role="tablist">
+        {(["ingresar", "crear"] as Mode[]).map((m) => (
           <button
             key={m}
             role="tab"
@@ -63,12 +62,12 @@ export function LoginForms({ siguiente }: { siguiente: string }) {
             onClick={() => setMode(m)}
             className={cn("h-9 rounded-full", mode === m ? "bg-card text-goyn-violeta shadow-sm" : "text-muted-foreground")}
           >
-            {m === "ingresar" ? "Ingresar" : m === "crear" ? "Crear cuenta" : "Enlace por correo"}
+            {m === "ingresar" ? "Ingresar" : "Crear cuenta"}
           </button>
         ))}
       </div>
 
-      <form action={mode === "ingresar" ? signInAction : mode === "crear" ? signUpAction : linkAction} className="space-y-4">
+      <form action={mode === "ingresar" ? signInAction : signUpAction} className="space-y-4">
         <input type="hidden" name="siguiente" value={siguiente} />
         {mode === "crear" && (
           <div className="space-y-1.5">
@@ -91,7 +90,7 @@ export function LoginForms({ siguiente }: { siguiente: string }) {
             className="h-11"
           />
         </div>
-        {mode !== "enlace" && (
+        {(
           <div className="space-y-1.5">
             <div className="flex items-center justify-between gap-3">
               <Label htmlFor="password">Contraseña</Label>
@@ -118,8 +117,8 @@ export function LoginForms({ siguiente }: { siguiente: string }) {
         )}
         {state.error && <p role="alert" className="text-sm font-semibold text-destructive">{state.error}</p>}
         {state.message && <p role="status" className="rounded-xl bg-goyn-lila p-3 text-sm text-foreground">{state.message}</p>}
-        <Button type="submit" disabled={signingIn || signingUp || sendingLink} className="h-11 w-full rounded-full font-bold">
-          {mode === "ingresar" ? "Ingresar" : mode === "crear" ? "Crear cuenta" : "Enviarme el enlace"}
+        <Button type="submit" disabled={signingIn || signingUp} className="h-11 w-full rounded-full font-bold">
+          {mode === "ingresar" ? "Ingresar" : "Crear cuenta"}
         </Button>
       </form>
       <p className="text-xs text-muted-foreground">

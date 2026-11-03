@@ -4,10 +4,11 @@ import { enterDemo } from "@/app/(auth)/actions";
 import { getCuentasPrueba } from "@/app/(auth)/cuentas-prueba";
 import { LoginForms } from "@/app/(auth)/ingresar/login-forms";
 import { TestAccounts } from "@/components/auth/test-accounts";
-import { ProductLogo } from "@/components/brand/logo";
+import { GoynLogo, ProductLogo } from "@/components/brand/logo";
 import { Shape } from "@/components/brand/shape";
 import { WaveLinesBackground } from "@/components/brand/wave-lines";
 import { allowsDemoRoles, isDemoMode, isSupabaseConfigured } from "@/lib/config";
+import { getEcosystemStats } from "@/lib/data";
 
 export const metadata: Metadata = { title: "Ingresar" };
 
@@ -21,16 +22,40 @@ export default async function IngresarPage(props: PageProps<"/ingresar">) {
   const sp = await props.searchParams;
   const siguiente = typeof sp.siguiente === "string" ? sp.siguiente : "";
   const cuentas = getCuentasPrueba();
+  // Cifras en vivo para el panel; si la base no responde, el panel se muestra sin ellas.
+  const stats = await getEcosystemStats().catch(() => null);
 
   return (
     <div className="grid min-h-screen lg:grid-cols-2">
       <div className="relative hidden overflow-hidden bg-goyn-violeta lg:sticky lg:top-0 lg:block lg:h-screen">
         <WaveLinesBackground />
-        <div className="absolute inset-0 bg-linear-to-t from-goyn-navy/85 via-goyn-navy/10 to-transparent" />
-        <Shape name="asterisco" size={100} className="top-10 right-10 motion-safe:animate-[spin_18s_linear_infinite]" />
-        <div className="absolute inset-x-0 bottom-0 space-y-3 p-12 text-center text-white">
-          <p className="font-marker text-3xl text-goyn-magenta">El futuro es joven</p>
-          <p className="mx-auto max-w-md text-2xl font-extrabold">Juntos vemos, conectamos y medimos lo que hacemos por las juventudes de Barranquilla.</p>
+        <div className="absolute inset-0 bg-linear-to-b from-goyn-navy/40 via-transparent to-goyn-navy/90" />
+        <Shape name="asterisco" size={110} className="top-24 right-12 motion-safe:animate-[spin_18s_linear_infinite]" />
+        <div className="relative flex h-full flex-col justify-between p-12 text-white">
+          <GoynLogo variant="blanco" className="w-56" />
+          <div className="mx-auto max-w-lg text-center">
+            <p className="font-marker text-4xl text-goyn-magenta">El futuro es joven</p>
+            <p className="mt-4 text-3xl leading-tight font-extrabold">
+              Juntos vemos, conectamos y medimos lo que hacemos por las juventudes de Barranquilla y su área metropolitana.
+            </p>
+          </div>
+          {stats ? (
+            <dl className="grid grid-cols-3 gap-3">
+              {[
+                { value: stats.organizations, label: "organizaciones en el mapa" },
+                { value: stats.programs, label: "programas para jóvenes" },
+                { value: stats.conectados, label: "jóvenes conectados" },
+              ].map((item) => (
+                <div key={item.label} className="rounded-2xl border border-white/15 bg-white/10 p-4 backdrop-blur-sm">
+                  <dt className="sr-only">{item.label}</dt>
+                  <dd className="text-3xl font-extrabold tabular-nums">{item.value.toLocaleString("es-CO")}</dd>
+                  <dd className="mt-1 text-sm leading-snug text-white/80">{item.label}</dd>
+                </div>
+              ))}
+            </dl>
+          ) : (
+            <span />
+          )}
         </div>
       </div>
 
