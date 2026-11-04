@@ -19,7 +19,8 @@ export default function RegistroPage() {
   return (
     <>
       <section className="relative isolate overflow-hidden bg-goyn-violeta text-white">
-        <Image src="/images/fotos/como-funciona.webp" alt="" fill sizes="100vw" className="-z-10 object-cover opacity-20" />
+        <Image src="/images/fotos/colaborativo-2026.webp" alt="" fill sizes="100vw" priority className="-z-20 object-cover object-[50%_68%]" />
+        <div aria-hidden className="absolute inset-0 -z-10 bg-linear-to-r from-goyn-violeta via-goyn-violeta/85 to-goyn-violeta/35" />
         <Shape name="rompecabezas" size={130} className="right-[6%] bottom-6 hidden brightness-0 invert md:block" />
         <div className="goyn-container py-14 sm:py-20">
           <span className="goyn-eyebrow bg-goyn-magenta-a11y">Únete al mapa del ecosistema</span>
